@@ -28,6 +28,17 @@
 /*** Spinner End ***/
 
 
+/*** Main Page Start ***/
+.container-main {
+    text-align: center;
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
+/*** Main Page End ***/
+
+
 /*** Button Start ***/
 .btn {
     font-weight: 600;
@@ -73,6 +84,8 @@
     background: var(--bs-secondary) !important;
     color: var(--bs-white) !important;
 }
+/*** Button End ***/
+
 
 /*** Topbar Start ***/
 .fixed-top {

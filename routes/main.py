@@ -6,12 +6,20 @@ main_bp = Blueprint('main', __name__)
 # Define the route for the home page
 @main_bp.route("/")
 def index():
-    return render_template("index.html")  # Render the index.html template
+    return render_template("index.html")  # Render the / template
 
 # Add more routes here
 @main_bp.route("/contact")
 def contact():
     return render_template("contact.html")  # Render the contact.html template
+
+@main_bp.route("/404")
+def fourofour():
+    return render_template("404.html")  # Render the 404.html template
+
+@main_bp.route("/shop")
+def shop():
+    return render_template("/shop")  # Render the /shop template
 
 
 # Define the route to serve images from the static/img directory for testing purposes 

@@ -13,10 +13,6 @@ def index():
 def contact():
     return render_template("contact.html")  # Render the contact.html template
 
-@main_bp.route("/404")
-def fourofour():
-    return render_template("404.html")  # Render the 404.html template
-
 @main_bp.route("/shop")
 def shop():
     return render_template("/shop")  # Render the /shop template

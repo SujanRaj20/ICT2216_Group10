@@ -17,6 +17,22 @@ def contact():
 def shop():
     return render_template("shop.html")  # Render the /shop template
 
+@main_bp.route("/login")
+def login():
+    return render_template("login.html")  # Render the /shop template
+
+@main_bp.route("/signup")
+def signup():
+    return render_template("signup.html")  # Render the /shop template
+
+@main_bp.route("/seller-login")
+def seller_login():
+    return render_template("login-seller.html")  # Render the /shop template
+
+@main_bp.route("/seller-signup")
+def seller_signup():
+    return render_template("signup-seller.html")  # Render the /shop template
+
 
 # Define the route to serve images from the static/img directory for testing purposes 
 # REMOVE THIS BEFORE PRODUCTION

@@ -35,3 +35,7 @@ def admin_commentsmenu():
 @admin_bp.route("/admin_reportsmenu")
 def admin_reportsmenu():
     return render_template("admin_reportsmenu.html")  # Render the add admin template
+
+@admin_bp.route("/admin_logs")
+def admin_logsview():
+    return render_template("admin_logsview.html")  # Render the add admin template

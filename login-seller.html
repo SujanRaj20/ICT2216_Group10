@@ -35,8 +35,6 @@
         <div class="spinner-grow text-primary" role="status"></div>
     </div>
     <!-- Spinner End -->
-
-
     <!-- Navbar start -->
     <div class="container-fluid fixed-top">
         <div class="container topbar bg-primary d-none d-lg-block">
@@ -91,30 +89,28 @@
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="bg-light rounded p-4">
-                        <form>
+                        <form id="loginForm">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username or Email</label>
-                                <input type="text" class="form-control" id="username" required>
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="email" required>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" required>
                             </div>
-                            
                             <div class="mb-3">
                                 <button type="submit" class="btn btn-primary w-100">Login</button>
                             </div>
                             <div class="mb-3">
                                 <a href="signup.html" class="nav-item nav-link">No account? Sign up here</a>
                             </div>
-                            
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Testimonial End -->
+    <!-- Log In End -->
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
         <div class="container py-5">
@@ -206,6 +202,23 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <!-- Client-side validation script -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Basic client-side validation
+            if (!username || !password) {
+                alert('All fields are required.');
+                event.preventDefault();
+            } else if (password.length < 8) {
+                alert('Password must be at least 8 characters long.');
+                event.preventDefault();
+            }
+        });
+    </script>
 </body>
 
 </html>

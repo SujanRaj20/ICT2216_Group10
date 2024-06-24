@@ -15,7 +15,7 @@ def contact():
 
 @main_bp.route("/shop")
 def shop():
-    return render_template("/shop")  # Render the /shop template
+    return render_template("shop.html")  # Render the /shop template
 
 
 # Define the route to serve images from the static/img directory for testing purposes 

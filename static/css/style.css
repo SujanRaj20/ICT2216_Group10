@@ -27,6 +27,54 @@
 }
 /*** Spinner End ***/
 
+/*** Main Page Start ***/
+.container-main {
+    text-align: center;
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
+/*** Main Page End ***/
+
+/*** Buyer Account Page Start ***/
+.my-account-container {
+    max-width: 800px;
+    margin: 150px auto 50px; /* Added margin-top to move it down */
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--bs-secondary);
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.5s, color 0.5s;
+}
+
+.tab.active {
+    border-top: 2px solid var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+/*** Buyer Account Page End ***/
 
 /*** Button Start ***/
 .btn {

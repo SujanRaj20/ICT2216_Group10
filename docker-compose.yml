@@ -11,7 +11,7 @@ services:
       FLASK_ENV: development
       MYSQL_HOST: mysql-container
       MYSQL_USER: bookwise_flask
-      MYSQL_PASSWORD: bookwiseflaskpasswordchangelater{XW
+      MYSQL_PASSWORD: bookwiseflaskpasswordchangelater
       MYSQL_DB: bookwisetesting
     depends_on:
       - mysql-container

@@ -3,6 +3,8 @@ from flask import Blueprint, render_template
 # Create a Blueprint named 'user'
 user_bp = Blueprint('user', __name__)
 
+
+
 # Define the route for the user profile page
 @user_bp.route("/user/<userid>")
 def profile(userid):

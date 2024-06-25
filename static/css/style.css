@@ -1,6 +1,5 @@
 
 /*** Spinner Start ***/
-
 #spinner {
     opacity: 0;
     visibility: hidden;
@@ -28,6 +27,54 @@
 }
 /*** Spinner End ***/
 
+/*** Main Page Start ***/
+.container-main {
+    text-align: center;
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
+/*** Main Page End ***/
+
+/*** Buyer Account Page Start ***/
+.my-account-container {
+    max-width: 800px;
+    margin: 150px auto 50px; /* Added margin-top to move it down */
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--bs-secondary);
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.5s, color 0.5s;
+}
+
+.tab.active {
+    border-top: 2px solid var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+/*** Buyer Account Page End ***/
 
 /*** Button Start ***/
 .btn {
@@ -177,52 +224,14 @@
 }
 /*** Navbar End ***/
 
-/*-----------------------------------*\
-  #HERO
-\*-----------------------------------*/
-
-.hero {
-  padding-block-start: 90px;
-  background-position: left;
-}
-
-.hero .container {
-  display: grid;
-  gap: 20px;
-}
-
-.hero-title::after {
-  bottom: -15px;
-  left: 0;
-  width: 70px;
-  height: 5px;
-  background-color: var(--maximum-blue-green);
-}
-
-
-.hero-text { margin-block: 40px; }
-
-.hero-banner {
-  max-width: 300px;
-  margin-inline: auto;
-  background-color: transparent; /* Ensure no background color */
-}
-
-.btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-  }
-  
-
 /*** Hero Header ***/
-/* .hero-header {
-    background: linear-gradient(rgba(248, 223, 173, 0.1), rgba(248, 223, 173, 0.1)), url(../img/hero-bg.jpg);
+.hero-header {
+    background: linear-gradient(rgba(248, 223, 173, 0.1), rgba(248, 223, 173, 0.1)), url(../img/hero-img.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
-} */ */
+}
 
-/* 
 .carousel-item {
     position: relative;
 }
@@ -254,9 +263,9 @@
 
 .carousel-control-prev {
     margin-left: 20px;
-} */
+}
 
-/* .page-header {
+.page-header {
     position: relative;
     background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(../img/cart-page-header-img.jpg);
     background-position: center center;
@@ -281,21 +290,6 @@
 
 
 /*** featurs Start ***/
-
-.featurs-icon-container {
-    width: 100px; /* Adjust the size as needed */
-    height: 100px; /* Adjust the size as needed */
-  }
-  
-  .featurs-icon {
-    width: 100%; /* Match the container size */
-    height: 100%; /* Match the container size */
-  }
-  
-  .featurs-icon i {
-    font-size: 3rem; /* Adjust the icon size as needed */
-  }
-  
 .featurs .featurs-item .featurs-icon {
     position: relative;
     width: 120px;

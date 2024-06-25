@@ -11,7 +11,7 @@ services:
       FLASK_ENV: development
       MYSQL_HOST: mysql-container
       MYSQL_USER: bookwise_flask
-      MYSQL_PASSWORD: ***REMOVED***{XW
+      MYSQL_PASSWORD: ***REMOVED***
       MYSQL_DB: ***REMOVED***
     depends_on:
       - mysql-container

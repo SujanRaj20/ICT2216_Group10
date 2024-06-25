@@ -4,7 +4,7 @@ def get_mysql_connection():
     try:
         # Replace with your MySQL connection details
         conn = mysql.connector.connect(
-            host='172.21.0.2',
+            host='127.0.0.1',
             user='root',
             password='***REMOVED***',
             database='***REMOVED***'

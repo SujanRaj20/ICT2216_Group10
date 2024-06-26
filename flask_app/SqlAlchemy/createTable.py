@@ -34,7 +34,7 @@ def setup_ssh_tunnel(ssh_host, ssh_port, ssh_user, ssh_pkey, remote_bind_address
         print(f"Error establishing SSH tunnel: {e}")
         return None
 
-def create_tables(engine):
+def create_or_verify_tables(engine):
     metadata = MetaData()
 
     # Define users table
@@ -49,7 +49,6 @@ def create_tables(engine):
                   Column('role', String(20), nullable=False),
                   Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                   )
-    users.create(engine)  # Ensure users table is created first
 
     # Define carts table
     carts = Table('carts', metadata,
@@ -59,7 +58,6 @@ def create_tables(engine):
                   Column('total_price', DECIMAL(10, 2), nullable=False),
                   Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                   )
-    carts.create(engine)
 
     # Define transactions table
     transactions = Table('transactions', metadata,
@@ -68,7 +66,6 @@ def create_tables(engine):
                          Column('status', String(20), nullable=False),
                          Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                          )
-    transactions.create(engine)
 
     # Define listings table
     listings = Table('listings', metadata,
@@ -85,7 +82,6 @@ def create_tables(engine):
                      Column('seller_id', Integer, ForeignKey('users.id'), nullable=False),
                      Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                      )
-    listings.create(engine)
 
     # Define pictures table
     pictures = Table('pictures', metadata,
@@ -94,7 +90,6 @@ def create_tables(engine):
                      Column('picture_url', String(255), nullable=False),
                      Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                      )
-    pictures.create(engine)
 
     # Define comments table
     comments = Table('comments', metadata,
@@ -106,7 +101,6 @@ def create_tables(engine):
                      Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
                      Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                      )
-    comments.create(engine)
 
     # Define cart_items table
     cart_items = Table('cart_items', metadata,
@@ -114,7 +108,6 @@ def create_tables(engine):
                        Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
                        Column('quantity', Integer, nullable=False)
                        )
-    cart_items.create(engine)
 
     # Define orders table
     orders = Table('orders', metadata,
@@ -124,16 +117,35 @@ def create_tables(engine):
                    Column('buyer_id', Integer, ForeignKey('users.id'), nullable=False),
                    Column('quantity', Integer, nullable=False)
                    )
-    orders.create(engine)
 
-    return metadata
+    metadata.create_all(engine)
 
-def print_table_fields(metadata):
-    print("\nFields in Each Table:")
-    for table in metadata.sorted_tables:
-        print(f"Table: {table.name}")
-        for column in table.columns:
-            print(f" - {column.name} ({column.type})")
+    existing_tables = engine.table_names()
+
+    tables_created_or_verified = []
+
+    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders]:
+        if table.name not in existing_tables:
+            table.create(engine)
+            tables_created_or_verified.append(f"{table.name} - Table created")
+        else:
+            # Check if all columns exist in the table
+            existing_columns = engine.execute(f"DESCRIBE {table.name}").fetchall()
+            expected_columns = [(column.name, str(column.type)) for column in table.columns]
+            for column_name, column_type in expected_columns:
+                if column_name not in [col[0] for col in existing_columns]:
+                    engine.execute(f"ALTER TABLE {table.name} ADD COLUMN {column_name} {column_type}")
+                    tables_created_or_verified.append(f"{table.name} - Added column {column_name}")
+
+    return tables_created_or_verified
+
+def print_tables_or_fields_created(tables_or_fields):
+    if tables_or_fields:
+        print("Tables or Fields Created or Verified:")
+        for item in tables_or_fields:
+            print(f" - {item}")
+    else:
+        print("No new tables or fields were created.")
 
 def main():
     try:
@@ -144,20 +156,28 @@ def main():
             # Create SQLAlchemy engine connected through SSH tunnel for VM
             vm_db_uri = f'mysql+pymysql://{vm_mysql_user}:{vm_mysql_password}@127.0.0.1:{vm_tunnel.local_bind_port}/{vm_mysql_db}'
             vm_engine = create_engine(vm_db_uri)
-            vm_metadata = create_tables(vm_engine)
-            print("Tables created successfully for VM.")
+            tables_or_fields = create_or_verify_tables(vm_engine)
+            print_tables_or_fields_created(tables_or_fields)
+            print("Tables created or verified successfully for VM.")
 
-            # Print fields in tables for VM
-            print_table_fields(vm_metadata)
+            # Print fields in tables for VM (for verification)
+            print("\nFields in Each Table:")
+            for table in vm_engine.table_names():
+                print(f"Table: {table}")
+                for column in vm_engine.execute(f"DESCRIBE {table}"):
+                    print(f" - {column['Field']} ({column['Type']})")
 
-        # Commented out local MySQL connection to avoid timeout error
+        # Uncomment for local MySQL connection (not recommended due to timeout issue)
         # local_db_uri = f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}'
         # local_engine = create_engine(local_db_uri)
-        # local_metadata = create_tables(local_engine)
-        # print("Tables created successfully for local MySQL.")
-
-        # Print fields in tables for local MySQL
-        # print_table_fields(local_metadata)
+        # tables_or_fields = create_or_verify_tables(local_engine)
+        # print_tables_or_fields_created(tables_or_fields)
+        # print("Tables created or verified successfully for local MySQL.")
+        # print("\nFields in Each Table:")
+        # for table in local_engine.table_names():
+        #     print(f"Table: {table}")
+        #     for column in local_engine.execute(f"DESCRIBE {table}"):
+        #         print(f" - {column['Field']} ({column['Type']})")
 
     except Exception as e:
         print(f"Error creating tables: {e}")

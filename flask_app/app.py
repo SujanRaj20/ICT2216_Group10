@@ -1,6 +1,7 @@
 from flask import Flask, render_template,g
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
+from SqlAlchemy.createTable import create_or_verify_tables
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
@@ -47,6 +48,21 @@ def dbconntest():
             return "Failed to connect to database"
     except Exception as e:
         return f"Error connecting to database: {e}"
+    
+# Function to create or verify database tables
+def initialize_database():
+    try:
+        from db_connector import get_mysql_connection  # Ensure you have the appropriate function imported
+        conn = get_mysql_connection()
+        if conn:
+            # Call the function to create or verify tables
+            create_or_verify_tables(conn)
+            conn.close()
+            print("Database tables created or verified successfully.")
+        else:
+            print("Failed to connect to database.")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
 
 # Run the app in debug mode if this script is executed directly
 if __name__ == "__main__":

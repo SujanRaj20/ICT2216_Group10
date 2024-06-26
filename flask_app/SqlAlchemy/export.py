@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, MetaData
 from sshtunnel import SSHTunnelForwarder
+import os
 
 # SSH and MySQL Server Parameters
 ssh_host = '3.145.129.7'
@@ -11,6 +12,9 @@ mysql_port = 3306  # Default MySQL port
 mysql_user = 'sqlAlchemy'
 mysql_password = '***REMOVED***'  # Replace with your actual password
 mysql_db = '***REMOVED***'
+
+# Folder to export schema files
+export_folder = r'C:\Users\Sujan\OneDrive\Desktop\export'
 
 def setup_ssh_tunnel():
     try:
@@ -47,6 +51,25 @@ try:
     print("\nList of Tables:")
     for table_name in metadata.tables.keys():
         print(f" - {table_name}")
+
+    # Export schema to files
+    for table in metadata.sorted_tables:
+        schema_file = os.path.join(export_folder, f"{table.name}_schema.sql")
+        with open(schema_file, 'w') as f:
+            # Generate CREATE TABLE statement
+            f.write(f"CREATE TABLE {table.name} (\n")
+            for column in table.columns:
+                f.write(f"    {column.compile(dialect=engine.dialect)}")
+                if column.comment:
+                    f.write(f" COMMENT '{column.comment}'")
+                f.write(",\n")
+            for constraint in table.constraints:
+                if constraint.__class__.__name__ == 'PrimaryKeyConstraint':
+                    f.write(f"    PRIMARY KEY ({', '.join(column.name for column in constraint.columns)}),\n")
+                else:
+                    f.write(f"    {constraint}\n")
+            f.write(");\n\n")
+        print(f"Exported schema for table '{table.name}' to {schema_file}")
 
 except Exception as e:
     print(f"Error connecting to MySQL via SSH tunnel: {e}")

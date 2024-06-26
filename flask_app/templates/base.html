@@ -99,13 +99,24 @@
                             </div>
                         </a> -->
                         <div class="nav-item dropdown">
-                            <a  href="{{ url_for('main.login') }}" class="my-auto">
-                                <i style="padding-top:20%;" class="fas fa-user fa-2x"></i>
+                            <a href="{{ url_for('main.login') }}" class="my-auto" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <i style="padding-top:20%;" class="fas fa-user fa-2x float-end"></i>
                             </a>
-                            <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                                <a href="{{ url_for('main.seller_login') }}" class="dropdown-item">Seller</a>
-                                <a href="{{ url_for('main.login') }}" class="dropdown-item">Buyer</a>
-                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end m-0 bg-secondary rounded-0">
+                                {% if current_user.is_authenticated %}
+                                <li><a href="{{ url_for('user.profile', userid=current_user.id) }}" class="dropdown-item">My Profile</a></li>
+                                <li><a href="{{ url_for('user.cart', userid=current_user.id) }}" class="dropdown-item">Cart</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a href="{{ url_for('user.logout') }}" class="dropdown-item">Logout</a></li>
+                                {% else %}
+                                <!-- Show these options when user is not logged in -->
+                                <li><a href="{{ url_for('main.seller_login') }}" class="dropdown-item">Seller</a></li>
+                                <li><a href="{{ url_for('main.login') }}" class="dropdown-item">Buyer</a></li>
+                                {% endif %}
+                            </ul>
                         </div>
                     </div>
                 </div>

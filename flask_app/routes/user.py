@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from SqlAlchemy.createTable import User
+
 from bcrypt import hashpw, gensalt, checkpw
 import bcrypt  # Import bcrypt module directly
 import mysql.connector
@@ -98,7 +101,7 @@ def login():
 
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                     # Successful login
-                    session['user_id'] = user['id']  # Store user ID in session
+                    login_user(User(user), remember=True)  # Login the user
                     return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
                     redirect
                 else:
@@ -114,6 +117,7 @@ def login():
     
 @user_bp.route('/logout')
 def logout():
+    logout_user()
     session.pop('user_id', None)  # Clear the 'user_id' from session
     return redirect(url_for('main.index'))  # Redirect to index page after logout
 

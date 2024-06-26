@@ -1,9 +1,10 @@
 from flask import Flask, render_template,g, redirect, url_for, session, request, redirect
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
 from datetime import timedelta
 
-from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
@@ -19,6 +20,9 @@ app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
@@ -73,6 +77,10 @@ def initialize_database():
             local_engine.dispose()
             print("Engine disposed.")
             
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
 @app.route('/dbconntest')
 def dbconntest():

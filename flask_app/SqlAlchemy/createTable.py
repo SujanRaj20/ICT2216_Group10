@@ -1,11 +1,15 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+import os
+
 
 # MySQL Server Parameters - Local
-local_mysql_host = '127.0.0.1'
+local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
 local_mysql_port = 3306
-local_mysql_user = 'root'
-local_mysql_password = '***REMOVED***'
-local_mysql_db = '***REMOVED***'
+local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
+local_mysql_password = os.getenv('MYSQL_PASSWORD', '***REMOVED***')
+local_mysql_db = os.getenv('MYSQL_DB', '***REMOVED***')
 
 def create_or_verify_tables(engine):
     metadata = MetaData()
@@ -119,6 +123,48 @@ def print_tables_or_fields_created(tables_or_fields):
             print(f" - {item}")
     else:
         print("No new tables or fields were created.")
+        
+# User authentication methods
+def get_user_by_id(engine, user_id):
+    query = f"SELECT * FROM users WHERE id = {user_id}"
+    result = engine.execute(query).fetchone()
+    if result:
+        return result
+    return None
+
+def get_user_by_username(engine, username):
+    query = f"SELECT * FROM users WHERE username = '{username}'"
+    result = engine.execute(query).fetchone()
+    if result:
+        return result
+    return None
+
+def authenticate_user(engine, username, password):
+    user = get_user_by_username(engine, username)
+    if user and check_password_hash(user['password_hash'], password):
+        return user
+    return None
+
+
+class User(UserMixin):
+    def __init__(self, user_data):
+        self.id = user_data['id']
+        self.username = user_data['username']
+        self.password_hash = user_data['password_hash']
+        self.fname = user_data['fname']
+        self.lname = user_data['lname']
+        self.email = user_data['email']
+        self.phone_num = user_data['phone_num']
+        self.role = user_data['role']
+
+    @staticmethod
+    def get(user_id):
+        engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+        user_data = get_user_by_id(engine, user_id)
+        engine.dispose()
+        if user_data:
+            return User(user_data)
+        return None
 
 def main():
     try:

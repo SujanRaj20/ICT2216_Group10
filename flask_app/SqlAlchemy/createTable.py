@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
 
 # MySQL Server Parameters - Local
-local_mysql_host = '172.18.0.2'
+local_mysql_host = '127.0.0.1'
 local_mysql_port = 3306
 local_mysql_user = 'root'
 local_mysql_password = '***REMOVED***'
@@ -139,6 +139,8 @@ def main():
     finally:
         if 'local_engine' in locals():
             local_engine.dispose()
+            
+    return 0
 
 if __name__ == "__main__":
     main()

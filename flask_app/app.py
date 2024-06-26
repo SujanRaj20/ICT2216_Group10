@@ -1,10 +1,13 @@
-from flask import Flask, render_template,g
+from flask import Flask, render_template,g, redirect, url_for, session, request, redirect
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
+from datetime import timedelta
+
 from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
+from endpoint_config import protected_endpoints  # Import protected endpoints
 
 from db_connector import get_mysql_connection
 from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
@@ -14,6 +17,8 @@ import mysql.connector
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.secret_key = os.urandom(24)
 
 
 local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
@@ -84,6 +89,12 @@ def dbconntest():
             return "Failed to connect to database"
     except Exception as e:
         return f"Error connecting to database: {e}"
+    
+# Before request handler to check if user is logged in for specific endpoints
+@app.before_request
+def before_request():
+    if request.endpoint in protected_endpoints and 'user_id' not in session:
+        return redirect(url_for('main.login'))  # Redirect to login page if not logged in
     
 
 

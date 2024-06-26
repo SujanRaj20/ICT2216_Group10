@@ -102,7 +102,7 @@
                         alert(data.error);
                     } else {
                         alert('Signup successful!');
-                        window.location.href = 'login.html';
+                        window.location.href = "{{ url_for('main.login') }}";
                     }
                 })
                 .catch(error => {

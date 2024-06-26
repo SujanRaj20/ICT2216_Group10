@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect
+from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from SqlAlchemy.createTable import User
 
@@ -13,9 +13,45 @@ user_bp = Blueprint('user', __name__)
 
 
 # Define the route for the user profile page
-@user_bp.route("/user/<userid>")
-def profile(userid):
-    return render_template("profile.html", userid=userid)  # Render profile.html with the userid
+@user_bp.route("/profile")
+# @login_required
+def profile():
+    user_data = {
+        'username': current_user.username,
+        'fname': current_user.fname,
+        'lname': current_user.lname,
+        'email': current_user.email,
+        'phone_num': current_user.phone_num
+    }
+    return render_template("buyer-account.html", user_data=user_data)  # Render profile.html with the userid
+
+@user_bp.route('/update_profile', methods=['POST'])
+# @login_required
+def update_profile():
+    try:
+        data = request.get_json()
+        fname = data.get('fname')
+        lname = data.get('lname')
+        email = data.get('email')
+        phone_num = data.get('phone_num')
+        username = data.get('username')
+        
+        # Basic server-side validation
+        if not (fname and lname and email and username):
+            return jsonify({'error': 'All fields except phone number are required'}), 400
+        
+        # Update user data in the database
+        current_user.fname = fname
+        current_user.lname = lname
+        current_user.email = email
+        current_user.phone_num = phone_num
+        current_user.username = username
+        db.session.commit()  # Commit changes to the database
+        
+        return jsonify({'message': 'User information updated successfully'})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @user_bp.route("/cart/<userid>")
 def cart(userid):
@@ -80,7 +116,7 @@ def signup():
         return jsonify({'error': str(e)}), 500
 
 
-@user_bp.route('/buyerlogin', methods=['POST'])
+@user_bp.route('/buyerlogin',methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         try:
@@ -102,6 +138,7 @@ def login():
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                     # Successful login
                     login_user(User(user), remember=True)  # Login the user
+                    session.permanent = True
                     return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
                     redirect
                 else:

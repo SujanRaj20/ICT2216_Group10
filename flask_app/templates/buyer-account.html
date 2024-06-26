@@ -5,36 +5,92 @@
 <div class="container-main my-account-container">
     <h2>My Account</h2>
     <div class="tabs">
-        <div class="tab active" onclick="openTab('profile')">Edit Profile</div>
+        <div class="tab active" onclick="openTab('profile')">Profile Info</div>
         <div class="tab" onclick="openTab('history')">Transaction History</div>
         <div class="tab" onclick="openTab('changePassword')">Change Password</div>
     </div>
 
     <div id="profile" class="tab-content active">
         <h3>Edit Profile</h3>
-        <form>
-            <div class="mb-3">
-                <label for="username" class="form-label">Username:</label>
-                <input type="text" class="form-control" id="username">
-            </div>
-            <div class="mb-3">
-                <label for="firstName" class="form-label">First Name:</label>
-                <input type="text" class="form-control" id="firstName">
-            </div>
-            <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name:</label>
-                <input type="text" class="form-control" id="lastName">
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email:</label>
-                <input type="email" class="form-control" id="email">
-            </div>
-            <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number:</label>
-                <input type="tel" class="form-control" id="phone">
-            </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-        </form>
+        <div class="container">
+            <div class="row gx-2 align-items-center">
+          
+                <div class="col-lg-4 col-md-12">
+                  <h5 style="float: left; padding-left:20%;">Username</h5>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <span style="float: left;display: block;">{{ user_data.username }}</span>
+                  <input type="text" class="form-control" id="usernameInput" style="display: none;">
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                    <button class="edit-btn" onclick="editField('username')">Edit</button>
+                </div>
+            
+              </div>
+              <div class="row gx-2 align-items-center">
+          
+                <div class="col-lg-4 col-md-12">
+                  <h5 style="float: left; padding-left:20%;">Email</h5>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <span style="float: left;">{{ user_data.email }}</span>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <i class="fas fa-edit "></i></button>
+                </div>
+            
+              </div>
+              <div class="row gx-2 align-items-center">
+          
+                <div class="col-lg-4 col-md-12">
+                  <h5 style="float: left; padding-left:20%;">Phone Number</h5>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <span style="float: left;">{{ user_data.phone_num }}</span>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <i class="fas fa-edit "></i></button>
+                </div>
+            
+              </div>
+              <div class="row gx-2 align-items-center">
+          
+                <div class="col-lg-4 col-md-12">
+                  <h5 style="float: left; padding-left:20%;">First Name</h5>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <span style="float: left;">{{ user_data.fname }}</span>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <i class="fas fa-edit "></i></button>
+                </div>
+            
+              </div>
+              <div class="row gx-2 align-items-center">
+          
+                <div class="col-lg-4 col-md-12">
+                  <h5 style="float: left; padding-left:20%;">Last Name</h5>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <span style="float: left;">{{ user_data.lname }}</span>
+                </div>
+            
+                <div class="col-lg-4 col-md-6">
+                  <i class="fas fa-edit "></i></button>
+                </div>
+            
+              </div>
+            
+          </div>
     </div>
 
     <div id="history" class="tab-content">
@@ -105,6 +161,17 @@
 
     // By default, open the profile tab
     document.getElementById("profile").style.display = "block";
+
+    function editField(fieldName) {
+        var spanElement = document.getElementById(fieldName);
+        var inputElement = document.getElementById(fieldName + 'Input');
+        
+        if (spanElement && inputElement) {
+            spanElement.style.display = 'none';
+            inputElement.style.display = 'block';
+            inputElement.value = spanElement.innerText.trim();
+        }
+    }
 </script>
         
     {% endblock %}

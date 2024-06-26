@@ -37,42 +37,6 @@
     </div>
 </div>
 <!-- Testimonial End -->
-<script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault();  // Prevent default form submission
 
-        // Get form data
-        const formData = new FormData(event.target);
-
-        // Send POST request to Flask endpoint
-        fetch('{{ url_for("user.login") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Check response for success or error
-            if (data.message) {
-                // Redirect to main page or handle successful login
-                window.location.href = '{{ url_for("main.index") }}';
-            } else if (data.error) {
-                // Display error using JavaScript alert
-                alert(data.error);
-            } else {
-                // Handle unexpected response
-                alert('Unexpected response from server');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Invalid username or password');
-        });
-    });
-</script>
 
 {% endblock %}

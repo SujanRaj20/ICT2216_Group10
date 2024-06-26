@@ -46,14 +46,24 @@
 
 pipeline {
     agent any
-     environment {
-        PATH = "/usr/bin/npm"  // Adjust this path based on your npm installation path
-    }
+
     stages {
-        stage('Build') { 
+        stage('Checkout') {
             steps {
-                sh 'npm install' 
+                // Checkout your Git repository
+                checkout scm
             }
         }
+        stage('Install Dependencies') {
+            steps {
+                // Set up the environment to find npm
+                withEnv(['PATH+NODEJS=/usr/bin']) {
+                    // Run npm install
+                    sh 'npm install'
+                }
+            }
+        }
+        // Add more stages as needed
     }
 }
+

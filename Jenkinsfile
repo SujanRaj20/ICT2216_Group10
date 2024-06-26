@@ -45,41 +45,49 @@
 
 
 pipeline {
-    agent { 
-        node {
-            label 'bookwise'
-            }
-      }
-    triggers {
-        pollSCM '* * * * *'
-    }
+    agent any
+
     stages {
         stage('Build') {
             steps {
-                echo "Building.."
-                sh '''
-                cd myapp
-                pip install -r requirements.txt
-                '''
+                echo "Starting Build stage..."
+                sh 'pip install -r requirements.txt'
+                echo "Build completed."
             }
         }
         stage('Test') {
             steps {
-                echo "Testing.."
-                sh '''
-                cd myapp
-                python3 hello.py
-                python3 hello.py --name=Brad
-                '''
+                echo "Starting Test stage..."
+                sh 'python3 app.py'
+                sh 'python3 checkdbconn.py'
+                echo "Test completed."
             }
         }
-        stage('Deliver') {
+        stage('Deploy') {
             steps {
-                echo 'Deliver....'
+                echo "Starting Deploy stage..."
+                dir('/home/student25/ICT2216_Group10') {
+                    // Clone the repository
+                    git branch: 'test', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: 'd642c4ab-aa9a-4c7f-81b5-c65def995a47'
+                }
+                // Run Docker commands
                 sh '''
-                echo "doing delivery stuff.."
+                    cd /home/student25/ICT2216_Group10 &&
+                    docker-compose down &&
+                    docker system prune -f &&
+                    docker-compose up --build -d
                 '''
+                echo "Deployment completed."
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline succeeded!"
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
 }

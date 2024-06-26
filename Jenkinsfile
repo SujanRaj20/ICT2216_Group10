@@ -46,6 +46,9 @@
 
 pipeline {
     agent any
+     environment {
+        PATH = "/usr/bin/npm"  // Adjust this path based on your npm installation path
+    }
     stages {
         stage('Build') { 
             steps {

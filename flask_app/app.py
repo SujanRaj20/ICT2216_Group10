@@ -1,17 +1,19 @@
 from flask import Flask, render_template,g
+import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
-# from db_sqla import init_db, db
+
 from db_connector import get_mysql_connection
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+# from sqlalchemy import text
 import mysql.connector
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:***REMOVED***@172.18.0.2/***REMOVED***'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 # Register the Blueprint with the app
@@ -30,8 +32,8 @@ app.register_blueprint(admin_bp)
 #     return render_template('404.html'), 404
 
 # Route to create a user (just for example)
-@app.route('/adduser')
-def adduser():
+@app.route('/dbconntest')
+def dbconntest():
     try:
         # Test the database connection
         conn = get_mysql_connection()

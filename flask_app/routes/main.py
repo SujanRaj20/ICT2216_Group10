@@ -35,7 +35,7 @@ def buyeraccount():
 
 @main_bp.route("/login")
 def login():
-    return render_template("login.html")  # Render the /login template
+    return render_template("signup.html")  # Render the /login template
 
 @main_bp.route("/signup")
 def signup():

@@ -1,5 +1,4 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
-from sshtunnel import SSHTunnelForwarder
 
 # MySQL Server Parameters - Local
 local_mysql_host = '172.18.0.2'
@@ -7,32 +6,6 @@ local_mysql_port = 3306
 local_mysql_user = 'root'
 local_mysql_password = 'kMcFNgtzJTA0{XW'
 local_mysql_db = 'bookwisetesting'
-
-# MySQL Server Parameters - VM via SSH
-ssh_host = '3.145.129.7'
-ssh_port = 22
-ssh_user = 'student25'
-ssh_pkey = r'C:\Users\Sujan\OneDrive\Desktop\TRI3\ICT2216 - Secure Software Development\ICT2216-student25.pem'
-vm_mysql_host = '172.21.0.2'
-vm_mysql_port = 3306
-vm_mysql_user = 'sqlAlchemy'
-vm_mysql_password = 'kMcFNgtzJTA0{XW'
-vm_mysql_db = 'bookwisetesting'
-
-def setup_ssh_tunnel(ssh_host, ssh_port, ssh_user, ssh_pkey, remote_bind_address):
-    try:
-        tunnel = SSHTunnelForwarder(
-            (ssh_host, ssh_port),
-            ssh_username=ssh_user,
-            ssh_pkey=ssh_pkey,
-            remote_bind_address=remote_bind_address,
-        )
-        tunnel.start()
-        print(f"SSH tunnel established on local port {tunnel.local_bind_port}")
-        return tunnel
-    except Exception as e:
-        print(f"Error establishing SSH tunnel: {e}")
-        return None
 
 def create_or_verify_tables(engine):
     metadata = MetaData()
@@ -149,46 +122,23 @@ def print_tables_or_fields_created(tables_or_fields):
 
 def main():
     try:
-        # Set up SSH tunnel for VM
-        vm_tunnel = setup_ssh_tunnel(ssh_host, ssh_port, ssh_user, ssh_pkey, (vm_mysql_host, vm_mysql_port))
-
-        if vm_tunnel:
-            # Create SQLAlchemy engine connected through SSH tunnel for VM
-            vm_db_uri = f'mysql+pymysql://{vm_mysql_user}:{vm_mysql_password}@127.0.0.1:{vm_tunnel.local_bind_port}/{vm_mysql_db}'
-            vm_engine = create_engine(vm_db_uri)
-            tables_or_fields = create_or_verify_tables(vm_engine)
-            print_tables_or_fields_created(tables_or_fields)
-            print("Tables created or verified successfully for VM.")
-
-            # Print fields in tables for VM (for verification)
-            print("\nFields in Each Table:")
-            for table in vm_engine.table_names():
-                print(f"Table: {table}")
-                for column in vm_engine.execute(f"DESCRIBE {table}"):
-                    print(f" - {column['Field']} ({column['Type']})")
-
-        # Uncomment for local MySQL connection (not recommended due to timeout issue)
-        # local_db_uri = f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}'
-        # local_engine = create_engine(local_db_uri)
-        # tables_or_fields = create_or_verify_tables(local_engine)
-        # print_tables_or_fields_created(tables_or_fields)
-        # print("Tables created or verified successfully for local MySQL.")
-        # print("\nFields in Each Table:")
-        # for table in local_engine.table_names():
-        #     print(f"Table: {table}")
-        #     for column in local_engine.execute(f"DESCRIBE {table}"):
-        #         print(f" - {column['Field']} ({column['Type']})")
+        local_db_uri = f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}'
+        local_engine = create_engine(local_db_uri)
+        tables_or_fields = create_or_verify_tables(local_engine)
+        print_tables_or_fields_created(tables_or_fields)
+        print("Tables created or verified successfully for local MySQL.")
+        print("\nFields in Each Table:")
+        for table in local_engine.table_names():
+            print(f"Table: {table}")
+            for column in local_engine.execute(f"DESCRIBE {table}"):
+                print(f" - {column['Field']} ({column['Type']})")
 
     except Exception as e:
         print(f"Error creating tables: {e}")
 
     finally:
-        if 'vm_engine' in locals():
-            vm_engine.dispose()
-        if vm_tunnel:
-            vm_tunnel.stop()
-        # if 'local_engine' in locals():
-        #     local_engine.dispose()
+        if 'local_engine' in locals():
+            local_engine.dispose()
 
 if __name__ == "__main__":
     main()

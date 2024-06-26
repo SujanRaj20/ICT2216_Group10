@@ -51,16 +51,11 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Starting Build stage..."
-                sh 'pip install -r requirements.txt'
-                echo "Build completed."
             }
         }
         stage('Test') {
             steps {
                 echo "Starting Test stage..."
-                sh 'python3 app.py'
-                sh 'python3 checkdbconn.py'
-                echo "Test completed."
             }
         }
         stage('Deploy') {

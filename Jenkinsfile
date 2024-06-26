@@ -24,7 +24,7 @@
 //         stage('Deploy') {
 //             steps {
 //                 dir('/home/student25/ICT2216_Group10') {
-//                     git branch: 'test', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: 'd642c4ab-aa9a-4c7f-81b5-c65def995a47'
+//                     git branch: 'test', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '77deb650-7c28-4370-81f8-c512f6f03f16'
 //                 }
 //                 sh '''
 //                     cd /home/student25/ICT2216_Group10 &&
@@ -46,43 +46,11 @@
 
 pipeline {
     agent any
-
     stages {
-        stage('Build') {
+        stage('Build') { 
             steps {
-                echo "Starting Build stage..."
+                sh 'npm install' 
             }
-        }
-        stage('Test') {
-            steps {
-                echo "Starting Test stage..."
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo "Starting Deploy stage..."
-                dir('/home/student25/ICT2216_Group10') {
-                    // Clone the repository
-                    git branch: 'test', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: 'd642c4ab-aa9a-4c7f-81b5-c65def995a47'
-                }
-                // Run Docker commands
-                sh '''
-                    cd /home/student25/ICT2216_Group10 &&
-                    docker-compose down &&
-                    docker system prune -f &&
-                    docker-compose up --build -d
-                '''
-                echo "Deployment completed."
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "Pipeline succeeded!"
-        }
-        failure {
-            echo "Pipeline failed!"
         }
     }
 }

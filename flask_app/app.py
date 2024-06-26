@@ -1,20 +1,26 @@
 from flask import Flask, render_template,g
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
-from SqlAlchemy.createTable import create_or_verify_tables
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
 
 from db_connector import get_mysql_connection
+from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:kMcFNgtzJTA0{XW@172.18.0.2/bookwisetesting'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
+local_mysql_port = 3306
+local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
+local_mysql_password = os.getenv('MYSQL_PASSWORD', 'bookwiseflaskpasswordchangelater')
+local_mysql_db = os.getenv('MYSQL_DB', 'bookwisetesting')
 
 
 # Register the Blueprint with the app
@@ -33,6 +39,36 @@ app.register_blueprint(admin_bp)
 #     return render_template('404.html'), 404
 
 # Route to create a user (just for example)
+
+
+def initialize_database():
+    """Function to initialize the database and create/verify tables."""
+    print("Initializing database...")
+    try:
+        local_db_uri = f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}'
+        local_engine = create_engine(local_db_uri)
+        print("Engine created.")
+        
+        tables_or_fields = create_or_verify_tables(local_engine)
+        print_tables_or_fields_created(tables_or_fields)
+        
+        print("Tables created or verified successfully for local MySQL.")
+        print("\nFields in Each Table:")
+        for table in local_engine.table_names():
+            print(f"Table: {table}")
+            for column in local_engine.execute(f"DESCRIBE {table}"):
+                print(f" - {column['Field']} ({column['Type']})")
+        print("Database initialization completed.")
+
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+
+    finally:
+        if 'local_engine' in locals():
+            local_engine.dispose()
+            print("Engine disposed.")
+            
+
 @app.route('/dbconntest')
 def dbconntest():
     try:
@@ -49,20 +85,12 @@ def dbconntest():
     except Exception as e:
         return f"Error connecting to database: {e}"
     
-# Function to create or verify database tables
-def initialize_database():
-    try:
-        from db_connector import get_mysql_connection  # Ensure you have the appropriate function imported
-        conn = get_mysql_connection()
-        if conn:
-            # Call the function to create or verify tables
-            create_or_verify_tables(conn)
-            conn.close()
-            print("Database tables created or verified successfully.")
-        else:
-            print("Failed to connect to database.")
-    except Exception as e:
-        print(f"Error initializing database: {e}")
+
+
+# Initialize the database tables when the app starts
+with app.app_context():
+    initialize_database()
+        
 
 # Run the app in debug mode if this script is executed directly
 if __name__ == "__main__":

@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, send_from_directory
+from flask import Blueprint, render_template, send_from_directory, session
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id
+from flask_login import current_user
 
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
@@ -6,7 +8,10 @@ main_bp = Blueprint('main', __name__)
 # Define the route for the home page
 @main_bp.route("/")
 def index():
-    return render_template("index.html")  # Render the / template
+    user_id = session.get('user_id')
+    user = User.query.get(user_id) if user_id else None
+    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
+    return render_template("index.html", user_role=user_role)  # Render the / template
 
 # Add more routes here
 @main_bp.route("/contact")

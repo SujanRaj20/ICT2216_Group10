@@ -1,4 +1,14 @@
-{% include "buyer-navbar.html" %}
 {% block title %}Home{% endblock %}
-{% include "buyer-home.html" %}
-{% include "buyer-footer.html" %}
+{% if user_role == 'buyer' %}
+    {% include "buyer-navbar.html" %}
+    {% include "buyer-home.html" %}
+    {% include "buyer-footer.html" %}
+{% elif user_role == 'seller' %}
+    {% include "seller-navbar.html" %}
+    {% include "seller-home.html" %}
+    {% include "seller-footer.html" %}
+{% else %}
+    {% include "buyer-navbar.html" %}
+    {% include "buyer-home.html" %}
+    {% include "buyer-footer.html" %}
+{% endif %}

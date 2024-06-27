@@ -156,6 +156,9 @@ class User(UserMixin):
         self.email = user_data['email']
         self.phone_num = user_data['phone_num']
         self.role = user_data['role']
+        
+    def get_role(self):
+        return self.role
 
     @staticmethod
     def get(user_id):

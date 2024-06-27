@@ -150,11 +150,54 @@ def authenticate_user(engine, username, password):
         return user
     return None
 
-def fetch_seller_listings(seller_id):
+def fetch_seller_listings(seller_id, sort_option, category):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
-    query = query = f"SELECT * FROM listings WHERE seller_id = {seller_id}"
+    query = f"SELECT * FROM listings WHERE seller_id = {seller_id}"
+
+    if category != 'all':
+        query += f" AND type = '{category}'"
+
+    if sort_option == "alpha":
+        query += " ORDER BY title ASC"
+    elif sort_option == "dateasc":
+        query += " ORDER BY created_at ASC"
+    elif sort_option == "datedesc":
+        query += " ORDER BY created_at DESC"
+    elif sort_option == "priceasc":
+        query += " ORDER BY price ASC"
+    elif sort_option == "pricedesc":
+        query += " ORDER BY price DESC"
+    elif sort_option == "stockasc":
+        query += " ORDER BY stock ASC"
+    elif sort_option == "stockdesc":
+        query += " ORDER BY stock DESC"
+
     result = engine.execute(query).fetchall()
     return result
+
+def fetch_category_counts(seller_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    # Query to get the count of each category
+    category_query = f"""
+        SELECT type, COUNT(*) as count
+        FROM listings
+        WHERE seller_id = {seller_id}
+        GROUP BY type
+    """
+    category_result = engine.execute(category_query).fetchall()
+    category_counts = {row['type']: row['count'] for row in category_result}
+    
+    # Query to get the total count of listings for the seller
+    total_query = f"""
+        SELECT COUNT(*) as total_count
+        FROM listings
+        WHERE seller_id = {seller_id}
+    """
+    total_result = engine.execute(total_query).fetchone()
+    category_counts['all'] = total_result['total_count']
+    
+    return category_counts
 
 def get_listing_byid(listing_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')

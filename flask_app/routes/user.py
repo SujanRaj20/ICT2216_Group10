@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -57,11 +57,14 @@ def update_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@user_bp.route("/seller-listings")
+@user_bp.route("/seller-listings", methods=["GET"])
 @login_required
 def seller_listings():
-    seller_listings = fetch_seller_listings(current_user.id)
-    return render_template("seller-listings.html", seller_listings=seller_listings)  # Render seller-listings.html with the userid
+    sort_option = request.args.get('sort', 'none')
+    category = request.args.get('category', 'all')
+    seller_listings = fetch_seller_listings(current_user.id, sort_option, category)
+    category_counts = fetch_category_counts(current_user.id)
+    return render_template("seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route("/seller-listing-add")
 def seller_listing_add():

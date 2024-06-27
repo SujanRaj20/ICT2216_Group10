@@ -54,8 +54,12 @@ def update_profile():
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route("/seller-listings")
-def listings():
+def seller_listings():
     return render_template("seller-listings.html")  # Render seller-listings.html with the userid
+
+@user_bp.route("/seller-listing-add")
+def seller_listing_add():
+    return render_template("seller-listing-add.html")  # Render seller-listings.html with the userid
 
 @user_bp.route('/buyersignup', methods=['POST'])
 def buyersignup():

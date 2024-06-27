@@ -1,4 +1,6 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
+from sqlalchemy.sql import select
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import os
@@ -10,6 +12,8 @@ local_mysql_port = 3306
 local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
 local_mysql_password = os.getenv('MYSQL_PASSWORD', 'bookwiseflaskpasswordchangelater')
 local_mysql_db = os.getenv('MYSQL_DB', 'bookwisetesting')
+
+localengine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
 
 def create_or_verify_tables(engine):
     metadata = MetaData()
@@ -145,6 +149,35 @@ def authenticate_user(engine, username, password):
     if user and check_password_hash(user['password_hash'], password):
         return user
     return None
+
+def fetch_seller_listings(seller_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    query = query = f"SELECT * FROM listings WHERE seller_id = {seller_id}"
+    result = engine.execute(query).fetchall()
+    return result
+
+def get_listing_byid(listing_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        query = f"SELECT * FROM listings WHERE id = {listing_id}"
+        result = engine.execute(query).fetchone()  # Fetch one instead of fetchall
+    except SQLAlchemyError as e:
+        logging.error(f"Error fetching listing {listing_id}: {e}")
+        result = None
+    finally:
+        engine.dispose()
+    return result
+
+def delete_listing_fromdb(listing_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        query = f"DELETE FROM listings WHERE id = {listing_id}"
+        engine.execute(query)
+    except SQLAlchemyError as e:
+        logging.error(f"Error deleting listing {listing_id}: {e}")
+        raise
+    finally:
+        engine.dispose()
 
 
 class User(UserMixin):

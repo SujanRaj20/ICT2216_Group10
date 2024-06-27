@@ -27,7 +27,8 @@ def profile():
         'email': current_user.email,
         'phone_num': current_user.phone_num
     }
-    return render_template("buyer-account.html", user_data=user_data)  # Render profile.html with the userid
+    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
+    return render_template("profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
 
 @user_bp.route('/update_profile', methods=['POST'])
 # @login_required

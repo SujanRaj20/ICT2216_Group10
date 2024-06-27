@@ -1,11 +1,17 @@
-{% include "buyer-navbar.html" %}
+{% if user_role == 'buyer' %}
+  {% include "buyer-navbar.html" %}
+{% elif user_role == 'seller' %}
+  {% include "seller-navbar.html" %}
+{% endif %}
 {% block title %}Home{% endblock %}
 
 <div class="container-main my-account-container">
     <h2>My Account</h2>
     <div class="tabs">
         <div class="tab active" onclick="openTab('profile')">Profile Info</div>
+        {% if user_role == 'buyer' %}
         <div class="tab" onclick="openTab('history')">Transaction History</div>
+        {% endif %}
         <div class="tab" onclick="openTab('changePassword')">Change Password</div>
     </div>
 
@@ -91,7 +97,7 @@
             
           </div>
     </div>
-
+    {% if user_role == 'buyer' %}
     <div id="history" class="tab-content">
         <h3>Transaction History</h3>
         <table class="table">
@@ -120,7 +126,7 @@
             </tbody>
         </table>
     </div>
-
+    {% endif %}
     <div id="changePassword" class="tab-content">
         <h3>Change Password</h3>
         <form>
@@ -173,4 +179,8 @@
     }
 </script>
         
-{% include "buyer-footer.html" %}
+{% if user_role == 'buyer' %}
+  {% include "buyer-footer.html" %}
+{% elif user_role == 'seller' %}
+  {% include "seller-footer.html" %}
+{% endif %}

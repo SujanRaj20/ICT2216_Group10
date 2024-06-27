@@ -24,14 +24,17 @@
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" required>
+                                <span id="email-error" class="text-danger"></span> <!-- Error message for email -->
                             </div>
                             <div class="mb-3">
                                 <label for="phone_num" class="form-label">Phone Number</label>
                                 <input type="text" class="form-control" id="phone_num">
+                                <span id="phone-error" class="text-danger"></span> <!-- Error message for phone number -->
                             </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="username" required>
+                                <span id="username-error" class="text-danger"></span> <!-- Error message for username -->
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
@@ -46,7 +49,7 @@
                             </div>
                             <p id="error-message" style="color: red; display: none;">Passwords do not match!</p>
                             <div class="mb-3">
-                                <a href="{{ url_for('main.seller_login') }}" class="nav-item nav-link">Already have a seller account? Log in here</a>
+                                <a href="{{ url_for('main.seller_login') }}" class="nav-item nav-link">Already have an account? Log in here</a>
                             </div>
                         </form>
                     </div>
@@ -59,6 +62,9 @@
     <!-- Client-side validation script -->
     <script>
         document.getElementById('signupForm').addEventListener('submit', function (event) {
+            document.getElementById('email-error').innerText = '';
+            document.getElementById('phone-error').innerText = '';
+            document.getElementById('username-error').innerText = '';
             event.preventDefault();
             const fname = sanitize(document.getElementById('fname').value);
             const lname = sanitize(document.getElementById('lname').value);
@@ -85,11 +91,10 @@
                 email,
                 phone_num,
                 username,
-                password,
-                role: 'seller'
+                password
             };
 
-            fetch('/signup-seller', {
+            fetch('/sellersignup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -99,10 +104,24 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        alert(data.error);
+                        // Clear previous error messages
+                        document.getElementById('email-error').innerText = '';
+                        document.getElementById('phone-error').innerText = '';
+                        document.getElementById('username-error').innerText = '';
+
+                        // Handle server-side validation errors
+                        if (data.error.includes('Email')) {
+                            document.getElementById('email-error').innerText = 'Email already exists.';
+                        }
+                        if (data.error.includes('Phone Number')) {
+                            document.getElementById('phone-error').innerText = 'Phone number already exists.';
+                        }
+                        if (data.error.includes('Username')) {
+                            document.getElementById('username-error').innerText = 'Username already exists.';
+                        }
                     } else {
                         alert('Signup successful!');
-                        window.location.href = 'login.html';
+                        window.location.href = "{{ url_for('main.seller_login') }}";
                     }
                 })
                 .catch(error => {
@@ -116,4 +135,4 @@
             return element.innerHTML;
         }
     </script>
-    {% endblock %}
+{% endblock %}

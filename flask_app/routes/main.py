@@ -8,8 +8,6 @@ main_bp = Blueprint('main', __name__)
 # Define the route for the home page
 @main_bp.route("/")
 def index():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id) if user_id else None
     user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
     return render_template("index.html", user_role=user_role)  # Render the / template
 

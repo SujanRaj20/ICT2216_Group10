@@ -53,9 +53,9 @@ def update_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@user_bp.route("/cart/<userid>")
-def cart(userid):
-    return render_template("cart.html", userid=userid)  # Render cart.html with the userid
+@user_bp.route("/seller-listings")
+def listings():
+    return render_template("seller-listings.html")  # Render seller-listings.html with the userid
 
 @user_bp.route('/buyersignup', methods=['POST'])
 def buyersignup():
@@ -247,6 +247,11 @@ def sellersignup():
         return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@user_bp.route('/cart')
+def cart():
+    # Your logic to handle the cart view
+    return render_template('cart.html', userid=userid)
     
     
 @user_bp.route('/logout')

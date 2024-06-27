@@ -58,7 +58,7 @@ def cart(userid):
     return render_template("cart.html", userid=userid)  # Render cart.html with the userid
 
 @user_bp.route('/buyersignup', methods=['POST'])
-def signup():
+def buyersignup():
     try:
         data = request.get_json()
         fname = data.get('fname')
@@ -114,10 +114,11 @@ def signup():
         return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+       
 
 
 @user_bp.route('/buyerlogin',methods=['GET', 'POST'])
-def login():
+def buyerlogin():
     if request.method == 'POST':
         try:
             # Extract email and password from request.form
@@ -150,6 +151,100 @@ def login():
             return jsonify({'error': str(e)}), 500
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
+    
+@user_bp.route('/sellerlogin',methods=['GET', 'POST'])
+def sellerlogin():
+    if request.method == 'POST':
+        try:
+            # Extract email and password from request.form
+            email = request.form.get('email')
+            password = request.form.get('password')
+
+            conn = get_mysql_connection()
+            if conn:
+                cursor = conn.cursor(dictionary=True)
+                query = """
+                SELECT * FROM users WHERE email = %s
+                """
+                cursor.execute(query, (email,))
+                user = cursor.fetchone()
+
+                conn.close()
+
+                if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+                    # Successful login
+                    login_user(User(user), remember=True)  # Login the user
+                    session.permanent = True
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
+                    redirect
+                else:
+                    return jsonify({'error': 'Invalid email or password'}), 401
+            else:
+                return jsonify({'error': 'Failed to connect to database'}), 500
+
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        return jsonify({'error': 'Method Not Allowed'}), 405
+    
+    
+@user_bp.route('/sellersignup', methods=['POST'])
+def sellersignup():
+    try:
+        data = request.get_json()
+        fname = data.get('fname')
+        lname = data.get('lname')
+        email = data.get('email')
+        phone_num = data.get('phone_num')
+        username = data.get('username')
+        password = data.get('password')
+        role = 'seller'
+        
+        # Basic server-side validation
+        if not (fname and lname and email and username and password):
+            return jsonify({'error': 'All fields except phone number are required'}), 400
+        
+        # Hash the password before saving
+        hashed_password = hashpw(password.encode('utf-8'), gensalt())
+
+        conn = get_mysql_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # Check if email, username, or phone number already exists
+            query = """
+            SELECT * FROM users WHERE email = %s OR username = %s OR phone_num = %s
+            """
+            cursor.execute(query, (email, username, phone_num))
+            existing_users = cursor.fetchall()
+            
+            if existing_users:
+                existing_fields = []
+                for user in existing_users:
+                    if user[5] == email:
+                        existing_fields.append("Email")
+                    if user[1] == username:
+                        existing_fields.append("Username")
+                    if user[6] == phone_num:
+                        existing_fields.append("Phone Number")
+                
+                return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
+            
+            # Insert user into the database
+            insert_query = """
+            INSERT INTO users (fname, lname, email, phone_num, username, password_hash, role)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (fname, lname, email, phone_num, username, hashed_password.decode('utf-8'), role))
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'User signed up successfully'})
+        else:
+            return jsonify({'error': 'Failed to connect to database'}), 500
+    except mysql.connector.Error as err:
+        return jsonify({'error': f"Database error: {err}"}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
     
 @user_bp.route('/logout')

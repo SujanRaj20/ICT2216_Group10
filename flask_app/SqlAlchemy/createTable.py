@@ -46,19 +46,20 @@ def create_or_verify_tables(engine):
 
     # Define listings table
     listings = Table('listings', metadata,
-                     Column('id', Integer, primary_key=True, autoincrement=True),
-                     Column('title', String(255), nullable=False),
-                     Column('description', String(2000)),  # Specify length for VARCHAR
-                     Column('keywords', JSON),
-                     Column('release_date', DATE),
-                     Column('author', String(255)),
-                     Column('publisher', String(255)),
-                     Column('price', DECIMAL(10, 2), nullable=False),
-                     Column('stock', Integer, nullable=False),
-                     Column('type', String(20), nullable=False),
-                     Column('seller_id', Integer, ForeignKey('users.id'), nullable=False),
-                     Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
-                     )
+                 Column('id', Integer, primary_key=True, autoincrement=True),
+                 Column('title', String(255), nullable=False),
+                 Column('description', String(2000)),  # Specify length for VARCHAR
+                 Column('keywords', JSON),
+                 Column('release_date', DATE),
+                 Column('author', String(255)),
+                 Column('publisher', String(255)),
+                 Column('price', DECIMAL(10, 2), nullable=False),
+                 Column('stock', Integer, nullable=False),
+                 Column('type', String(20), nullable=False),
+                 Column('seller_id', Integer, ForeignKey('users.id'), nullable=False),
+                 Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP')),
+                 Column('imagepath', String(255))
+                 )
 
     # Define pictures table
     pictures = Table('pictures', metadata,

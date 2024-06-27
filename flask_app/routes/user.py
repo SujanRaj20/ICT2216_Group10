@@ -1,6 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb
+import json
+import os
+from werkzeug.utils import secure_filename
+import logging
 
 from bcrypt import hashpw, gensalt, checkpw
 import bcrypt  # Import bcrypt module directly
@@ -54,12 +58,88 @@ def update_profile():
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route("/seller-listings")
+@login_required
 def seller_listings():
-    return render_template("seller-listings.html")  # Render seller-listings.html with the userid
+    seller_listings = fetch_seller_listings(current_user.id)
+    return render_template("seller-listings.html", seller_listings=seller_listings)  # Render seller-listings.html with the userid
 
 @user_bp.route("/seller-listing-add")
 def seller_listing_add():
     return render_template("seller-listing-add.html")  # Render seller-listings.html with the userid
+
+@user_bp.route('/add-listing', methods=['POST'])
+def add_listing():
+    try:
+        # Access form data using request.form and request.files
+        title = request.form['title']
+        description = request.form['description']
+        keywords_str = request.form['keywords']  # Assuming keywords is a comma-separated string
+        keywords = json.dumps(keywords_str.split(','))  # Convert to JSON array
+        release_date = request.form['release_date']
+        author = request.form['author']
+        publisher = request.form['publisher']
+        price = request.form['price']
+        stock = request.form['stock']
+        type = request.form['type']
+        seller_id = current_user.id  # Assuming you have a logged-in user with an 'id' attribute
+        image = request.files['image']  # Handle file upload separately if needed
+        
+        # Basic server-side validation
+        if not (title and price and stock and type and image):
+            return jsonify({'error': 'Title, price, stock, type, and image are required fields.'}), 400
+        
+        # Save image to filesystem
+        image_path = save_image(image)
+
+        # Insert new listing into the database using direct MySQL connection
+        conn = get_mysql_connection()
+        cursor = conn.cursor()
+
+        insert_query = """
+        INSERT INTO listings (title, description, keywords, release_date, author, publisher, price, stock, type, seller_id, imagepath)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (title, description, keywords, release_date, author, publisher, price, stock, type, seller_id, image_path))
+        conn.commit()
+        conn.close()
+
+        return jsonify({'message': 'Listing added successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def save_image(image):
+    # Define the directory where you want to save images
+    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'listingpictures')
+    
+    # Ensure the upload directory exists
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+
+    # Save the image with a secure filename to the upload directory
+    filename = secure_filename(image.filename)
+    image_path = os.path.join(upload_dir, filename)
+    image.save(image_path)
+
+    return image_path
+
+@user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
+@login_required
+def delete_listing(listing_id):
+    try:
+        listing = get_listing_byid(listing_id)
+        if not listing:
+            return jsonify({"success": False, "message": "Listing not found"}), 404
+
+        # Assuming listing is a dictionary-like object returned from SQLAlchemy
+        if listing['seller_id'] != current_user.id:
+            return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+        delete_listing_fromdb(listing_id)
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logging.error(f"Error deleting listing {listing_id}: {e}")
+        return jsonify({"success": False, "message": "Failed to delete the listing"}), 500
+
 
 @user_bp.route('/buyersignup', methods=['POST'])
 def buyersignup():

@@ -44,7 +44,6 @@
 // }
 
 
-
 pipeline {
     agent any
 
@@ -60,8 +59,16 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+               steps {
+                dir('/home/student25/ICT2216_Group10') {
+                    git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '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'
+                }
+                sh '''
+                    cd /home/student25/ICT2216_Group10 &&
+                    docker-compose down &&
+                    docker system prune -f &&
+                    docker-compose up --build -d
+                '''
             }
         }
     }

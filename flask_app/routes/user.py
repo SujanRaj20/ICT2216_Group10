@@ -173,7 +173,9 @@ def sellerlogin():
 
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                     # Successful login
-                    login_user(User(user), remember=True)  # Login the user
+                    user_obj = User(user)
+                    login_user(user_obj, remember=True)  # Login the user
+                    session['user_id'] = user_obj.id
                     session.permanent = True
                     return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
                     redirect

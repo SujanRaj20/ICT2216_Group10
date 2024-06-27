@@ -1,6 +1,5 @@
-{% extends "base.html" %}
+{% include "buyer-navbar.html" %}
 {% block title %}Shop{% endblock %}
-{% block content %}
 
         <!-- Single Page Header start -->
         <div class="container-fluid page-header py-5">
@@ -351,4 +350,4 @@
             </div>
         </div>
         <!-- Fruits Shop End-->
-{% endblock %}
+        {% include "buyer-footer.html" %}

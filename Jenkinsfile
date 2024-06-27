@@ -44,26 +44,25 @@
 // }
 
 
+
 pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                // Checkout your Git repository
-                checkout scm
+                echo 'Building..'
             }
         }
-        stage('Install Dependencies') {
+        stage('Test') {
             steps {
-                // Set up the environment to find npm
-                withEnv(['PATH+NODEJS=/usr/bin']) {
-                    // Run npm install
-                    sh 'npm install'
-                }
+                echo 'Testing..'
             }
         }
-        // Add more stages as needed
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
     }
 }
-

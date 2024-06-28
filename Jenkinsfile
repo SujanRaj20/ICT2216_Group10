@@ -7,9 +7,22 @@ pipeline {
          echo("Build")
       }
     }
-    stage('Test') {
+    stage('Unit Test') {
       steps {
-        echo("Test")
+       sh 'pip install --upgrade pip'
+       sh'pip install -r requirements.txt'
+      }
+      post{
+        always{
+          junit testResults: 'logs/unitreport.xml'
+        }
+      }
+    }
+
+    stage ('Integration Test'){
+      steps{
+        sh 'pip install --upgrade pip'
+        sh 'pip install -r requirements.txt'
       }
     }
 
@@ -32,7 +45,7 @@ pipeline {
                 '''
             }
         }
-  }  
+  
   post {
     success {
       dependencyCheckPublisher pattern: 'dependency-check-report.xml'

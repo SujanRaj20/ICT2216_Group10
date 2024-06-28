@@ -13,6 +13,12 @@ pipeline {
       }
     }
 
+    stage('OWASP DependencyCheck') {
+      steps {
+        dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'Default'
+      }
+    }
+
     stage('Deploy') {
             steps {
                 dir('/home/student25/ICT2216_Group10/flask_app') {
@@ -26,12 +32,6 @@ pipeline {
                 '''
             }
         }
-
-    stage('OWASP DependencyCheck') {
-      steps {
-        dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'Default'
-      }
-    }
   }  
   post {
     success {

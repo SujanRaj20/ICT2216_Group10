@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -378,10 +378,38 @@ def sellersignup():
         return jsonify({'error': str(e)}), 500
     
 @user_bp.route('/cart')
+@login_required
 def cart():
-    # Your logic to handle the cart view
-    return render_template('cart.html', userid=userid)
-    
+    cart_items = get_cart_items(current_user.id)
+    cart_value = get_user_cart_value(current_user.id)
+    return render_template('cart.html', cart_items=cart_items, cart_value=cart_value)
+
+@user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
+@login_required
+def increase_quantity(cart_item_id):
+    result = increase_cart_item_quantity(cart_item_id, current_user.id)
+    if result['success']:
+        return jsonify({'message': 'Quantity increased successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
+
+@user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])
+@login_required
+def decrease_quantity(cart_item_id):
+    result = decrease_cart_item_quantity(cart_item_id, current_user.id)
+    if result['success']:
+        return jsonify({'message': 'Quantity decreased successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
+
+@user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])
+@login_required
+def delete_item(cart_item_id):
+    result = delete_cart_item(cart_item_id, current_user.id)
+    if result['success']:
+        return jsonify({'message': 'Item deleted successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
     
 @user_bp.route('/logout')
 def logout():

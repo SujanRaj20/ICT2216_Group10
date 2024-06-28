@@ -160,6 +160,36 @@ def get_user_cart_item_count(userid):
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         return None
+    
+def get_cart_items(userid):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Get the user's cart
+        user_cart = get_user_cart(userid)
+
+        cart_id = user_cart['id']
+        
+        query = f"""
+            SELECT ci.listing_id, l.imagepath, l.title, l.price, ci.quantity, ci.id
+            FROM cart_items ci
+            JOIN listings l ON ci.listing_id = l.id
+            WHERE ci.cart_id = '{cart_id}'
+        """
+        cart_items = engine.execute(query).fetchall()
+        
+        return cart_items
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()
+        
+def get_user_cart_value(userid):
+    user_cart = get_user_cart(userid)
+    cart_value = user_cart['total_price']
+    
+    return cart_value
 
 def get_user_cart(userid):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
@@ -241,6 +271,137 @@ def add_to_cart(user_id, listing_id):
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def update_cart_totals(cart_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Calculate the new total price and item count
+        total_price_query = f"""
+            SELECT SUM(ci.quantity * l.price) as total_price, SUM(ci.quantity) as item_count
+            FROM cart_items ci
+            JOIN listings l ON ci.listing_id = l.id
+            WHERE ci.cart_id = '{cart_id}'
+        """
+        totals = engine.execute(total_price_query).fetchone()
+
+        total_price = totals['total_price'] if totals['total_price'] else 0
+        item_count = totals['item_count'] if totals['item_count'] else 0
+
+        # Update the carts table with the new totals
+        update_query = f"""
+            UPDATE carts
+            SET total_price = '{total_price}', item_count = '{item_count}'
+            WHERE id = '{cart_id}'
+        """
+        engine.execute(update_query)
+
+    except SQLAlchemyError as e:
+        print(f"Error updating cart totals: {e}")
+    finally:
+        engine.dispose()
+
+def increase_cart_item_quantity(cart_item_id, user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT ci.*, c.id as cart_id, c.user_id FROM cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            WHERE ci.id = '{cart_item_id}' AND c.user_id = '{user_id}'
+        """
+        cart_item = engine.execute(query).fetchone()
+        
+        if cart_item:
+            # Increase the quantity
+            new_quantity = cart_item['quantity'] + 1
+            update_query = f"""
+                UPDATE cart_items
+                SET quantity = '{new_quantity}'
+                WHERE id = '{cart_item_id}'
+            """
+            engine.execute(update_query)
+
+            # Update cart totals
+            update_cart_totals(cart_item['cart_id'])
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Cart item not found or does not belong to user'}
+    except SQLAlchemyError as e:
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def decrease_cart_item_quantity(cart_item_id, user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT ci.*, c.id as cart_id, c.user_id FROM cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            WHERE ci.id = '{cart_item_id}' AND c.user_id = '{user_id}'
+        """
+        cart_item = engine.execute(query).fetchone()
+        
+        if cart_item:
+            if cart_item['quantity'] > 1:
+                # Decrease the quantity
+                new_quantity = cart_item['quantity'] - 1
+                update_query = f"""
+                    UPDATE cart_items
+                    SET quantity = '{new_quantity}'
+                    WHERE id = '{cart_item_id}'
+                """
+                engine.execute(update_query)
+            else:
+                # If quantity is 1, delete the item
+                delete_query = f"""
+                    DELETE FROM cart_items
+                    WHERE id = '{cart_item_id}'
+                """
+                engine.execute(delete_query)
+
+            # Update cart totals
+            update_cart_totals(cart_item['cart_id'])
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Cart item not found or does not belong to user'}
+    except SQLAlchemyError as e:
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+
+def delete_cart_item(cart_item_id, user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT ci.*, c.id as cart_id, c.user_id FROM cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            WHERE ci.id = '{cart_item_id}' AND c.user_id = '{user_id}'
+        """
+        cart_item = engine.execute(query).fetchone()
+        
+        if cart_item:
+            # Delete the cart item
+            delete_query = f"""
+                DELETE FROM cart_items
+                WHERE id = '{cart_item_id}'
+            """
+            engine.execute(delete_query)
+
+            # Update cart totals
+            update_cart_totals(cart_item['cart_id'])
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Cart item not found or does not belong to user'}
+    except SQLAlchemyError as e:
+        return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
         

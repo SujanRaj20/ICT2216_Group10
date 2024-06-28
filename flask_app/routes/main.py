@@ -28,10 +28,6 @@ def shop():
 def wishlist():
     return render_template("wishlist.html")  # Render the /wishlist template
 
-@main_bp.route("/cart")
-def cart():
-    return render_template("cart.html")  # Render the /cart template
-
 @main_bp.route("/checkout")
 def checkout():
     return render_template("checkout.html")  # Render the /checkout template

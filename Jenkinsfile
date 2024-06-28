@@ -6,6 +6,7 @@ pipeline {
           echo("Build")
         }
       }
+      
       stage('Unit Test') {
         steps {
         sh 'pip install --upgrade pip'
@@ -45,11 +46,11 @@ pipeline {
               }
           }
     
-    post {
-      success {
-        dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-      }
-    }
+    // post {
+    //   success {
+    //     dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+    //   }
+    // }
   }
 }
 

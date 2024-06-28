@@ -1,44 +1,75 @@
-{% include "buyer-navbar.html" %}
-{% block title %}Home{% endblock %}
-    <!-- Single Page Header start -->
-    <div class="container-fluid page-header py-4">
-        <h1 class="text-center text-white display-6">Buyer Login</h1>
-    </div>
-    <!-- Single Page Header End -->
+{% include "buyer-navbar.html" %} {% block title %}Home{% endblock %}
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-4">
+  <h1 class="text-center text-white display-6">Buyer Login</h1>
+</div>
+<!-- Single Page Header End -->
 <!-- Log In Start -->
 <div class="container-fluid testimonial py-1">
-    <div class="container py-5">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="bg-light rounded p-4">
-                        <form id="loginForm" method="POST" action="/buyerlogin">
-                            <!-- Input fields for email and password -->
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-primary w-100">Login</button>
-                            </div>
-                            <div class="mb-3">
-                                <a href="{{ url_for('main.signup') }}" class="nav-item nav-link">No account? Sign up here</a>
-                            </div>
-                            <div class="mb-3">
-                                <a href="{{ url_for('main.seller_signup') }}" class="nav-item nav-link">Want to create a Seller account? Sign up here</a>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+  <div class="container py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="bg-light rounded p-4">
+            <form id="loginForm" method="POST" action="/buyerlogin">
+              <!-- Display flash messages -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %} {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %} {% endif %} {% endwith %}
+
+              <!-- Input fields for email and password -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email"
+                required {% if 'email' in errors %} value="{{ email }}" {% endif
+                %} />
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <button type="submit" class="btn btn-primary w-100">
+                  Login
+                </button>
+              </div>
+              <div class="mb-3">
+                <a href="{{ url_for('main.signup') }}" class="nav-item nav-link"
+                  >No account? Sign up here</a
+                >
+              </div>
+              <div class="mb-3">
+                <a
+                  href="{{ url_for('main.seller_signup') }}"
+                  class="nav-item nav-link"
+                  >Want to create a Seller account? Sign up here</a
+                >
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 <!-- Testimonial End -->
 
-
 {% include "buyer-footer.html" %}
+
+<script>
+  // Add event listener for form submission
+  document
+    .getElementById("loginForm")
+    .addEventListener("submit", function (event) {
+      // Clear form fields after submission
+      document.getElementById("email").value = "";
+      document.getElementById("password").value = "";
+    });
+</script>

@@ -105,6 +105,7 @@
                                                 <img  src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
                                             </div>
                                             <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">{{ listing.type }}</div>
+                                            <div class="text-white px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;"><i class="fa fa-heart fa-2x text-danger" onclick="add_to_wishlist('{{ listing.id }}')" ></i></div>
                                             <div class="p-4 border border-secondary border-top-0 rounded-bottom">
                                                 <h4>{{ listing.title }}</h4>
                                                 <p>{{ listing.description }}</p>
@@ -166,6 +167,38 @@
                     if (data && data.success) {
                         location.reload();
                     } else if (data && data.error) {
+                        alert(data.error);
+                    } else {
+                        throw new Error('Invalid response from server.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+    
+            function add_to_wishlist(listingId) {
+                console.log(listingId);
+                fetch(`/add-to-wishlist/${listingId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('You must be logged in to add items to the wishlist.');
+                        window.location.href = 'main.login'; // Redirect to login page
+                    } else if (!response.ok) {
+                        throw new Error('Failed to add item to wishlist.');
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data.message) {
+                        location.reload();
+                    } else if (data.error) {
                         alert(data.error);
                     } else {
                         throw new Error('Invalid response from server.');

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -149,6 +149,29 @@ def add_to_cart_route(listing_id):
         current_app.logger.error(f"Error adding item to cart: {str(e)}")
         flash(str(e), 'danger')
         return jsonify({'error': 'Failed to add item to cart'}), 500
+    
+    
+@user_bp.route("/add-to-wishlist/<int:listing_id>", methods=["POST"])
+@login_required
+def add_to_wishlist_route(listing_id):
+    try:
+        user_id = current_user.id
+        current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to wishlist")
+        result = add_to_wishlist(user_id, listing_id)
+        
+        if 'error' in result:
+            current_app.logger.error(result['error'])
+            flash(result['error'], 'danger')
+            return jsonify({'error': result['error']}), 500
+        else:
+            current_app.logger.debug(result['message'])
+            flash(result['message'], 'success')
+            return jsonify({'message': result['message']}), 200
+    
+    except Exception as e:
+        current_app.logger.error(f"Error adding item to wishlist: {str(e)}")
+        flash(str(e), 'danger')
+        return jsonify({'error': 'Failed to add item to wishlist'}), 500
 
 @user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
 @login_required
@@ -382,7 +405,7 @@ def sellersignup():
 def cart():
     cart_items = get_cart_items(current_user.id)
     cart_value = get_user_cart_value(current_user.id)
-    return render_template('cart.html', cart_items=cart_items, cart_value=cart_value)
+    return render_template('buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
 
 @user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
 @login_required
@@ -417,3 +440,17 @@ def logout():
     session.pop('user_id', None)  # Clear the 'user_id' from session
     return redirect(url_for('main.index'))  # Redirect to index page after logout
 
+@user_bp.route("/wishlist")
+@login_required
+def wishlist():
+    wishlist_items = get_wishlist_items(current_user.id)
+    return render_template("buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
+
+@user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST'])
+@login_required
+def delete_item_wishlist(wishlist_item_id):
+    result = delete_wishlist_item(wishlist_item_id, current_user.id)
+    if result['success']:
+        return jsonify({'message': 'Item deleted successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400

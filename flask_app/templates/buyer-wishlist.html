@@ -1,0 +1,106 @@
+{% include "buyer-navbar.html" %}
+{% block title %}Home{% endblock %}
+
+
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Wishlist</h1>
+</div>
+<!-- Single Page Header End -->
+
+
+<!-- Wishlist Page Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Products</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for item in wishlist_items %}
+                    <tr>
+                        <th scope="row">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ item.imagepath[4:] }}" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="" alt="">
+                            </div>
+                        </th>
+                        <td>
+                            <p class="mb-0 mt-4">{{ item.title }}</p>
+                        </td>
+                        <td>
+                            <p class="mb-0 mt-4">S$ {{ item.price }}</p>
+                        </td>
+                        <td>
+                            <a onclick="add_to_cart('{{ item.listing_id }}')" class="btn btn-md bg-light border mt-4">
+                                <i class="fa fa-shopping-bag me-2 text-primary"></i>Add to cart</a>
+                            <button onclick="delete_from_wishlist('{{ item.id }}')" class="btn btn-md rounded-circle bg-light border mt-4" >
+                                <i class="fa fa-trash text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Wishlist Page End -->
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+    function delete_from_wishlist(listingId) {
+        console.log(listingId)
+        $.ajax({
+            url: `/wishlist/delete/${listingId}`,
+            type: 'POST',
+            success: function(response) {
+                window.location.reload();
+            },
+            error: function(xhr) {
+                alert('An error occurred while deleting the item.');
+            }
+        });
+    }
+
+    function add_to_cart(listingId) {
+        console.log(listingId)
+        fetch(`/add-to-cart/${listingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('You must be logged in to add items to the cart.');
+                window.location.href = 'main.login'; // Redirect to login page
+            } else if (!response.ok) {
+                throw new Error('Failed to add item to cart.');
+            } else {
+                return response.json();
+            }
+        })
+        .then(data => {
+            if (data && data.success) {
+                location.reload();
+            } else if (data && data.error) {
+                alert(data.error);
+            } else {
+                throw new Error('Invalid response from server.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+        
+{% include "buyer-footer.html" %}

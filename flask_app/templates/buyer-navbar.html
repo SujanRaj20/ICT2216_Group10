@@ -76,9 +76,9 @@
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
                         <a href="{{ url_for('main.index') }}" class="nav-item nav-link">Home</a>
-                        <a href="/shop" class="nav-item nav-link">Shop</a>
+                        <a href="{{ url_for('main.shop') }}" class="nav-item nav-link">Shop</a>
                         {% if current_user.is_authenticated %}
-                        <a href="/wishlist" class="nav-item nav-link">Wishlist</a>
+                        <a href="{{ url_for('user.wishlist') }}" class="nav-item nav-link">Wishlist</a>
                         {% endif %}
                         <a href="/contact" class="nav-item nav-link">Contact</a>
                     </div>

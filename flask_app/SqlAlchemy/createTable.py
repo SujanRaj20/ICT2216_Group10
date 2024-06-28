@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import os
-
+import logging
 
 # MySQL Server Parameters - Local
 local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
@@ -84,7 +84,7 @@ def create_or_verify_tables(engine):
                      Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                      )
 
-    # Define cart_items table
+    # Define cart_items table, repurpose
     cart_items = Table('cart_items', metadata,
                        Column('cart_id', Integer, ForeignKey('carts.id'), nullable=False),
                        Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
@@ -99,6 +99,15 @@ def create_or_verify_tables(engine):
                    Column('buyer_id', Integer, ForeignKey('users.id'), nullable=False),
                    Column('quantity', Integer, nullable=False)
                    )
+    
+    # Define new cartitems table
+    cartitems = Table('cartitems', metadata,
+                      Column('id', Integer, primary_key=True, autoincrement=True),
+                      Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+                      Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
+                      Column('quantity', Integer, nullable=False),
+                      Column('date_added', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+                      )
 
     metadata.create_all(engine)
 

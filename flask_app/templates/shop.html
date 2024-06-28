@@ -110,6 +110,7 @@
                                                 <p>{{ listing.description }}</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
                                                     <p class="text-dark fs-5 fw-bold mb-0">{{ listing.price }}</p>
+                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
                                                     <p style="margin-top: 1%;" class="text-dark fs-9 mb-0">{{ listing.stock }} in stock</p>
                                                 </div>
                                             </div>
@@ -142,25 +143,7 @@
                 var sort = document.getElementById("sort").value;
                 window.location.href = "/shop?sort=" + sort;
             }
-        
-            function deleteListing(listingId) {
-                if (confirm('Are you sure you want to delete this listing?')) {
-                    fetch(`/delete-listing/${listingId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert('Failed to delete the listing');
-                        }
-                    });
-                }
-            }
+    
             </script>
             <input type="hidden" id="category" value="{{ category }}">
         {% include "buyer-footer.html" %}

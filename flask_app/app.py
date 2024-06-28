@@ -1,10 +1,10 @@
-from flask import Flask, render_template,g, redirect, url_for, session, request, redirect
+from flask import Flask, render_template,g, redirect, url_for, session, request, redirect, current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
 from datetime import timedelta
 
-from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id, get_user_cart_item_count
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
@@ -14,12 +14,38 @@ from db_connector import get_mysql_connection
 from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector
+import logging
+
+
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
+
+@app.context_processor
+def inject_user_cart_count():
+    if current_user.is_authenticated:
+        user_cart_count = get_user_cart_item_count(current_user.id)
+    else:
+        user_cart_count = '0'
+    return dict(user_cart_count=user_cart_count)
+
+def inject_user_role():
+    if current_user.is_authenticated:
+        user_role = current_user.role
+    else:
+        user_role = 'Guest'
+    return dict(user_role=user_role)
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG for all loggers
+
+# Optionally, configure Flask's logger to use the same settings
+app.logger.setLevel(logging.DEBUG)
+
+app.logger.debug("This is a debug message")
 
 login_manager = LoginManager()
 login_manager.init_app(app)

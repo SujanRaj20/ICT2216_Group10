@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, send_from_directory, request, jsonify, url_for, session, redirect,flash,current_app
 from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id
-from SqlAlchemy.createTable import User, fetch_all_listings_forbuyer, get_listing_byid, delete_listing_fromdb, fetch_category_counts_for_shop_buyer
+from SqlAlchemy.createTable import User, fetch_all_listings_forbuyer, get_listing_byid, delete_listing_fromdb, fetch_category_counts_for_shop_buyer, get_user_cart_item_count
 from flask_login import current_user
 
 # Create a Blueprint named 'main'
@@ -9,8 +9,7 @@ main_bp = Blueprint('main', __name__)
 # Define the route for the home page
 @main_bp.route("/")
 def index():
-    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
-    return render_template("index.html", user_role=user_role)  # Render the / template
+    return render_template("index.html")  # Render the / template
 
 # Add more routes here
 @main_bp.route("/contact")

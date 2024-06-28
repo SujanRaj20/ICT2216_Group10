@@ -168,6 +168,27 @@ def get_user_cart_item_count(userid):
         print(f"Error: {e}")
         return None
     
+    
+def get_wishlist_items(userid):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Get the user's wishlist items
+        query = f"""
+            SELECT wi.listing_id, l.imagepath, l.title, l.price, wi.id
+            FROM wishlist_items wi
+            JOIN listings l ON wi.listing_id = l.id
+            WHERE wi.user_id = '{userid}'
+        """
+        wishlist_items = engine.execute(query).fetchall()
+        
+        return wishlist_items
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()
+    
 def get_cart_items(userid):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
     try:
@@ -278,6 +299,51 @@ def add_to_cart(user_id, listing_id):
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def add_to_wishlist(user_id, listing_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+       
+        # Check if the item already exists in the cart
+        check_query = f"""
+            SELECT * FROM wishlist_items 
+            WHERE user_id = '{user_id}' AND listing_id = '{listing_id}'
+        """
+        existing_item = engine.execute(check_query).fetchone()
+        
+        if not existing_item:
+            # Insert a new item if it doesn't exist
+            insert_query = f"""
+                INSERT INTO wishlist_items (listing_id, user_id) 
+                VALUES ('{listing_id}', '{user_id}')
+            """
+            engine.execute(insert_query)
+            
+        return {'message': 'Item added to wishlist.'}
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def delete_wishlist_item(wishlist_item_id, user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Delete the cart item
+        delete_query = f"""
+            DELETE FROM wishlist_items
+            WHERE id = '{wishlist_item_id}'
+        """
+        engine.execute(delete_query)
+
+        return {'success': True}
+
+    except SQLAlchemyError as e:
+        return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
         

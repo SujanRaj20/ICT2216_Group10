@@ -24,10 +24,6 @@ def shop():
     category_counts = fetch_category_counts_for_shop_buyer()
     return render_template("shop.html", listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)  # Render the /shop template
 
-@main_bp.route("/wishlist")
-def wishlist():
-    return render_template("wishlist.html")  # Render the /wishlist template
-
 @main_bp.route("/checkout")
 def checkout():
     return render_template("checkout.html")  # Render the /checkout template

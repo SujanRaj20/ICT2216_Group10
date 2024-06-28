@@ -1,6 +1,28 @@
 {% include "buyer-navbar.html" %}
 {% block title %}Shop{% endblock %}
 
+<style>
+    .fruite-img {
+        position: relative;
+        width: 100%;
+        padding-top: 100%; /* This creates a square aspect ratio */
+        overflow: hidden;
+        border-top-left-radius: 0.25rem;
+        border-top-right-radius: 0.25rem;
+    }
+    
+    .fruite-img img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensure the image covers the entire area while maintaining aspect ratio */
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+    }
+</style>
+
         <!-- Single Page Header start -->
         <div class="container-fluid page-header py-5">
             <h1 class="text-center text-white display-6">Shop</h1>
@@ -14,9 +36,8 @@
 
 
         <!-- Fruits Shop Start-->
-        <div class="container-fluid fruite py-5">
-            <div class="container py-5">
-                <h1 class="mb-4">Fresh fruits shop</h1>
+        <div class="container-fluid fruite py-2">
+            <div class="container py-4">
                 <div class="row g-4">
                     <div class="col-lg-12">
                         <div class="row g-4">
@@ -29,14 +50,19 @@
                             <div class="col-6"></div>
                             <div class="col-xl-3">
                                 <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
-                                    <label for="fruits">Default Sorting:</label>
-                                    <select id="fruits" name="fruitlist" class="border-0 form-select-sm bg-light me-3" form="fruitform">
-                                        <option value="volvo">Nothing</option>
-                                        <option value="saab">Popularity</option>
-                                        <option value="opel">Organic</option>
-                                        <option value="audi">Fantastic</option>
+                                    <label for="sort">Default Sorting:</label>
+                                    <select id="sort" name="sort" class="border-0 form-select-sm bg-light me-3" onchange="sortListings()">
+                                        <option value="none" {% if sort_option == 'none' %}selected{% endif %}>Nothing</option>
+                                        <option value="alpha" {% if sort_option == 'alpha' %}selected{% endif %}>Alphabetical</option>
+                                        <option value="dateasc" {% if sort_option == 'dateasc' %}selected{% endif %}>Date (Ascending)</option>
+                                        <option value="datedesc" {% if sort_option == 'datedesc' %}selected{% endif %}>Date (Descending)</option>
+                                        <option value="priceasc" {% if sort_option == 'priceasc' %}selected{% endif %}>Price (Ascending)</option>
+                                        <option value="pricedesc" {% if sort_option == 'pricedesc' %}selected{% endif %}>Price (Descending)</option>
+                                        <option value="stockasc" {% if sort_option == 'stockasc' %}selected{% endif %}>Stock (Ascending)</option>
+                                        <option value="stockdesc" {% if sort_option == 'stockdesc' %}selected{% endif %}>Stock (Descending)</option>
                                     </select>
                                 </div>
+                                
                             </div>
                         </div>
                         <div class="row g-4">
@@ -48,58 +74,48 @@
                                             <ul class="list-unstyled fruite-categorie">
                                                 <li>
                                                     <div class="d-flex justify-content-between fruite-name">
-                                                        <a href="#"><i class="fas fa-apple-alt me-2"></i>Apples</a>
-                                                        <span>(3)</span>
+                                                        <a href="#" onclick="updateCategory('all')">All</a>
+                                                        <span>({{ category_counts.get('all', 0) }})</span>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div class="d-flex justify-content-between fruite-name">
-                                                        <a href="#"><i class="fas fa-apple-alt me-2"></i>Oranges</a>
-                                                        <span>(5)</span>
+                                                        <a href="#" onclick="updateCategory('Fiction')">Fiction</a>
+                                                        <span>({{ category_counts.get('Fiction', 0) }})</span>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div class="d-flex justify-content-between fruite-name">
-                                                        <a href="#"><i class="fas fa-apple-alt me-2"></i>Strawbery</a>
-                                                        <span>(2)</span>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="d-flex justify-content-between fruite-name">
-                                                        <a href="#"><i class="fas fa-apple-alt me-2"></i>Banana</a>
-                                                        <span>(8)</span>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="d-flex justify-content-between fruite-name">
-                                                        <a href="#"><i class="fas fa-apple-alt me-2"></i>Pumpkin</a>
-                                                        <span>(5)</span>
+                                                        <a href="#" onclick="updateCategory('Non-Fiction')">Non-Fiction</a>
+                                                        <span>({{ category_counts.get('Non-Fiction', 0) }})</span>
                                                     </div>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
-
+        
                                 </div>
                             </div>
                             <div class="col-lg-9">
                                 <div class="row g-4 justify-content-left">
+                                    {% for listing in listings %}
                                     <div class="col-md-6 col-lg-6 col-xl-4">
                                         <div class="rounded position-relative fruite-item">
                                             <div class="fruite-img">
-                                                <img src="img/fruite-item-5.jpg" class="img-fluid w-100 rounded-top" alt="">
+                                                <img  src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
                                             </div>
-                                            <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">Fruits</div>
+                                            <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">{{ listing.type }}</div>
                                             <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>Grapes</h4>
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod te incididunt</p>
+                                                <h4>{{ listing.title }}</h4>
+                                                <p>{{ listing.description }}</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">$4.99 / kg</p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <p class="text-dark fs-5 fw-bold mb-0">{{ listing.price }}</p>
+                                                    <p style="margin-top: 1%;" class="text-dark fs-9 mb-0">{{ listing.stock }} in stock</p>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
@@ -107,5 +123,44 @@
                 </div>
             </div>
         </div>
+
         <!-- Fruits Shop End-->
+
+        <script>
+            function updateListings() {
+                var sort = document.getElementById("sort").value;
+                var category = document.getElementById("category").value;
+                window.location.href = "/shop?sort=" + sort + "&category=" + category;
+            }
+            
+            function updateCategory(selectedCategory) {
+                var sort = document.getElementById("sort").value;
+                window.location.href = "/shop?sort=" + sort + "&category=" + selectedCategory;
+            }
+        
+            function sortListings() {
+                var sort = document.getElementById("sort").value;
+                window.location.href = "/shop?sort=" + sort;
+            }
+        
+            function deleteListing(listingId) {
+                if (confirm('Are you sure you want to delete this listing?')) {
+                    fetch(`/delete-listing/${listingId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Failed to delete the listing');
+                        }
+                    });
+                }
+            }
+            </script>
+            <input type="hidden" id="category" value="{{ category }}">
         {% include "buyer-footer.html" %}

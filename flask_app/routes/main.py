@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, send_from_directory, session
+from flask import Blueprint, render_template, send_from_directory, request, jsonify, url_for, session, redirect,flash,current_app
 from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id
+from SqlAlchemy.createTable import User, fetch_all_listings_forbuyer, get_listing_byid, delete_listing_fromdb, fetch_category_counts_for_shop_buyer
 from flask_login import current_user
 
 # Create a Blueprint named 'main'
@@ -18,7 +19,11 @@ def contact():
 
 @main_bp.route("/shop")
 def shop():
-    return render_template("shop.html")  # Render the /shop template
+    sort_option = request.args.get('sort', 'none')
+    category = request.args.get('category', 'all')
+    listings = fetch_all_listings_forbuyer(sort_option, category)
+    category_counts = fetch_category_counts_for_shop_buyer()
+    return render_template("shop.html", listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)  # Render the /shop template
 
 @main_bp.route("/wishlist")
 def wishlist():

@@ -138,11 +138,29 @@ def delete_listing(listing_id):
         if listing['seller_id'] != current_user.id:
             return jsonify({"success": False, "message": "Unauthorized"}), 403
 
+        # Fetch the image path before deleting the listing
+        image_path = listing['imagepath']
+        
         delete_listing_fromdb(listing_id)
+        
+        # Delete the image file from the filesystem
+        if image_path:
+            delete_image(image_path)
+        
         return jsonify({"success": True}), 200
     except Exception as e:
         logging.error(f"Error deleting listing {listing_id}: {e}")
         return jsonify({"success": False, "message": "Failed to delete the listing"}), 500
+    
+def delete_image(image_path):
+    
+    # Remove '/app' prefix from the image path if it exists
+    # if image_path.startswith('/app'):
+    #     image_path = image_path.replace('/app', '')
+        
+    # Ensure the image path is valid and remove the file
+    if os.path.exists(image_path):
+        os.remove(image_path)
 
 
 @user_bp.route('/buyersignup', methods=['POST'])

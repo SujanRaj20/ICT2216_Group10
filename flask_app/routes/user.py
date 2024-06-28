@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -14,6 +14,8 @@ from db_connector import get_mysql_connection
 # Create a Blueprint named 'user'
 user_bp = Blueprint('user', __name__)
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 
 # Define the route for the user profile page
@@ -125,6 +127,28 @@ def save_image(image):
     image.save(image_path)
 
     return image_path
+
+@user_bp.route("/add-to-cart/<int:listing_id>", methods=["POST"])
+@login_required
+def add_to_cart_route(listing_id):
+    try:
+        user_id = current_user.id
+        current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to cart")
+        result = add_to_cart(user_id, listing_id)
+        
+        if 'error' in result:
+            current_app.logger.error(result['error'])
+            flash(result['error'], 'danger')
+            return jsonify({'error': result['error']}), 500
+        else:
+            current_app.logger.debug(result['message'])
+            flash(result['message'], 'success')
+            return jsonify({'message': result['message']}), 200
+    
+    except Exception as e:
+        current_app.logger.error(f"Error adding item to cart: {str(e)}")
+        flash(str(e), 'danger')
+        return jsonify({'error': 'Failed to add item to cart'}), 500
 
 @user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
 @login_required
@@ -247,7 +271,6 @@ def buyerlogin():
                     login_user(User(user), remember=True)  # Login the user
                     session.permanent = True
                     return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
-                    redirect
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:

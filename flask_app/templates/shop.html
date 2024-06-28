@@ -110,7 +110,7 @@
                                                 <p>{{ listing.description }}</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
                                                     <p class="text-dark fs-5 fw-bold mb-0">{{ listing.price }}</p>
-                                                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                                    <a onclick="add_to_cart('{{ listing.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
                                                     <p style="margin-top: 1%;" class="text-dark fs-9 mb-0">{{ listing.stock }} in stock</p>
                                                 </div>
                                             </div>
@@ -142,6 +142,38 @@
             function sortListings() {
                 var sort = document.getElementById("sort").value;
                 window.location.href = "/shop?sort=" + sort;
+            }
+
+            function add_to_cart(listingId) {
+                console.log(listingId)
+                fetch(`/add-to-cart/${listingId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('You must be logged in to add items to the cart.');
+                        window.location.href = 'main.login'; // Redirect to login page
+                    } else if (!response.ok) {
+                        throw new Error('Failed to add item to cart.');
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        location.reload();
+                    } else if (data && data.error) {
+                        alert(data.error);
+                    } else {
+                        throw new Error('Invalid response from server.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             }
     
             </script>

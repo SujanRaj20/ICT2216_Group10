@@ -3,6 +3,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from datetime import datetime
 import os
 
 
@@ -86,6 +87,7 @@ def create_or_verify_tables(engine):
 
     # Define cart_items table
     cart_items = Table('cart_items', metadata,
+                       Column('id', Integer, primary_key=True, autoincrement=True),
                        Column('cart_id', Integer, ForeignKey('carts.id'), nullable=False),
                        Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
                        Column('quantity', Integer, nullable=False)
@@ -149,6 +151,99 @@ def authenticate_user(engine, username, password):
     if user and check_password_hash(user['password_hash'], password):
         return user
     return None
+
+def get_user_cart_item_count(userid):
+    try:
+        cart = get_user_cart(userid)
+        cart_count = cart['item_count']
+        return cart_count
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+
+def get_user_cart(userid):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        query = f"SELECT * FROM carts WHERE user_id = '{userid}'"
+        result = engine.execute(query).fetchone()
+        
+        # If no cart exists, create a new cart
+        if result is None:
+            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            insert_query = f"""
+                    INSERT INTO carts (user_id, item_count, total_price, created_at) 
+                    VALUES ('{userid}', 0, 0.0, '{created_at}')
+                """
+            engine.execute(insert_query)
+            # Fetch the newly created cart
+            result = engine.execute(query).fetchone()
+            
+        return result
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()
+        
+def add_to_cart(user_id, listing_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Get the user's cart
+        user_cart = get_user_cart(user_id)
+
+        cart_id = user_cart['id']
+        
+        # Check if the item already exists in the cart
+        check_query = f"""
+            SELECT * FROM cart_items 
+            WHERE cart_id = '{cart_id}' AND listing_id = '{listing_id}'
+        """
+        existing_item = engine.execute(check_query).fetchone()
+        
+        # Get the price of the item from the listing table
+        price_query = f"SELECT price FROM listings WHERE id = '{listing_id}'"
+        listing = engine.execute(price_query).fetchone()
+        if not listing:
+            return {'error': 'Listing not found.'}
+        
+        price = listing['price']
+        
+        if existing_item:
+            # Update the quantity if the item already exists
+            new_quantity = existing_item['quantity'] + 1
+            update_query = f"""
+                UPDATE cart_items 
+                SET quantity = '{new_quantity}' 
+                WHERE cart_id = '{cart_id}' AND listing_id = '{listing_id}'
+            """
+            engine.execute(update_query)
+        else:
+            # Insert a new item if it doesn't exist
+            insert_query = f"""
+                INSERT INTO cart_items (cart_id, listing_id, quantity) 
+                VALUES ('{cart_id}', '{listing_id}', 1)
+            """
+            engine.execute(insert_query)
+            
+        # Update the item_count and total_price in the carts table
+        new_item_count = user_cart['item_count'] + 1
+        new_total_price = user_cart['total_price'] + price
+        update_cart_query = f"""
+            UPDATE carts 
+            SET item_count = '{new_item_count}', total_price = '{new_total_price}'
+            WHERE id = '{cart_id}'
+        """
+        engine.execute(update_cart_query)
+            
+        return {'message': 'Item added to cart successfully.'}
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
 
 def fetch_all_listings_forbuyer(sort_option, category):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')

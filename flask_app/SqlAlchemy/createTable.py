@@ -102,13 +102,20 @@ def create_or_verify_tables(engine):
                    Column('quantity', Integer, nullable=False)
                    )
 
+     # Define orders table
+    wishlist_items = Table('wishlist_items', metadata,
+                   Column('id', Integer, primary_key=True, autoincrement=True),
+                   Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
+                   Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
+                   )
+    
     metadata.create_all(engine)
 
     existing_tables = engine.table_names()
 
     tables_created_or_verified = []
 
-    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders]:
+    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items]:
         if table.name not in existing_tables:
             table.create(engine)
             tables_created_or_verified.append(f"{table.name} - Table created")

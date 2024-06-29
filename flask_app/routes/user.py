@@ -5,11 +5,16 @@ import json
 import os
 from werkzeug.utils import secure_filename
 import logging
+import random
+import string
 
 from bcrypt import hashpw, gensalt, checkpw
 import bcrypt  # Import bcrypt module directly
 import mysql.connector
 from db_connector import get_mysql_connection
+from flask import send_file
+from captcha.image import ImageCaptcha
+import io
 
 # Create a Blueprint named 'user'
 user_bp = Blueprint('user', __name__)
@@ -59,6 +64,16 @@ def update_profile():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+@user_bp.route('/generate_captcha')
+def generate_captcha():
+    image = ImageCaptcha()
+    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    data = image.generate(captcha_text)
+    image_data = io.BytesIO(data.read())
+    session['captcha_text'] = captcha_text
+    current_app.logger.debug(f"Generated CAPTCHA text: {captcha_text}")
+    return send_file(image_data, mimetype='image/png')
+
 
 @user_bp.route("/seller-listings", methods=["GET"])
 @login_required
@@ -221,6 +236,11 @@ def buyersignup():
         username = data.get('username')
         password = data.get('password')
         role = 'buyer'
+        captcha_input = data.get('captcha')
+
+         # Validate CAPTCHA
+        if captcha_input != session.get('captcha_text'):
+            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         
         # Basic server-side validation
         if not (fname and lname and email and username and password):
@@ -270,30 +290,32 @@ def buyersignup():
        
 
 
-@user_bp.route('/buyerlogin',methods=['GET', 'POST'])
+@user_bp.route('/buyerlogin', methods=['GET', 'POST'])
 def buyerlogin():
     if request.method == 'POST':
         try:
-            # Extract email and password from request.form
             email = request.form.get('email')
             password = request.form.get('password')
+            captcha_input = request.form.get('captcha')
+
+            current_app.logger.debug(f"User entered CAPTCHA: {captcha_input}")
+            current_app.logger.debug(f"Session CAPTCHA: {session.get('captcha_text')}")
+
+            if captcha_input != session.get('captcha_text'):
+                return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
 
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor(dictionary=True)
-                query = """
-                SELECT * FROM users WHERE email = %s
-                """
+                query = "SELECT * FROM users WHERE email = %s"
                 cursor.execute(query, (email,))
                 user = cursor.fetchone()
-
                 conn.close()
 
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                    # Successful login
-                    login_user(User(user), remember=True)  # Login the user
+                    login_user(User(user), remember=True)
                     session.permanent = True
-                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:
@@ -353,6 +375,11 @@ def sellersignup():
         username = data.get('username')
         password = data.get('password')
         role = 'seller'
+        captcha_input = data.get('captcha')
+
+        # Validate CAPTCHA
+        if captcha_input != session.get('captcha_text'):
+            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         
         # Basic server-side validation
         if not (fname and lname and email and username and password):

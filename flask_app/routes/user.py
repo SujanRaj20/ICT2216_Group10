@@ -297,9 +297,11 @@ def buyerlogin():
             email = request.form.get('email')
             password = request.form.get('password')
             captcha_input = request.form.get('captcha')
+            
+            # current_app.logger.debug(f"User credentials are email: {email} password: {password}")
 
-            current_app.logger.debug(f"User entered CAPTCHA: {captcha_input}")
-            current_app.logger.debug(f"Session CAPTCHA: {session.get('captcha_text')}")
+            # current_app.logger.debug(f"User entered CAPTCHA: {captcha_input}")
+            # current_app.logger.debug(f"Session CAPTCHA: {session.get('captcha_text')}")
 
             if captcha_input != session.get('captcha_text'):
                 return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400

@@ -49,13 +49,6 @@
 
 <script>
   // Add event listener for form submission
-  document
-    .getElementById("loginForm")
-    .addEventListener("submit", function (event) {
-      // Clear form fields after submission
-      document.getElementById("email").value = "";
-      document.getElementById("password").value = "";
-    });
     document.getElementById('refresh_captcha').addEventListener('click', function() {
         document.getElementById('captcha_image').src = '/generate_captcha?' + Date.now();
     });

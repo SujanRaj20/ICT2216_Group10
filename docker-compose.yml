@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
@@ -7,6 +7,8 @@ services:
       - "5000:5000"
     volumes:
       - ./flask_app:/app
+    env_file:
+      - .env
     environment:
       FLASK_ENV: development
       MYSQL_HOST: mysql-container
@@ -19,6 +21,8 @@ services:
 
   mysql-container:
     image: mysql:latest
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ***REMOVED***
       MYSQL_DATABASE: ***REMOVED***

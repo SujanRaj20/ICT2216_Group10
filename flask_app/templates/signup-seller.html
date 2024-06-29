@@ -44,6 +44,13 @@
                                 <input type="password" class="form-control" id="confirmPassword" required>
                             </div>
                             <div class="mb-3">
+                                <img src="/generate_captcha" alt="CAPTCHA" id="captcha_image">
+                                <input type="text" class="form-control" id="captcha" placeholder="Enter CAPTCHA" required>
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" id="refresh_captcha" class="btn btn-secondary">Refresh CAPTCHA</button>
+                            </div>
+                            <div class="mb-3">
                                 <button type="submit" class="btn btn-primary w-100">Sign Up</button>
                             </div>
                             <p id="error-message" style="color: red; display: none;">Passwords do not match!</p>
@@ -72,9 +79,11 @@
             const username = sanitize(document.getElementById('username').value);
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const captcha = document.getElementById('captcha').value;
+
 
             // Basic client-side validation
-            if (!fname || !lname || !email || !username || !password || !confirmPassword) {
+            if (!fname || !lname || !email || !username || !password || !confirmPassword|| !captcha) {
                 alert('All fields except phone number are required.');
                 return;
             } else if (password !== confirmPassword) {
@@ -90,7 +99,8 @@
                 email,
                 phone_num,
                 username,
-                password
+                password,
+                captcha
             };
 
             fetch('/sellersignup', {
@@ -118,6 +128,10 @@
                         if (data.error.includes('Username')) {
                             document.getElementById('username-error').innerText = 'Username already exists.';
                         }
+                        if (data.error.includes('CAPTCHA')) {
+                            alert('Invalid CAPTCHA. Please try again.');
+                        }
+                        
                     } else {
                         alert('Signup successful!');
                         window.location.href = "{{ url_for('main.seller_login') }}";
@@ -133,5 +147,9 @@
             element.innerText = input;
             return element.innerHTML;
         }
+        // Add a script to refresh the CAPTCHA image when the button is clicked
+        document.getElementById('refresh_captcha').addEventListener('click', function() {
+        document.getElementById('captcha_image').src = '/generate_captcha?' + Date.now();
+    });
     </script>
     {% include "buyer-footer.html" %}

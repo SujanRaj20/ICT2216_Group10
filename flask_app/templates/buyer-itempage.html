@@ -1,0 +1,185 @@
+{% block title %}item{% endblock %}
+{% if user_role == 'buyer' %}
+{% include "buyer-navbar.html" %}
+{% elif user_role == 'seller' %}
+{% include "seller-navbar.html" %}
+{% else %}
+{% include "buyer-navbar.html" %}
+{% endif %}
+<style>
+    .align-left-div {
+        text-align: left;
+        /* Ensure text is aligned to the left */
+        padding-left: 5%;
+    }
+</style>
+<div class="container-main itempage-container" style="width: 80%;">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-5">
+                <img src="{{ item.imagepath[4:] }}" class="img-fluid rounded" alt="Item Image">
+            </div>
+            <div class="col-md-7 align-left-div">
+                <h1>{{ item.title }}</h1>
+                <h4 class="text-muted">S${{ item.price }}</h4>
+                <p><strong>Tags:</strong>
+                    {% set tags_string = item.keywords %}
+                    {% set tags_list = tags_string[2:-2].split('", "') %}
+                    {% for tag in tags_list %}
+                    <span class="badge bg-primary">{{ tag }}</span>
+                    {% endfor %}
+                </p>
+                <p><strong>Seller: </strong><a>{{ seller_name }}</a></p>
+                <p><strong>Stock: </strong>{{ item.stock }}</p>
+                <p><strong>Release Date: </strong>{{ item.release_date }}</p>
+                <p><strong>Author: </strong>{{ item.author }}</p>
+                <p><strong>Publisher: </strong>{{ item.publisher }}</p>
+                <p><strong>Type: </strong>{{ item.type }}</p>
+                <button class="btn btn-danger mt-3"
+                    onclick="toggleReportForm('{{ item.id }}', '{{ item.seller_id }}')">Report</button>
+
+                <!-- Report Form -->
+                <div id="reportForm_{{ item.id }}" style="display: none; margin-top:3%">
+                    <form id="form_{{ item.id }}"
+                        onsubmit="submitReport('{{ item.id }}', '{{ item.seller_id }}', '{{ current_user.id }}'); return false;">
+                        <div class="mb-3">
+                            <label for="reportTitle">Report Title</label>
+                            <input type="text" class="form-control" id="reportTitle" name="reportTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reportBody">Report Body</label>
+                            <textarea class="form-control" id="reportBody" name="reportBody" rows="3"
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- Add comment form -->
+    <div class="container mt-5 align-left-div">
+        <h2>Add Comment</h2>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="mb-2">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating</label>
+                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+                </div>
+            </div>
+        </div>
+        <form action="" method="post">
+
+            <div class="mb-3">
+                <label for="body" class="form-label">Comment</label>
+                <textarea class="form-control" id="body" name="body" rows="3" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+
+    <div class="container mt-5">
+        <h2>Comments</h2>
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ comment.title }}</h5>
+                <p class="card-text">{{ comment.body }}</p>
+                <p class="card-text">Rating: {{ comment.rating }}</p>
+                <p class="card-text">Posted by: {{ comment.user.username }}</p>
+                <p class="card-text">Posted at: {{ comment.created_at }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No comments yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Display existing comments -->
+
+
+{% if user_role == 'buyer' %}
+{% include "buyer-footer.html" %}
+{% elif user_role == 'seller' %}
+{% include "seller-footer.html" %}
+{% else %}
+{% include "buyer-footer.html" %}
+{% endif %}
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    function toggleReportForm(itemId, sellerId) {
+        var reportForm = document.getElementById(`reportForm_${itemId}`);
+        if (reportForm.style.display === "none") {
+            reportForm.style.display = "block";
+        } else {
+            reportForm.style.display = "none";
+        }
+    }
+
+    function submitReport(itemId, sellerId, buyerId) {
+        var form = document.getElementById(`form_${itemId}`);
+        var title = form.elements['reportTitle'].value;
+        var body = form.elements['reportBody'].value;
+
+        console.log("title", title)
+        console.log("body", body)
+        console.log("itemId", itemId)
+        console.log("sellerId", sellerId)
+        console.log("buyerId", buyerId)
+
+        fetch('/report-item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                body: body,
+                item_id: itemId,
+                seller_id: sellerId,
+                buyer_id: buyerId
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to submit report.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message); // Display success message
+                // Optionally, you can reload or update the page after submission
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to submit report.');
+            });
+    }
+
+    function submitComment(itemId) {
+        // Implement the submit comment functionality here
+        const commentText = document.getElementById('commentText').value;
+        alert("Submit comment functionality is not implemented yet.");
+    }
+</script>

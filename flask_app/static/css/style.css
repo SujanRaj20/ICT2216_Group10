@@ -46,6 +46,14 @@
     border-radius: 10px;
     box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
 }
+.itempage-container {
+    max-width: 80%;
+    margin: 150px auto 50px; /* Added margin-top to move it down */
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+}
 
 .tabs {
     display: flex;

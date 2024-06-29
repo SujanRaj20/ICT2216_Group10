@@ -99,7 +99,7 @@
                             <div class="col-lg-9">
                                 <div class="row g-4 justify-content-left">
                                     {% for listing in listings %}
-                                    <div class="col-md-6 col-lg-6 col-xl-4">
+                                    <div class="col-md-6 col-lg-6 col-xl-4"onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')">
                                         <div class="rounded position-relative fruite-item">
                                             <div class="fruite-img">
                                                 <img  src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
@@ -129,6 +129,10 @@
         <!-- Fruits Shop End-->
 
         <script>
+            function redirectToItemPage(url) {
+                window.location.href = url;
+            }
+
             function updateListings() {
                 var sort = document.getElementById("sort").value;
                 var category = document.getElementById("category").value;

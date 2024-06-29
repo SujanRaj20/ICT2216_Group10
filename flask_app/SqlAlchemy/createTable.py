@@ -3,8 +3,13 @@ from sqlalchemy.sql import select
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import current_app
 from datetime import datetime
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 
 # MySQL Server Parameters - Local
@@ -77,8 +82,8 @@ def create_or_verify_tables(engine):
     # Define comments table
     comments = Table('comments', metadata,
                      Column('id', Integer, primary_key=True, autoincrement=True),
-                     Column('title', String(255)),
-                     Column('body', String(2000)),  # Specify length for VARCHAR
+                     Column('title', String(255),nullable=False),
+                     Column('body', String(2000), nullable=False),  # Specify length for VARCHAR
                      Column('rating', Integer),
                      Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
                      Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
@@ -109,13 +114,23 @@ def create_or_verify_tables(engine):
                    Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
                    )
     
+    reports = Table('reports', metadata,
+                   Column('id', Integer, primary_key=True, autoincrement=True),
+                   Column('listing_id', Integer, ForeignKey('listings.id'), nullable=False),
+                   Column('buyer_id', Integer, ForeignKey('users.id'), nullable=False),
+                   Column('seller_id', Integer, ForeignKey('users.id'), nullable=False),
+                   Column('title', String(255),nullable=False),
+                   Column('body', String(2000), nullable=False),  # Specify length for VARCHAR
+                   Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+                   )
+    
     metadata.create_all(engine)
 
     existing_tables = engine.table_names()
 
     tables_created_or_verified = []
 
-    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items]:
+    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items, reports]:
         if table.name not in existing_tables:
             table.create(engine)
             tables_created_or_verified.append(f"{table.name} - Table created")
@@ -601,6 +616,41 @@ def delete_listing_fromdb(listing_id):
         raise
     finally:
         engine.dispose()
+        
+        
+def create_report(title, body, item_id, seller_id, buyer_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
+    
+    try:
+        # Check if the item already exists in the reports table for this buyer
+        check_query = f"""
+            SELECT * FROM reports 
+            WHERE buyer_id = {buyer_id} AND listing_id = {item_id}
+        """
+        existing_report = engine.execute(check_query).fetchone()
+        
+        if not existing_report:
+            # Insert a new report if it doesn't exist
+            insert_query = f"""
+                INSERT INTO reports (title, body, listing_id, buyer_id, seller_id) 
+                VALUES ('{title}', '{body}', '{item_id}', '{buyer_id}', '{seller_id}')
+            """
+            engine.execute(insert_query)
+            return {'message': 'Report created successfully.'}
+        else:
+            return {'message': 'You have already reported this item.'}
+    
+    except SQLAlchemyError as e:
+        error_message = f"SQLAlchemy Error: {e}"
+        current_app.logger.error(error_message)
+        return {'error': error_message}
+    except Exception as e:
+        error_message = f"Error: {e}"
+        current_app.logger.error(error_message)
+        return {'error': error_message}
+    finally:
+        engine.dispose()
 
 
 class User(UserMixin):
@@ -625,6 +675,8 @@ class User(UserMixin):
         if user_data:
             return User(user_data)
         return None
+    
+
 
 def main():
     try:

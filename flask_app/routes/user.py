@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item, create_comment_report
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -303,7 +303,7 @@ def item_page(item_id):
             seller = cursor.fetchone()
             seller_name = seller['fname'] + " " + seller['lname']
             
-            comments_query = f""" SELECT c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.listing_id = {item_id} """
+            comments_query = f""" SELECT c.id, c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.listing_id = {item_id} """
             
             cursor.execute(comments_query)
             comments = cursor.fetchall()
@@ -578,3 +578,22 @@ def submit_comment(item_id):
     except Exception as e:
         current_app.logger.error(f"Error in submit_comment route: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+@user_bp.route('/report-comment/<int:comment_id>', methods=['POST'])
+@login_required
+def report_comment(comment_id):
+    title = request.form.get('title')
+    body = request.form.get('body')
+    reporter_id = current_user.id  # Assuming you have a way to get the current logged-in user's ID
+    
+    try:
+        result = create_comment_report(comment_id, reporter_id, title, body)
+        if 'error' in result:
+            flash(result['error'], 'danger')
+        else:
+            flash('Report submitted successfully.', 'success')
+    except Exception as e:
+        current_app.logger.error(f"Error reporting comment: {str(e)}")
+        flash(f"Error reporting comment: {str(e)}", 'danger')
+    
+    return redirect(request.referrer or url_for('main.shop'))

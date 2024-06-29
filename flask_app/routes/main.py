@@ -6,10 +6,19 @@ from flask_login import current_user
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
 
+def rolechecker():
+    if current_user.is_authenticated:
+        user_role = current_user.get_role()
+    else:
+        user_role = 'Guest'
+    
+    return user_role
+
 # Define the route for the home page
 @main_bp.route("/")
 def index():
-    return render_template("index.html")  # Render the / template
+    user_role = rolechecker()
+    return render_template("index.html", user_role=user_role)  # Render the / 
 
 # Add more routes here
 @main_bp.route("/contact")

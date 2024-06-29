@@ -1,4 +1,10 @@
-{% include "buyer-navbar.html" %}
+{% if user_role == 'buyer' %}
+    {% include "buyer-navbar.html" %}
+{% elif user_role == 'seller' %}
+    {% include "seller-navbar.html" %}
+{% else %}
+    {% include "buyer-navbar.html" %}
+{% endif %}
 {% block title %}Contact Us{% endblock %}
 
 
@@ -69,5 +75,10 @@
             </div>
         </div>
         <!-- Contact End -->
-
+        {% if user_role == 'buyer' %}
         {% include "buyer-footer.html" %}
+    {% elif user_role == 'seller' %}
+        {% include "seller-footer.html" %}
+    {% else %}
+        {% include "buyer-footer.html" %}
+    {% endif %}

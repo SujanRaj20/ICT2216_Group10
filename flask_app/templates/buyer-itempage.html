@@ -35,8 +35,11 @@
                 <p><strong>Author: </strong>{{ item.author }}</p>
                 <p><strong>Publisher: </strong>{{ item.publisher }}</p>
                 <p><strong>Type: </strong>{{ item.type }}</p>
-                <button class="btn btn-danger mt-3"
-                    onclick="toggleReportForm('{{ item.id }}', '{{ item.seller_id }}')">Report</button>
+
+                            <div class="d-flex justify-content-between flex-lg-wrap" >
+                                <a onclick="add_to_cart('{{ item.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
+                                </div>
+                            <button class="btn btn-danger mt-3" onclick="toggleReportForm('{{ item.id }}', '{{ item.seller_id }}')">Report</button>
 
                 <!-- Report Form -->
                 <div id="reportForm_{{ item.id }}" style="display: none; margin-top:3%">
@@ -118,10 +121,44 @@
         {% if comments %}
             {% for comment in comments %}
             <div class="comment-container align-left-div" style="width: 100%; padding: 1%;">
-                <strong style="padding: 0; margin:0%">{{ comment.fname }} {{ comment.lname }} ({{ comment.username }}):</strong>
-                <p style="padding: 0; margin:0%">{{ comment.title }} - Rating: {{ comment.rating }}/5</p>
-                <p style="padding: 0; margin:0%">{{ comment.body }}</p>
-                <p style="padding: 0; margin:0%">Posted on: {{ comment.created_at }}</p>
+                <div class="row">
+                <div class="col-md-11">
+                    <strong style="padding: 0; margin:0%">{{ comment.fname }} {{ comment.lname }} ({{ comment.username }}):</strong>
+                    <p style="padding: 0; margin:0%">{{ comment.title }} - Rating: {{ comment.rating }}/5</p>
+                    <p style="padding: 0; margin:0%">{{ comment.body }}</p>
+                    <p style="padding: 0; margin:0%">Posted on: {{ comment.created_at }}</p>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger btn-link" data-toggle="modal" data-target="#reportModal{{ comment.id }}">
+                        <p style="color: white; padding: 0; margin:0%;">Report</p>
+                    </button>
+                    <div class="modal fade" id="reportModal{{ comment.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ comment.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="reportModalLabel{{ comment.id }}">Report Comment</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ url_for('user.report_comment', comment_id=comment.id) }}" method="post">
+                                        <div class="mb-3">
+                                            <label for="title{{ comment.id }}" class="form-label">Title</label>
+                                            <input type="text" class="form-control" id="title{{ comment.id }}" name="title" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="body{{ comment.id }}" class="form-label">Body</label>
+                                            <textarea class="form-control" id="body{{ comment.id }}" name="body" rows="3" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit Report</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
             {% endfor %}
         {% else %}
@@ -154,6 +191,38 @@
         } else {
             reportForm.style.display = "none";
         }
+    }
+
+    function add_to_cart(listingId) {
+        console.log(listingId)
+        fetch(`/add-to-cart/${listingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('You must be logged in to add items to the cart.');
+                window.location.href = 'main.login'; // Redirect to login page
+            } else if (!response.ok) {
+                throw new Error('Failed to add item to cart.');
+            } else {
+                return response.json();
+            }
+        })
+        .then(data => {
+            if (data && data.success) {
+                location.reload();
+            } else if (data && data.error) {
+                alert(data.error);
+            } else {
+                throw new Error('Invalid response from server.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
 
     function submitReport(itemId, sellerId, buyerId) {

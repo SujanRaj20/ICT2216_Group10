@@ -32,13 +32,6 @@ def inject_user_cart_count():
         user_cart_count = '0'
     return dict(user_cart_count=user_cart_count)
 
-def inject_user_role():
-    if current_user.is_authenticated:
-        user_role = current_user.role
-    else:
-        user_role = 'Guest'
-    return dict(user_role=user_role)
-
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG for all loggers
 

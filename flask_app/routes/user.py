@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -288,6 +288,36 @@ def buyersignup():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
        
+       
+@user_bp.route('/item/<int:item_id>')
+def item_page(item_id):
+    try:
+        conn = get_mysql_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            query = "SELECT * FROM listings WHERE id = %s"
+            cursor.execute(query, (item_id,))
+            item = cursor.fetchone()
+            seller_name_query = "SELECT * FROM users WHERE id = %s"
+            cursor.execute(seller_name_query, (item['seller_id'],))
+            seller = cursor.fetchone()
+            seller_name = seller['fname'] + " " + seller['lname']
+            conn.close()
+
+            if item:
+                return render_template('buyer-itempage.html', item=item, seller_name=seller_name)
+            else:
+                flash('Item not found', 'danger')
+                return redirect(url_for('main.shop'))
+
+        else:
+            flash('Failed to connect to database', 'danger')
+            return redirect(url_for('main.shop'))
+
+    except Exception as e:
+        flash(f'Error: {e}', 'danger')
+        return redirect(url_for('main.shop'))
+
 
 
 @user_bp.route('/buyerlogin', methods=['GET', 'POST'])
@@ -483,3 +513,28 @@ def delete_item_wishlist(wishlist_item_id):
         return jsonify({'message': 'Item deleted successfully'}), 200
     else:
         return jsonify({'error': result['error']}), 400
+    
+    
+@user_bp.route('/report-item', methods=['POST'])
+def report_item():
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        body = data.get('body')
+        item_id = data.get('item_id')
+        seller_id = data.get('seller_id')
+        buyer_id = data.get('buyer_id')
+        
+        current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
+        
+        result = create_report(title, body, item_id, seller_id, buyer_id)
+        
+        if 'error' in result:
+            current_app.logger.error(f"Error in create_report function: {result['error']}")
+            return jsonify({'error': result['error']}), 500
+        else:
+            return jsonify({'message': result['message']}), 200
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in report_item route: {str(e)}")
+        return jsonify({'error': str(e)}), 500

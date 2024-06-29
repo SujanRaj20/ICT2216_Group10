@@ -99,9 +99,9 @@
                             <div class="col-lg-9">
                                 <div class="row g-4 justify-content-left">
                                     {% for listing in listings %}
-                                    <div class="col-md-6 col-lg-6 col-xl-4"onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')">
+                                    <div class="col-md-6 col-lg-6 col-xl-4">
                                         <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
+                                            <div class="fruite-img" onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')">
                                                 <img  src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
                                             </div>
                                             <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">{{ listing.type }}</div>

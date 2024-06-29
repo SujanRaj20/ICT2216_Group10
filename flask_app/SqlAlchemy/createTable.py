@@ -125,13 +125,22 @@ def create_or_verify_tables(engine):
                    Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
                    )
     
+    comment_reports = Table('comment_reports', metadata,
+                   Column('id', Integer, primary_key=True, autoincrement=True),
+                   Column('comment_id', Integer, ForeignKey('comments.id'), nullable=False),
+                   Column('reporter_id', Integer, ForeignKey('users.id'), nullable=False),
+                   Column('title', String(255),nullable=False),
+                   Column('body', String(2000), nullable=False),  # Specify length for VARCHAR
+                   Column('created_at', TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
+                   )
+    
     metadata.create_all(engine)
 
     existing_tables = engine.table_names()
 
     tables_created_or_verified = []
 
-    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items, reports]:
+    for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items, reports, comment_reports]:
         if table.name not in existing_tables:
             table.create(engine)
             tables_created_or_verified.append(f"{table.name} - Table created")
@@ -785,5 +794,22 @@ def get_comments_for_item(item_id):
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         return None
+    finally:
+        engine.dispose()
+        
+def create_comment_report(comment_id, reporter_id, title, body):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        insert_query = """
+            INSERT INTO comment_reports (comment_id, reporter_id, title, body) 
+            VALUES (%s, %s, %s, %s)
+        """
+        with engine.connect() as conn:
+            conn.execute(insert_query, (comment_id, reporter_id, title, body))
+        return {'message': 'Report created successfully.'}
+    except SQLAlchemyError as e:
+        return {'error': f"SQLAlchemy Error: {e}"}
+    except Exception as e:
+        return {'error': str(e)}
     finally:
         engine.dispose()

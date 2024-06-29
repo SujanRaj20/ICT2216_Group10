@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -302,13 +302,16 @@ def item_page(item_id):
             cursor.execute(seller_name_query, (item['seller_id'],))
             seller = cursor.fetchone()
             seller_name = seller['fname'] + " " + seller['lname']
+            
+            comments_query = f""" SELECT c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.listing_id = {item_id} """
+            
+            cursor.execute(comments_query)
+            comments = cursor.fetchall()
+            current_app.logger.debug(comments)
+            
             conn.close()
 
-            if item:
-                return render_template('buyer-itempage.html', item=item, seller_name=seller_name)
-            else:
-                flash('Item not found', 'danger')
-                return redirect(url_for('main.shop'))
+            return render_template('buyer-itempage.html', item=item, seller_name=seller_name, comments=comments)
 
         else:
             flash('Failed to connect to database', 'danger')
@@ -316,6 +319,7 @@ def item_page(item_id):
 
     except Exception as e:
         flash(f'Error: {e}', 'danger')
+        current_app.logger.debug(e)
         return redirect(url_for('main.shop'))
 
 
@@ -537,4 +541,40 @@ def report_item():
     
     except Exception as e:
         current_app.logger.error(f"Error in report_item route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+@user_bp.route('/seller/<int:seller_id>')
+def buyer_seller_page(seller_id):
+    seller_info = get_seller_info(seller_id)
+    sort_option = request.args.get('sort', 'none')
+    category = request.args.get('category', 'all')
+    listings = fetch_seller_listings(seller_id, sort_option, category)
+    category_counts = fetch_category_counts_for_shop_buyer()
+    return render_template('buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
+
+@user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])
+def submit_comment(item_id):
+    try:
+        title = request.form.get('title')
+        body = request.form.get('body')
+        rating = int(request.form.get('rating'))
+        user_id = current_user.id  # Assuming you have a way to get the current user ID
+
+        current_app.logger.debug(f"Received title: {title}, body: {body}, rating: {rating}, user_id: {user_id}, item_id: {item_id}")
+
+        # Validate rating
+        if rating < 1 or rating > 5:
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+
+        # Create the comment
+        result = create_comment(title, body, rating, item_id, user_id)
+
+        if 'error' in result:
+            return jsonify({'error': result['error']}), 500
+        else:
+            # On success, do not return JSON but allow the frontend to reload
+            return '', 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error in submit_comment route: {str(e)}")
         return jsonify({'error': str(e)}), 500

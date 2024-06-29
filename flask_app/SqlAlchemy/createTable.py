@@ -618,6 +618,43 @@ def delete_listing_fromdb(listing_id):
     finally:
         engine.dispose()
         
+def get_seller_info(seller_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Query to fetch seller information
+        query = f"""
+            SELECT username, fname, lname, email, phone_num
+            FROM users
+            WHERE id = {seller_id}
+        """
+        
+        # Execute the query
+        with engine.connect() as connection:
+            result = connection.execute(text(query)).fetchone()
+        
+        if result:
+            seller_info = {
+                'username': result['username'],
+                'fname': result['fname'],
+                'lname': result['lname'],
+                'email': result['email'],
+                'phone_num': result['phone_num']
+            }
+            return seller_info
+        else:
+            return None  # Return None if seller_id does not exist
+        
+    except SQLAlchemyError as e:
+        print(f"SQLAlchemy Error: {e}")
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()
+        
+        
         
 def create_report(title, body, item_id, seller_id, buyer_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
@@ -703,3 +740,50 @@ def main():
 
 if __name__ == "__main__":
     main()
+        
+def create_comment(title, body, rating, item_id, user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Insert the new comment into the comments table
+        insert_query = f"""
+                INSERT INTO comments (title, body, rating, listing_id, user_id) 
+                VALUES ('{title}', '{body}', '{rating}', '{item_id}', '{user_id}')
+            """
+            
+            
+        engine.execute(insert_query)
+        
+        return {'message': 'Comment created successfully.'}
+    
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error: {e}")
+        return {'error': f"SQLAlchemy Error: {e}"}
+    except Exception as e:
+        current_app.logger.error(f"Error: {e}")
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+        
+def get_comments_for_item(item_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Get the user's wishlist items
+        query = f"""
+            SELECT c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname
+            FROM comments c
+            JOIN users u ON c.user_id = c.id
+            WHERE c.listing_id = '{item_id}'
+        """
+        
+        current_app.logged.debug(query)
+        
+        comments = engine.execute(query).fetchall()
+        
+        return comments
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()

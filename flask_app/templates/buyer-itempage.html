@@ -29,7 +29,7 @@
                     <span class="badge bg-primary">{{ tag }}</span>
                     {% endfor %}
                 </p>
-                <p><strong>Seller: </strong><a>{{ seller_name }}</a></p>
+                <p><strong>Seller: </strong><a  href="{{ url_for('user.buyer_seller_page', seller_id=item.seller_id) }}" >{{ seller_name }}</a></p>
                 <p><strong>Stock: </strong>{{ item.stock }}</p>
                 <p><strong>Release Date: </strong>{{ item.release_date }}</p>
                 <p><strong>Author: </strong>{{ item.author }}</p>
@@ -65,46 +65,65 @@
     <!-- Add comment form -->
     <div class="container mt-5 align-left-div">
         <h2>Add Comment</h2>
-        <div class="row">
-            <div class="col-md-9">
-                <div class="mb-2">
-                    <label for="title" class="form-label">Title</label>
-                    <input type="text" class="form-control" id="title" name="title" required>
+        <form id="commentForm" action="{{ url_for('user.submit_comment', item_id=item.id) }}" method="post">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-2">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div id="rating" name="rating">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating1" value="1" required>
+                                <label class="form-check-label" for="rating1">1</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating2" value="2" required>
+                                <label class="form-check-label" for="rating2">2</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating3" value="3" required>
+                                <label class="form-check-label" for="rating3">3</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating4" value="4" required>
+                                <label class="form-check-label" for="rating4">4</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating5" value="5" required>
+                                <label class="form-check-label" for="rating5">5</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="mb-3">
-                    <label for="rating" class="form-label">Rating</label>
-                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
-                </div>
-            </div>
-        </div>
-        <form action="" method="post">
-
+    
             <div class="mb-3">
                 <label for="body" class="form-label">Comment</label>
                 <textarea class="form-control" id="body" name="body" rows="3" required></textarea>
             </div>
-
+    
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
+    
 
 
-    <div class="container mt-5">
+    <div class=" align-left-div" style="padding-left: 0;">
         <h2>Comments</h2>
         {% if comments %}
-        {% for comment in comments %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ comment.title }}</h5>
-                <p class="card-text">{{ comment.body }}</p>
-                <p class="card-text">Rating: {{ comment.rating }}</p>
-                <p class="card-text">Posted by: {{ comment.user.username }}</p>
-                <p class="card-text">Posted at: {{ comment.created_at }}</p>
+            {% for comment in comments %}
+            <div class="comment-container align-left-div" style="width: 100%; padding: 1%;">
+                <strong style="padding: 0; margin:0%">{{ comment.fname }} {{ comment.lname }} ({{ comment.username }}):</strong>
+                <p style="padding: 0; margin:0%">{{ comment.title }} - Rating: {{ comment.rating }}/5</p>
+                <p style="padding: 0; margin:0%">{{ comment.body }}</p>
+                <p style="padding: 0; margin:0%">Posted on: {{ comment.created_at }}</p>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
         {% else %}
         <p>No comments yet.</p>
         {% endif %}
@@ -177,9 +196,30 @@
             });
     }
 
-    function submitComment(itemId) {
-        // Implement the submit comment functionality here
-        const commentText = document.getElementById('commentText').value;
-        alert("Submit comment functionality is not implemented yet.");
-    }
+    document.getElementById('commentForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the form from submitting the traditional way
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                // Reload the page on success
+                location.reload();
+            } else {
+                return response.json().then(data => {
+                    // Handle errors
+                    alert(data.error || 'An error occurred');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    });
 </script>

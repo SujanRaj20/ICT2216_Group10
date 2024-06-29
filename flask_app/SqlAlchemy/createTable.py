@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
 from sqlalchemy.sql import select
 from sqlalchemy.exc import SQLAlchemyError

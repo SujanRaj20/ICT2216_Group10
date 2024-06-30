@@ -1,0 +1,39 @@
+{% include "buyer-navbar.html" %}
+{% block title %}OTP Verification{% endblock %}
+
+<!-- OTP Verification Page Start -->
+<div class="container-fluid page-header py-4">
+  <h1 class="text-center text-white display-6">OTP Verification</h1>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="bg-light rounded p-4">
+                <form id="otpForm" method="POST" action="/verify-otp">
+                    <div class="mb-3">
+                        <label for="otp" class="form-label">Enter OTP</label>
+                        <input type="text" class="form-control" id="otp" name="otp" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
+                    </div>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ messages[0] }}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- OTP Verification Page End -->
+
+{% include "buyer-footer.html" %}
+
+<script>
+    // You can add JavaScript here if needed
+</script>

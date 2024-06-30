@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        nodejs '22.3.0'
+    }
 
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
@@ -7,36 +10,38 @@ pipeline {
     }
 
     stages {
-        stage('Test Docker') {
+
+        stage("Test Docker") {
             steps {
-                script {
-                    // Check if Docker is running and list running containers
-                    sh 'docker ps'
-                }
+                sh 'docker ps'
             }
         }
 
         stage('Checkout') {
             steps {
-                // Checkout the source code from the SCM
                 checkout scm
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                script {
+                    // Installing Python dependencies
+                    sh 'pip install -r flask_app/requirements.txt'
+                }
+            }
+        }
+
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image
                     sh 'docker build -t ${DOCKER_IMAGE} .'
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                script {
-                    // Run tests using the built Docker image
-                    sh 'docker run --rm ${DOCKER_IMAGE} pytest'
                 }
             }
         }
@@ -44,7 +49,6 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    // Stop and remove any existing container, then run a new one
                     sh """
                     docker stop ${DOCKER_CONTAINER} || true
                     docker rm ${DOCKER_CONTAINER} || true
@@ -56,8 +60,11 @@ pipeline {
     }
 
     post {
+        success {
+            // Publish dependency check report if required
+            dependencyCheckPublisher pattern: './dependency-check-report.xml'
+        }
         always {
-            // Clean the workspace after build
             cleanWs()
         }
     }

@@ -16,7 +16,7 @@ from db_connector import get_mysql_connection
 from flask import send_file
 from captcha.image import ImageCaptcha
 import io
-from email_utils import send_otp_email
+# from email_utils import send_otp_email
 
 # Initialize Stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -389,8 +389,8 @@ def buyerlogin():
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                     login_user(User(user), remember=True)
                     session.permanent = True
-                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))
-                    return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))
+                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:
@@ -427,8 +427,8 @@ def sellerlogin():
                     login_user(user_obj, remember=True)  # Login the user
                     session['user_id'] = user_obj.id
                     session.permanent = True
-                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
-                    return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
+                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:
@@ -439,36 +439,36 @@ def sellerlogin():
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
     
-@user_bp.route('/verify-otp', methods=['GET', 'POST'])
-def verify_otp():
-    if request.method == 'POST':
-        otp = request.form.get('otp')
-        if otp == str(session.get('otp')):
-            email = session.get('email')
-            conn = get_mysql_connection()
-            if conn:
-                cursor = conn.cursor(dictionary=True)
-                query = "SELECT * FROM users WHERE email = %s"
-                cursor.execute(query, (email,))
-                user = cursor.fetchone()
-                conn.close()
+# @user_bp.route('/verify-otp', methods=['GET', 'POST'])
+# def verify_otp():
+    # if request.method == 'POST':
+    #     otp = request.form.get('otp')
+    #     if otp == str(session.get('otp')):
+    #         email = session.get('email')
+    #         conn = get_mysql_connection()
+    #         if conn:
+    #             cursor = conn.cursor(dictionary=True)
+    #             query = "SELECT * FROM users WHERE email = %s"
+    #             cursor.execute(query, (email,))
+    #             user = cursor.fetchone()
+    #             conn.close()
 
-                if user:
-                    user_obj = User(user)
-                    login_user(user_obj, remember=True)
-                    session.pop('otp', None)
-                    session.pop('email', None)
-                    return redirect(url_for('main.index'))
-                else:
-                    flash('Invalid email or user not found.')
-                    return redirect(url_for('user.buyerlogin'))
-            else:
-                flash('Failed to connect to database.')
-                return redirect(url_for('user.buyerlogin'))
-        else:
-            flash('Invalid OTP. Please try again.')
-            return redirect(url_for('user.verify_otp'))
-    return render_template('verify_otp.html')
+    #             if user:
+    #                 user_obj = User(user)
+    #                 login_user(user_obj, remember=True)
+    #                 session.pop('otp', None)
+    #                 session.pop('email', None)
+    #                 return redirect(url_for('main.index'))
+    #             else:
+    #                 flash('Invalid email or user not found.')
+    #                 return redirect(url_for('user.buyerlogin'))
+    #         else:
+    #             flash('Failed to connect to database.')
+    #             return redirect(url_for('user.buyerlogin'))
+    #     else:
+    #         flash('Invalid OTP. Please try again.')
+    #         return redirect(url_for('user.verify_otp'))
+    # return render_template('verify_otp.html')
     
 @user_bp.route('/sellersignup', methods=['POST'])
 def sellersignup():

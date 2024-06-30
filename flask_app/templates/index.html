@@ -8,6 +8,10 @@
     {% include "seller-navbar.html" %}
     {% include "seller-home.html" %}
     {% include "seller-footer.html" %}
+{% elif user_role == 'admin' %}
+    {% include "admin-navbar.html" %}
+    {% include "admin-dashboard.html" %}
+    {% include "admin-footer.html" %}
 {% else %}
     {% include "buyer-navbar.html" %}
     {% include "buyer-home.html" %}

@@ -598,6 +598,10 @@ def report_item():
         item_id = data.get('item_id')
         seller_id = data.get('seller_id')
         buyer_id = data.get('buyer_id')
+        captcha_input = data.get('captcha')
+        # Verify CAPTCHA
+        if captcha_input != session.get('captcha_text'):
+            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         
         current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
         
@@ -654,7 +658,12 @@ def submit_comment(item_id):
 def report_comment(comment_id):
     title = request.form.get('title')
     body = request.form.get('body')
+    captcha_input = request.form.get('captcha')
     reporter_id = current_user.id  # Assuming you have a way to get the current logged-in user's ID
+    # Verify CAPTCHA
+    if captcha_input != session.get('captcha_text'):
+        flash('Invalid CAPTCHA. Please try again.', 'danger')
+        return redirect(request.referrer or url_for('main.shop'))
     
     try:
         result = create_comment_report(comment_id, reporter_id, title, body)

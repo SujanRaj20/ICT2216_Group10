@@ -8,34 +8,30 @@ admin_bp = Blueprint('admin', __name__)
 # def admin_dashboard(userid):
 #     return render_template("admin_dashboard.html", userid=userid)  # Render profile.html with the userid
 
-@admin_bp.route("/admin")
-def admin_dashboard():
-    return render_template("admin_dashboard.html")  # Render the admin dashboard template
-
 @admin_bp.route("/add_admin")
-def add_admin():
-    return render_template("add_admin.html")  # Render the add admin template
+def add_admin_route():
+    return render_template("add-admin.html")  # Render the add admin template
 
 @admin_bp.route("/admin_buyersmenu")
-def admin_buyersmenu():
-    return render_template("admin_buyersmenu.html")  # Render the add admin template
+def admin_buyersmenu_route():
+    return render_template("admin-buyersmenu.html")  # Render the add admin template
 
 @admin_bp.route("/admin_sellersmenu")
-def admin_sellersmenu():
-    return render_template("admin_sellersmenu.html")  # Render the add admin template
+def admin_sellersmenu_route():
+    return render_template("admin-sellersmenu.html")  # Render the add admin template
 
 @admin_bp.route("/admin_listingsmenu")
-def admin_listingsmenu():
-    return render_template("admin_listingsmenu.html")  # Render the add admin template
+def admin_listingsmenu_route():
+    return render_template("admin-listingsmenu.html")  # Render the add admin template
 
 @admin_bp.route("/admin_commentsmenu")
-def admin_commentsmenu():
-    return render_template("admin_commentsmenu.html")  # Render the add admin template
+def admin_commentsmenu_route():
+    return render_template("admin-commentsmenu.html")  # Render the add admin template
 
 @admin_bp.route("/admin_reportsmenu")
-def admin_reportsmenu():
-    return render_template("admin_reportsmenu.html")  # Render the add admin template
+def admin_reportsmenu_route():
+    return render_template("admin-reportsmenu.html")  # Render the add admin template
 
 @admin_bp.route("/admin_logs")
-def admin_logsview():
-    return render_template("admin_logsview.html")  # Render the add admin template
+def admin_logsview_route():
+    return render_template("admin-logsview.html")  # Render the add admin template

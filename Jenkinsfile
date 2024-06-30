@@ -17,7 +17,15 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd']]])
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh 'pip install -r flask_app/requirements.txt'
+                }
             }
         }
 
@@ -40,11 +48,21 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    sh """
+                    sh '''
+                    # Check if any container is using port 5000
+                    if [ "$(docker ps -q -f publish=5000)" ]; then
+                        echo "Port 5000 is in use. Stopping the container using it..."
+                        docker stop $(docker ps -q -f publish=5000)
+                        docker rm $(docker ps -q -f publish=5000)
+                    fi
+                    
+                    # Stop and remove existing container
                     docker stop ${DOCKER_CONTAINER} || true
                     docker rm ${DOCKER_CONTAINER} || true
+                    
+                    # Run the new container
                     docker run -d --name ${DOCKER_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE}
-                    """
+                    '''
                 }
             }
         }

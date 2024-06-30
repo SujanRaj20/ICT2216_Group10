@@ -7,49 +7,140 @@
 <!-- Log In Start -->
 <div class="container-fluid testimonial py-1">
   <div class="container py-5">
-      <div class="container">
-          <div class="row justify-content-center">
-              <div class="col-md-6">
-                  <div class="bg-light rounded p-4">
-                      <form id="loginForm" method="POST" action="/buyerlogin">
-                          <!-- Input fields for email and password -->
-                          <div class="mb-3">
-                              <label for="email" class="form-label">Email</label>
-                              <input type="email" class="form-control" id="email" name="email" required>
-                          </div>
-                          <div class="mb-3">
-                              <label for="password" class="form-label">Password</label>
-                              <input type="password" class="form-control" id="password" name="password" required>
-                          </div>
-                          <div class="mb-3">
-                              <img src="/generate_captcha" alt="CAPTCHA" id="captcha_image">
-                              <input type="text" class="form-control" id="captcha" name="captcha" placeholder="Enter CAPTCHA" required>
-                          </div>
-                          <div class="mb-3">
-                              <button type="button" id="refresh_captcha" class="btn btn-secondary">Refresh CAPTCHA</button>
-                          </div>
-                          <div class="mb-3">
-                              <button type="submit" class="btn btn-primary w-100">Login</button>
-                          </div>
-                          <div class="mb-3">
-                              <a href="{{ url_for('main.signup') }}" class="nav-item nav-link">No account? Sign up here</a>
-                          </div>
-                          <div class="mb-3">
-                              <a href="{{ url_for('main.seller_signup') }}" class="nav-item nav-link">Want to create a Seller account? Sign up here</a>
-                          </div>
-                      </form>
-                  </div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="bg-light rounded p-4">
+            <form id="loginForm" method="POST" action="/buyerlogin">
+              <!-- Input fields for email and password -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  required
+                />
               </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <img src="/generate_captcha" alt="CAPTCHA" id="captcha_image" />
+                <input
+                  type="text"
+                  class="form-control"
+                  id="captcha"
+                  name="captcha"
+                  placeholder="Enter CAPTCHA"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <button
+                  type="button"
+                  id="refresh_captcha"
+                  class="btn btn-secondary"
+                >
+                  Refresh CAPTCHA
+                </button>
+              </div>
+              <div class="mb-3">
+                <button type="submit" class="btn btn-primary w-100">
+                  Login
+                </button>
+              </div>
+              <div class="mb-3">
+                <a href="{{ url_for('main.signup') }}" class="nav-item nav-link"
+                  >No account? Sign up here</a
+                >
+              </div>
+              <div class="mb-3">
+                <a
+                  href="{{ url_for('main.seller_signup') }}"
+                  class="nav-item nav-link"
+                  >Want to create a Seller account? Sign up here</a
+                >
+              </div>
+            </form>
           </div>
+        </div>
       </div>
+    </div>
   </div>
 </div>
 <!-- Testimonial End -->
 {% include "buyer-footer.html" %}
 
 <script>
-  // Add event listener for form submission
-    document.getElementById('refresh_captcha').addEventListener('click', function() {
-        document.getElementById('captcha_image').src = '/generate_captcha?' + Date.now();
+  document
+    .getElementById("refresh_captcha")
+    .addEventListener("click", function () {
+      document.getElementById("captcha_image").src =
+        "/generate_captcha?" + Date.now();
+    });
+
+  document
+    .getElementById("loginForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault(); // Prevent default form submission
+
+      const formData = new FormData(this);
+
+      fetch("/buyerlogin", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          return response.text().then((text) => {
+            try {
+              const data = JSON.parse(text);
+              return {
+                status: response.status,
+                body: data,
+              };
+            } catch (error) {
+              return {
+                status: response.status,
+                body: { error: text },
+              };
+            }
+          });
+        })
+        .then((data) => {
+          if (data.status === 200) {
+            // Clear the form fields
+            document.getElementById("loginForm").reset();
+            // Redirect to the main page
+            window.location.href = data.body.redirect_url || "/";
+          } else {
+            // Handle invalid CAPTCHA or other errors
+            alert(data.body.error);
+            document.getElementById("captcha_image").src =
+              "/generate_captcha?" + Date.now();
+            document.getElementById("captcha").value = "";
+            if (data.body.error !== "Invalid CAPTCHA. Please try again.") {
+              document.getElementById("email").value = "";
+              document.getElementById("password").value = "";
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred: " + error.message);
+          document.getElementById("captcha_image").src =
+            "/generate_captcha?" + Date.now();
+          document.getElementById("captcha").value = "";
+          document.getElementById("email").value = "";
+          document.getElementById("password").value = "";
+        });
     });
 </script>

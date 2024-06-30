@@ -1,3 +1,4 @@
+import base64
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import stripe
@@ -71,6 +72,8 @@ def update_profile():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
 @user_bp.route('/generate_captcha')
 def generate_captcha():
     image = ImageCaptcha()

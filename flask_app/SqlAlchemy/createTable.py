@@ -831,6 +831,21 @@ def get_buyers_foradmin():
     finally:
         engine.dispose()
         
+def get_sellers_foradmin():
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        sellers_query = " SELECT * FROM users WHERE role = 'seller' "
+        
+        sellers = engine.execute(sellers_query).fetchall()
+        
+        return sellers
+    except SQLAlchemyError as e:
+        return {'error': f"SQLAlchemy Error: {e}"}
+    except Exception as e:
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
         
 def admin_buyerdelete(user_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
@@ -853,6 +868,33 @@ def admin_buyerdelete(user_id):
             return {'success': True}
         else:
             return {'success': False, 'error': 'Buyer account not found'}
+    except SQLAlchemyError as e:
+        current_app.logger.debug(e)
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def admin_sellerdelete(user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT * FROM users WHERE id = '{user_id}' AND role = 'seller'
+        """
+        buyer = engine.execute(query).fetchone()
+        
+        if buyer:
+            # Delete the cart item
+            delete_query = f"""
+                DELETE FROM users
+                WHERE id = '{user_id}'
+            """
+            engine.execute(delete_query)
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Seller account not found'}
     except SQLAlchemyError as e:
         current_app.logger.debug(e)
         return {'success': False, 'error': str(e)}

@@ -1,7 +1,7 @@
 {% include "admin-navbar.html" %}
 {% block title %}Buyers{% endblock %}
 <div class="container-fluid page-header py-4" style="margin-top: 10px;">
-    <h1 class="text-center text-white display-6">Buyer's List</h1>
+    <h1 class="text-center text-white display-6">Buyers List</h1>
 </div>
 
 <div class="container-fluid py-5">
@@ -10,6 +10,7 @@
         <table class="table">
           <thead>
             <tr>
+              <th scope="col">ID</th>
               <th scope="col">Username</th>
               <th scope="col">Name</th>
               <th scope="col">Email</th>
@@ -20,6 +21,9 @@
           <tbody>
             {% for buyer in buyers %}
             <tr>
+              <td>
+                <p class="mb-0 mt-4">{{ buyer.id }}</p>
+              </td>
               <td>
                 <p class="mb-0 mt-4">{{ buyer.username }}</p>
               </td>

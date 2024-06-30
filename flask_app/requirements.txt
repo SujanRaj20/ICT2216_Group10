@@ -15,4 +15,4 @@ Flask-login
 Flask-Mail
 captcha
 stripe
-pytest==latest
+pytest

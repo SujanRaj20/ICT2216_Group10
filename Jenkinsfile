@@ -10,7 +10,6 @@ pipeline {
         stage('Test Docker') {
             steps {
                 script {
-                    // Check if Docker is running and list running containers
                     sh 'docker ps'
                 }
             }
@@ -18,7 +17,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Checkout the source code from the SCM
                 checkout scm
             }
         }
@@ -26,7 +24,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image
                     sh 'docker build -t ${DOCKER_IMAGE} .'
                 }
             }
@@ -35,7 +32,6 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run tests using the built Docker image
                     sh 'docker run --rm ${DOCKER_IMAGE} pytest'
                 }
             }
@@ -44,7 +40,6 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    // Stop and remove any existing container, then run a new one
                     sh """
                     docker stop ${DOCKER_CONTAINER} || true
                     docker rm ${DOCKER_CONTAINER} || true
@@ -57,8 +52,7 @@ pipeline {
 
     post {
         always {
-            // Clean the workspace after build
             cleanWs()
-        }
+        } 
     }
 }

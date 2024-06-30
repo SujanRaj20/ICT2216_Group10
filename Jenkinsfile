@@ -29,16 +29,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    docker.image('python:3.8-slim').inside {
-                        sh 'pip install -r flask_app/requirements.txt'
-                    }
-                }
-            }
-        }
-
         stage('Run Tests') {
             steps {
                 script {

@@ -1,6 +1,6 @@
 pipeline {
     agent any
-   
+ 
 
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
@@ -24,8 +24,10 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 script {
-                    // Installing Python dependencies
-                    sh 'pip install -r flask_app/requirements.txt'
+                    // Run the installation inside a Python Docker container
+                    docker.image('python:3.8-slim').inside {
+                        sh 'pip install -r flask_app/requirements.txt'
+                    }
                 }
             }
         }

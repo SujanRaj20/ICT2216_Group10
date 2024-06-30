@@ -17,14 +17,14 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd']]])
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh 'pip install -r flask_app/requirements.txt'
+                    sh 'docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r flask_app/requirements.txt'
                 }
             }
         }

@@ -10,6 +10,9 @@ COPY flask_app/requirements.txt /app/
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install pytest
+RUN pip install pytest
+
 # Copy the rest of the working directory contents into the container at /app
 COPY flask_app/ /app/
 

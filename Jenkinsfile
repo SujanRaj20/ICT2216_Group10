@@ -1,10 +1,11 @@
+
 pipeline {
     agent any
 
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
-        // NVD_API_KEY = credentials'779643d0-11fc-4b1e-b599-9545de56634' // Add your NVD API Key here
+        NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634' // Add your NVD API Key here
     }
 
     triggers {
@@ -51,19 +52,15 @@ pipeline {
         }
 
         stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                dependencyCheck additionalArguments: ''' 
+          steps {
+            dependencyCheck additionalArguments: ''' 
                         -o './'
                         -s './'
-                        -f 'ALL'
-                        --prettyPrint
-                        // --nvdApiKey ${NVD_API_KEY}'''
-                        // --cveValidForHours 12
-                        // --nvdApiDelay 2000''', 
-                        odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                
-                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-            }
+                        -f 'ALL' 
+                        --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+            
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+          }
         }
 
         stage('Install Docker Compose') {

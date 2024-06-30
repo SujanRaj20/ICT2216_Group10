@@ -328,6 +328,39 @@ def item_page(item_id):
         flash(f'Error: {e}', 'danger')
         current_app.logger.debug(e)
         return redirect(url_for('main.shop'))
+    
+@user_bp.route('/selleritem/<int:item_id>')
+def item_page_seller(item_id):
+    try:
+        conn = get_mysql_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            query = "SELECT * FROM listings WHERE id = %s"
+            cursor.execute(query, (item_id,))
+            item = cursor.fetchone()
+            seller_name_query = "SELECT * FROM users WHERE id = %s"
+            cursor.execute(seller_name_query, (item['seller_id'],))
+            seller = cursor.fetchone()
+            seller_name = seller['fname'] + " " + seller['lname']
+            
+            comments_query = f""" SELECT c.id, c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.listing_id = {item_id} """
+            
+            cursor.execute(comments_query)
+            comments = cursor.fetchall()
+            current_app.logger.debug(comments)
+            
+            conn.close()
+
+            return render_template('seller-itempage.html', item=item, seller_name=seller_name, comments=comments)
+
+        else:
+            flash('Failed to connect to database', 'danger')
+            return redirect(url_for('main.shop'))
+
+    except Exception as e:
+        flash(f'Error: {e}', 'danger')
+        current_app.logger.debug(e)
+        return redirect(url_for('main.shop'))
 
 @user_bp.route('/buyerlogin', methods=['GET', 'POST'])
 def buyerlogin():

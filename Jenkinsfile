@@ -1,7 +1,6 @@
 pipeline {
     agent any
  
-
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'

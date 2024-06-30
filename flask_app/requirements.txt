@@ -12,4 +12,6 @@ sshtunnel==0.4.0
 mysql-connector-python
 Flask-SQLAlchemy
 Flask-login
+Flask-Mail
 captcha
+stripe

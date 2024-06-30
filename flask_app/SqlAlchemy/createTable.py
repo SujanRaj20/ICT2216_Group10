@@ -103,7 +103,8 @@ def create_or_verify_tables(engine):
     orders = Table('orders', metadata,
                 Column('id', Integer, primary_key=True, autoincrement=True),
                 Column('transaction_id', Integer, ForeignKey('transactions.id', ondelete='CASCADE'), nullable=False),
-                Column('listing_id', Integer, ForeignKey('listings.id', ondelete='CASCADE'), nullable=False),
+                Column('keywords', JSON),
+                Column('total_price', DECIMAL(10, 2), nullable=False),
                 Column('buyer_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
                 Column('quantity', Integer, nullable=False)
                 )

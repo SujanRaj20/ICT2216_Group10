@@ -356,7 +356,8 @@ def buyerlogin():
                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                     login_user(User(user), remember=True)
                     session.permanent = True
-                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))
+                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:
@@ -367,44 +368,6 @@ def buyerlogin():
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
 
-# @user_bp.route('/buyerlogin', methods=['GET', 'POST'])
-# def buyerlogin():
-#     if request.method == 'POST':
-#         try:
-#             email = request.form.get('email')
-#             password = request.form.get('password')
-#             captcha_input = request.form.get('captcha')
-            
-#             # current_app.logger.debug(f"User credentials are email: {email} password: {password}")
-
-#             # current_app.logger.debug(f"User entered CAPTCHA: {captcha_input}")
-#             # current_app.logger.debug(f"Session CAPTCHA: {session.get('captcha_text')}")
-
-#             if captcha_input != session.get('captcha_text'):
-#                 return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
-
-#             conn = get_mysql_connection()
-#             if conn:
-#                 cursor = conn.cursor(dictionary=True)
-#                 query = "SELECT * FROM users WHERE email = %s"
-#                 cursor.execute(query, (email,))
-#                 user = cursor.fetchone()
-#                 conn.close()
-
-#                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-#                     session['otp'] = random.randint(100000, 999999)
-#                     session['email'] = email
-#                     send_otp_email(email, session['otp'])
-#                     return redirect(url_for('user.verify_otp'))
-#                 else:
-#                     return jsonify({'error': 'Invalid email or password'}), 401
-#             else:
-#                 return jsonify({'error': 'Failed to connect to database'}), 500
-
-#         except Exception as e:
-#             return jsonify({'error': str(e)}), 500
-#     else:
-#         return jsonify({'error': 'Method Not Allowed'}), 405
 
 @user_bp.route('/sellerlogin',methods=['GET', 'POST'])
 def sellerlogin():
@@ -431,8 +394,8 @@ def sellerlogin():
                     login_user(user_obj, remember=True)  # Login the user
                     session['user_id'] = user_obj.id
                     session.permanent = True
-                    return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
-                    redirect
+                    # return jsonify({'message': 'Login successful'}) and redirect(url_for('main.index'))  
+                    return jsonify({'message': 'Login successful'}) and redirect(url_for('user.verify_otp'))
                 else:
                     return jsonify({'error': 'Invalid email or password'}), 401
             else:
@@ -473,41 +436,6 @@ def verify_otp():
             flash('Invalid OTP. Please try again.')
             return redirect(url_for('user.verify_otp'))
     return render_template('verify_otp.html')
-    
-# @user_bp.route('/sellerlogin',methods=['GET', 'POST'])
-# def sellerlogin():
-#     if request.method == 'POST':
-#         try:
-#             # Extract email and password from request.form
-#             email = request.form.get('email')
-#             password = request.form.get('password')
-
-#             conn = get_mysql_connection()
-#             if conn:
-#                 cursor = conn.cursor(dictionary=True)
-#                 query = """
-#                 SELECT * FROM users WHERE email = %s
-#                 """
-#                 cursor.execute(query, (email,))
-#                 user = cursor.fetchone()
-
-#                 conn.close()
-
-#                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-#                     session['otp'] = random.randint(100000, 999999)
-#                     session['email'] = email
-#                     send_otp_email(email, session['otp'])
-#                     return redirect(url_for('user.verify_otp'))
-#                 else:
-#                     return jsonify({'error': 'Invalid email or password'}), 401
-#             else:
-#                 return jsonify({'error': 'Failed to connect to database'}), 500
-
-#         except Exception as e:
-#             return jsonify({'error': str(e)}), 500
-#     else:
-#         return jsonify({'error': 'Method Not Allowed'}), 405
-    
     
 @user_bp.route('/sellersignup', methods=['POST'])
 def sellersignup():

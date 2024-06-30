@@ -1,35 +1,38 @@
-<div class="container-fluid fruite py-5">
+<div class="container-fluid page-header py-4" style="margin-top: 10px;">
+    <h1 class="text-center text-white display-6">Admin Dashboard</h1>
+</div>
+
+<div class="container-fluid fruite py-2">
     <div class="container py-5">
-        <h1 class="mb-4">Admin Dashboard</h1>
         <div class="container">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                 <!-- Uses the bootstrap breakpoint grid so you can add columns as you need and it will fit as many in row as it can -->
-                <div onclick="window.location.href='{{ url_for('admin.add_admin') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.add_admin_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Add Admin</h4>
                     <p>Add another admin user to the system.</p>
                 </div>
-                <div onclick="window.location.href='{{ url_for('admin.admin_buyersmenu') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.admin_buyersmenu_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Buyers</h4>
                     <p>Manage buyer accounts.</p>
                 </div>
-                <div onclick="window.location.href='{{ url_for('admin.admin_sellersmenu') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.admin_sellersmenu_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Sellers</h4>
                     <p>Manage seller accounts.</p>
                 </div>
-                <div onclick="window.location.href='{{ url_for('admin.admin_listingsmenu') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.admin_listingsmenu_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Listings</h4>
                     <p>Manage book listings.</p>
                 </div>
-                <div onclick="window.location.href='{{ url_for('admin.admin_commentsmenu') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.admin_commentsmenu_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Comments</h4>
                     <p>Manage comments on listins.</p>
                 </div>
-                <div onclick="window.location.href='{{ url_for('admin.admin_reportsmenu') }}'"
+                <div onclick="window.location.href='{{ url_for('admin.admin_reportsmenu_route') }}'"
                     class="col p-4 border border-secondary rounded fruite-item m-2">
                     <h4>Reports</h4>
                     <p>View and manage reports from users.</p>

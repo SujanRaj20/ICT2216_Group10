@@ -47,7 +47,7 @@ def login():
 
 @main_bp.route("/signup")
 def signup():
-    return render_template("signup.html")  # Render the /signup template
+    return render_template("buyer-signup.html")  # Render the /signup template
 
 @main_bp.route("/seller-login")
 def seller_login():
@@ -55,7 +55,7 @@ def seller_login():
 
 @main_bp.route("/seller-signup")
 def seller_signup():
-    return render_template("signup-seller.html")  # Render the /seller-signup template
+    return render_template("seller-signup.html")  # Render the /seller-signup template
 
 
 # Define the route to serve images from the static/img directory for testing purposes 

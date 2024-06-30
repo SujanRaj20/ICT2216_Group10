@@ -84,10 +84,10 @@ pipeline {
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
     }
 
-    triggers {
-        pollSCM('* * * * *') // Poll SCM every minute
-        // For GitHub plugin, you can use: githubPush()
-    }
+    // triggers {
+    //     pollSCM('* * * * *') // Poll SCM every minute
+    //     // For GitHub plugin, you can use: githubPush()
+    // }
 
     stages {
         stage('Test Docker') {
@@ -135,6 +135,7 @@ pipeline {
                     if ! [ -x "$(command -v docker-compose)" ]; then
                         curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
                         chmod +x /usr/local/bin/docker-compose
+                        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
                     fi
                     '''
                 }
@@ -147,9 +148,22 @@ pipeline {
                     script {
                         git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
                         sh '''
-                            cd /home/student25/ICT2216_Group10 &&
-                            docker-compose down &&
-                            docker system prune -f &&
+                            # Check if any container is using port 5000
+                            CONTAINER_ID=$(docker ps -q -f publish=5000)
+                            if [ "$CONTAINER_ID" ]; then
+                                echo "Port 5000 is in use. Stopping the container using it..."
+                                docker stop $CONTAINER_ID
+                                docker rm $CONTAINER_ID
+                            fi
+
+                            # Navigate to the project directory
+                            cd /home/student25/ICT2216_Group10
+                            
+                            # Bring down any running containers and prune system
+                            docker-compose down
+                            docker system prune -f
+                            
+                            # Bring up new containers
                             docker-compose up --build -d
                         '''
                     }
@@ -164,7 +178,3 @@ pipeline {
         }
     }
 }
-
-
-
-

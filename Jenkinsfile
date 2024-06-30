@@ -129,33 +129,21 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+             stage('Deploy') {
             steps {
-                script {
-                    sh '''
-                    # Ensure we are running as student25
-                    sudo -u student25 bash <<'EOF'
-                    
-                    # Pull the latest changes from GitHub
-                    git clone --branch main https://github.com/SujanRaj20/ICT2216_Group10.git /home/student25/ICT2216_Group10
-
-                    # Change to the project directory
-                    cd /home/student25/ICT2216_Group10
-
-                    # Stop and remove any existing containers
-                    docker-compose down
-
-                    # Prune any unused Docker objects
-                    docker system prune -f
-
-                    # Build and start the containers in detached mode
-                    docker-compose up --build -d
-                    
-                    EOF
-                    '''
+                dir('/home/student25/ICT2216_Group10') {
+                    git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
                 }
+                sh '''
+                    cd /home/student25/ICT2216_Group10 &&
+                    docker-compose down &&
+                    docker system prune -f &&
+                    docker-compose up --build -d
+                '''
             }
         }
+    }
+}
     }
 
     post {

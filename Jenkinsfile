@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        nodejs '22.3.0'
+    }
 
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
@@ -7,11 +10,10 @@ pipeline {
     }
 
     stages {
-        stage('Test Docker') {
+
+        stage("Test Docker") {
             steps {
-                script {
-                    sh 'docker ps'
-                }
+                sh 'docker ps'
             }
         }
 
@@ -21,18 +23,25 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Install dependencies') {
             steps {
                 script {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    // Installing Python dependencies
+                    sh 'pip install -r flask_app/requirements.txt'
                 }
             }
         }
 
-        stage('Run Tests') {
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker run --rm ${DOCKER_IMAGE} pytest'
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
                 }
             }
         }
@@ -51,8 +60,12 @@ pipeline {
     }
 
     post {
+        success {
+            // Publish dependency check report if required
+            dependencyCheckPublisher pattern: './dependency-check-report.xml'
+        }
         always {
             cleanWs()
-        } 
+        }
     }
 }

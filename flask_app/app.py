@@ -4,6 +4,8 @@ import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
 from datetime import timedelta
 
+import stripe
+
 from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id, get_user_cart_item_count
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
@@ -15,14 +17,17 @@ from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector
 import logging
-
-
+from email_utils import init_mail
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
+
+# Flask-Mail initialization
+init_mail(app)
+
 
 @app.context_processor
 def inject_user_cart_count():
@@ -122,7 +127,6 @@ def dbconntest():
 def before_request():
     if request.endpoint in protected_endpoints and 'user_id' not in session:
         return redirect(url_for('main.login'))  # Redirect to login page if not logged in
-    
 
 
 # Initialize the database tables when the app starts

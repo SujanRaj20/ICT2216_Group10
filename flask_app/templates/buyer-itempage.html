@@ -43,20 +43,25 @@
 
                 <!-- Report Form -->
                 <div id="reportForm_{{ item.id }}" style="display: none; margin-top:3%">
-                    <form id="form_{{ item.id }}"
-                        onsubmit="submitReport('{{ item.id }}', '{{ item.seller_id }}', '{{ current_user.id }}'); return false;">
+                    <form id="form_{{ item.id }}" onsubmit="submitReport('{{ item.id }}', '{{ item.seller_id }}', '{{ current_user.id }}'); return false;">
                         <div class="mb-3">
                             <label for="reportTitle">Report Title</label>
                             <input type="text" class="form-control" id="reportTitle" name="reportTitle" required>
                         </div>
                         <div class="mb-3">
                             <label for="reportBody">Report Body</label>
-                            <textarea class="form-control" id="reportBody" name="reportBody" rows="3"
-                                required></textarea>
+                            <textarea class="form-control" id="reportBody" name="reportBody" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="captcha">Enter CAPTCHA</label>
+                            <input type="text" class="form-control" id="captcha" name="captcha" required>
+                            <img src="/generate_captcha" alt="CAPTCHA" id="captchaImage">
+                            <button type="button" onclick="refreshCaptcha()">Refresh CAPTCHA</button>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit Report</button>
                     </form>
                 </div>
+                
             </div>
 
         </div>
@@ -151,6 +156,12 @@
                                             <label for="body{{ comment.id }}" class="form-label">Body</label>
                                             <textarea class="form-control" id="body{{ comment.id }}" name="body" rows="3" required></textarea>
                                         </div>
+                                        <div class="mb-3">
+                                            <label for="captcha{{ comment.id }}">Enter CAPTCHA</label>
+                                            <input type="text" class="form-control" id="captcha{{ comment.id }}" name="captcha" required>
+                                            <img src="/generate_captcha" alt="CAPTCHA" id="captchaImage{{ comment.id }}">
+                                            <button type="button" onclick="refreshCaptchaForComment('{{ comment.id }}')">Refresh CAPTCHA</button>
+                                        </div>
                                         <button type="submit" class="btn btn-primary">Submit Report</button>
                                     </form>
                                 </div>
@@ -183,6 +194,16 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    function refreshCaptcha() {
+        document.getElementById('captchaImage').src = '/generate_captcha?' + new Date().getTime();
+    }
+    </script>
+    <script>
+    function refreshCaptchaForComment(commentId) {
+        document.getElementById(`captchaImage${commentId}`).src = '/generate_captcha?' + new Date().getTime();
+    }
+</script>
 <script>
     function toggleReportForm(itemId, sellerId) {
         var reportForm = document.getElementById(`reportForm_${itemId}`);
@@ -227,8 +248,9 @@
 
     function submitReport(itemId, sellerId, buyerId) {
         var form = document.getElementById(`form_${itemId}`);
-        var title = form.elements['reportTitle'].value;
-        var body = form.elements['reportBody'].value;
+    var title = form.elements['reportTitle'].value;
+    var body = form.elements['reportBody'].value;
+    var captcha = form.elements['captcha'].value;
 
         console.log("title", title)
         console.log("body", body)
@@ -238,15 +260,16 @@
 
         fetch('/report-item', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: title,
-                body: body,
-                item_id: itemId,
-                seller_id: sellerId,
-                buyer_id: buyerId
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: title,
+            body: body,
+            item_id: itemId,
+            seller_id: sellerId,
+            buyer_id: buyerId,
+            captcha: captcha
             })
         })
             .then(response => {

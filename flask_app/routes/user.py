@@ -16,6 +16,7 @@ from db_connector import get_mysql_connection
 from flask import send_file
 from captcha.image import ImageCaptcha
 import io
+from email_utils import send_otp_email
 
 # Initialize Stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -328,8 +329,6 @@ def item_page(item_id):
         current_app.logger.debug(e)
         return redirect(url_for('main.shop'))
 
-
-
 @user_bp.route('/buyerlogin', methods=['GET', 'POST'])
 def buyerlogin():
     if request.method == 'POST':
@@ -367,7 +366,46 @@ def buyerlogin():
             return jsonify({'error': str(e)}), 500
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
-    
+
+# @user_bp.route('/buyerlogin', methods=['GET', 'POST'])
+# def buyerlogin():
+#     if request.method == 'POST':
+#         try:
+#             email = request.form.get('email')
+#             password = request.form.get('password')
+#             captcha_input = request.form.get('captcha')
+            
+#             # current_app.logger.debug(f"User credentials are email: {email} password: {password}")
+
+#             # current_app.logger.debug(f"User entered CAPTCHA: {captcha_input}")
+#             # current_app.logger.debug(f"Session CAPTCHA: {session.get('captcha_text')}")
+
+#             if captcha_input != session.get('captcha_text'):
+#                 return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
+
+#             conn = get_mysql_connection()
+#             if conn:
+#                 cursor = conn.cursor(dictionary=True)
+#                 query = "SELECT * FROM users WHERE email = %s"
+#                 cursor.execute(query, (email,))
+#                 user = cursor.fetchone()
+#                 conn.close()
+
+#                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+#                     session['otp'] = random.randint(100000, 999999)
+#                     session['email'] = email
+#                     send_otp_email(email, session['otp'])
+#                     return redirect(url_for('user.verify_otp'))
+#                 else:
+#                     return jsonify({'error': 'Invalid email or password'}), 401
+#             else:
+#                 return jsonify({'error': 'Failed to connect to database'}), 500
+
+#         except Exception as e:
+#             return jsonify({'error': str(e)}), 500
+#     else:
+#         return jsonify({'error': 'Method Not Allowed'}), 405
+
 @user_bp.route('/sellerlogin',methods=['GET', 'POST'])
 def sellerlogin():
     if request.method == 'POST':
@@ -404,6 +442,71 @@ def sellerlogin():
             return jsonify({'error': str(e)}), 500
     else:
         return jsonify({'error': 'Method Not Allowed'}), 405
+    
+@user_bp.route('/verify-otp', methods=['GET', 'POST'])
+def verify_otp():
+    if request.method == 'POST':
+        otp = request.form.get('otp')
+        if otp == str(session.get('otp')):
+            email = session.get('email')
+            conn = get_mysql_connection()
+            if conn:
+                cursor = conn.cursor(dictionary=True)
+                query = "SELECT * FROM users WHERE email = %s"
+                cursor.execute(query, (email,))
+                user = cursor.fetchone()
+                conn.close()
+
+                if user:
+                    user_obj = User(user)
+                    login_user(user_obj, remember=True)
+                    session.pop('otp', None)
+                    session.pop('email', None)
+                    return redirect(url_for('main.index'))
+                else:
+                    flash('Invalid email or user not found.')
+                    return redirect(url_for('user.buyerlogin'))
+            else:
+                flash('Failed to connect to database.')
+                return redirect(url_for('user.buyerlogin'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('user.verify_otp'))
+    return render_template('verify_otp.html')
+    
+# @user_bp.route('/sellerlogin',methods=['GET', 'POST'])
+# def sellerlogin():
+#     if request.method == 'POST':
+#         try:
+#             # Extract email and password from request.form
+#             email = request.form.get('email')
+#             password = request.form.get('password')
+
+#             conn = get_mysql_connection()
+#             if conn:
+#                 cursor = conn.cursor(dictionary=True)
+#                 query = """
+#                 SELECT * FROM users WHERE email = %s
+#                 """
+#                 cursor.execute(query, (email,))
+#                 user = cursor.fetchone()
+
+#                 conn.close()
+
+#                 if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+#                     session['otp'] = random.randint(100000, 999999)
+#                     session['email'] = email
+#                     send_otp_email(email, session['otp'])
+#                     return redirect(url_for('user.verify_otp'))
+#                 else:
+#                     return jsonify({'error': 'Invalid email or password'}), 401
+#             else:
+#                 return jsonify({'error': 'Failed to connect to database'}), 500
+
+#         except Exception as e:
+#             return jsonify({'error': str(e)}), 500
+#     else:
+#         return jsonify({'error': 'Method Not Allowed'}), 405
     
     
 @user_bp.route('/sellersignup', methods=['POST'])

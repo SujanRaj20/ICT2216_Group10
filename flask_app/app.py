@@ -17,13 +17,17 @@ from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector
 import logging
-
+from email_utils import init_mail
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
+
+# Flask-Mail initialization
+init_mail(app)
+
 
 @app.context_processor
 def inject_user_cart_count():

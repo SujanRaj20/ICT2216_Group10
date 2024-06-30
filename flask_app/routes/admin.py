@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import stripe
-from SqlAlchemy.createTable import User, get_buyers_foradmin, admin_buyerdelete
+from SqlAlchemy.createTable import User, get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -112,7 +112,17 @@ def admin_buyerdelete_route(buyer_id):
 
 @admin_bp.route("/admin_sellersmenu")
 def admin_sellersmenu_route():
-    return render_template("admin-sellersmenu.html")  # Render the add admin template
+    sellers = get_sellers_foradmin()
+    return render_template("admin-sellersmenu.html", sellers=sellers)  # Render the add admin template
+
+@admin_bp.route('/admin/selleraccountdelete/<int:seller_id>', methods=['POST'])
+@login_required
+def admin_sellerdelete_route(seller_id):
+    result = admin_sellerdelete(seller_id)
+    if result['success']:
+        return jsonify({'message': 'Seller account deleted successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_listingsmenu")
 def admin_listingsmenu_route():

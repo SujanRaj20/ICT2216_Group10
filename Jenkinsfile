@@ -50,10 +50,11 @@ pipeline {
                 script {
                     sh '''
                     # Check if any container is using port 5000
-                    if [ "$(docker ps -q -f publish=5000)" ]; then
+                    CONTAINER_ID=$(docker ps -q -f publish=5000)
+                    if [ "$CONTAINER_ID" ]; then
                         echo "Port 5000 is in use. Stopping the container using it..."
-                        docker stop $(docker ps -q -f publish=5000)
-                        docker rm $(docker ps -q -f publish=5000)
+                        docker stop $CONTAINER_ID
+                        docker rm $CONTAINER_ID
                     fi
                     
                     # Stop and remove existing container

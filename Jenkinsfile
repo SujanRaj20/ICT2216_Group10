@@ -1,8 +1,6 @@
 pipeline {
     agent any
-    tools {
-        nodejs '22.3.0'
-    }
+   
 
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'

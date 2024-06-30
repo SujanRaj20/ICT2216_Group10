@@ -704,6 +704,7 @@ def report_comment(comment_id):
 #         return "Internal Server Error sos please", 500
 
 
+
 @user_bp.route('/payment', methods=['POST'])
 @login_required
 def payment():

@@ -1,4 +1,4 @@
-from flask import Flask, render_template,g, redirect, url_for, session, request, redirect, current_app
+from flask import Flask, render_template, g, redirect, url_for, session, request, jsonify, current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
@@ -28,7 +28,6 @@ app.secret_key = os.urandom(24)
 # Flask-Mail initialization
 init_mail(app)
 
-
 @app.context_processor
 def inject_user_cart_count():
     if current_user.is_authenticated:
@@ -48,13 +47,11 @@ app.logger.debug("This is a debug message")
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
 local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
 local_mysql_port = 3306
 local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
 local_mysql_password = os.getenv('MYSQL_PASSWORD', '***REMOVED***')
 local_mysql_db = os.getenv('MYSQL_DB', '***REMOVED***')
-
 
 # Register the Blueprint with the app
 app.register_blueprint(main_bp)
@@ -121,19 +118,33 @@ def dbconntest():
             return "Failed to connect to database"
     except Exception as e:
         return f"Error connecting to database: {e}"
-    
+
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query')
+    db = get_mysql_connection()  # Use the existing get_mysql_connection function
+    cursor = db.cursor(dictionary=True)
+    search_query = """
+    SELECT * FROM listings 
+    WHERE title LIKE %s OR description LIKE %s OR keywords LIKE %s OR author LIKE %s
+    """
+    like_query = f"%{query}%"
+    cursor.execute(search_query, (like_query, like_query, like_query, like_query))
+    results = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify(results)
+
 # Before request handler to check if user is logged in for specific endpoints
 @app.before_request
 def before_request():
     if request.endpoint in protected_endpoints and 'user_id' not in session:
         return redirect(url_for('main.login'))  # Redirect to login page if not logged in
 
-
 # Initialize the database tables when the app starts
 with app.app_context():
     initialize_database()
         
-
 # Run the app in debug mode if this script is executed directly
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

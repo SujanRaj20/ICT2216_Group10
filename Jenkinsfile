@@ -84,10 +84,9 @@ pipeline {
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
     }
 
-    // triggers {
-    //     pollSCM('* * * * *') // Poll SCM every minute
-    //     // For GitHub plugin, you can use: githubPush()
-    // }
+    triggers {
+        githubPush() // Trigger build on GitHub push events
+    }
 
     stages {
         stage('Test Docker') {

@@ -28,34 +28,36 @@
                 </thead>
                 <tbody>
                     <tr>
-                    <td>
-                        <p class="mb-0 mt-4">{{ comment.comment_id }}</p>
-                    </td>
-                    <td>
-                        <p class="mb-0 mt-4">{{ comment.comment_title }}</p>
-                    </td>
-                    <td>
-                        <p class="mb-0 mt-4">{{ comment.comment_body }}</p>
-                    </td>
-                    <td>
-                        <p class="mb-0 mt-4">{{ comment.comment_rating }}</p>
-                    </td>
-                    <td>
-                        <p class="mb-0 mt-4">{{ comment.comment_created_at }}</p>
-                    </td>
-                    <td>
-                        <button class="btn btn-success mt-3" onclick="toggleUserPanel('{{ comment.comment_id }}')">User</button>
-                    </td>
-                    <td>
-                        <button class="btn btn-success mt-3" onclick="toggleListingPanel('{{ comment.listing_id }}')">Listing</button>
-                    </td>
-                    <td>
-                        <button
-                class="btn btn-md rounded-circle bg-light border mt-4" onclick="confirmDelete('{{comment.comment_id}}')">
-                <i class="fa fa-trash text-danger"></i>
-              </button>
-                    </td>
-                </tr>
+                        <td>
+                            <p class="mb-0 mt-4">{{ comment.comment_id }}</p>
+                        </td>
+                        <td>
+                            <p class="mb-0 mt-4">{{ comment.comment_title }}</p>
+                        </td>
+                        <td>
+                            <p class="mb-0 mt-4">{{ comment.comment_body }}</p>
+                        </td>
+                        <td>
+                            <p class="mb-0 mt-4">{{ comment.comment_rating }}</p>
+                        </td>
+                        <td>
+                            <p class="mb-0 mt-4">{{ comment.comment_created_at }}</p>
+                        </td>
+                        <td>
+                            <button class="btn btn-success mt-3"
+                                onclick="toggleUserPanel('{{ comment.comment_id }}')">User</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-success mt-3"
+                                onclick="toggleListingPanel('{{ comment.listing_id }}')">Listing</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                onclick="confirmDelete('{{comment.comment_id}}')">
+                                <i class="fa fa-trash text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <div id="userPanel_{{ comment.comment_id }}" style="display: none; margin-top:3%">
@@ -72,25 +74,25 @@
                     </thead>
                     <tbody>
                         <tr>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_id }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_fname }} {{ comment.user_lname }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_username }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_email }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_phone_num }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.user_role }}</p>
-                        </td>
-                    </tr>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_fname }} {{ comment.user_lname }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_username }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_email }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_phone_num }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.user_role }}</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -114,50 +116,46 @@
                     </thead>
                     <tbody>
                         <tr>
-                        <th scope="row">
-                            <div class="d-flex align-items-center">
-                              <img
-                                src="{{ comment.listing_imagepath[4:] }}"
-                                class="img-fluid me-5 rounded-circle"
-                                style="width: 80px; height: 80px"
-                                alt=""
-                              />
-                            </div>
-                          </th>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_id }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_title }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_description }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_keywords }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_release_date }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_author }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_publisher }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_price }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_stock }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_type }}</p>
-                        </td>
-                        <td>
-                            <p class="mb-0 mt-4">{{ comment.listing_seller_id }}</p>
-                        </td>
-                    </tr>
+                            <th scope="row">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ comment.listing_imagepath[4:] }}" class="img-fluid me-5 rounded-circle"
+                                        style="width: 80px; height: 80px" alt="" />
+                                </div>
+                            </th>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_title }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_description }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_keywords }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_release_date }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_author }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_publisher }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_price }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_stock }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_type }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ comment.listing_seller_id }}</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

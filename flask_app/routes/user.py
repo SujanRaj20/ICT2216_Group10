@@ -163,7 +163,7 @@ def save_image(image):
 def add_to_cart_route(listing_id):
     try:
         user_id = current_user.id
-        current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to cart")
+        # current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to cart")
         result = add_to_cart(user_id, listing_id)
         
         if 'error' in result:
@@ -186,7 +186,7 @@ def add_to_cart_route(listing_id):
 def add_to_wishlist_route(listing_id):
     try:
         user_id = current_user.id
-        current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to wishlist")
+        # current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to wishlist")
         result = add_to_wishlist(user_id, listing_id)
         
         if 'error' in result:
@@ -373,7 +373,7 @@ def item_page(item_id):
             
             cursor.execute(comments_query)
             comments = cursor.fetchall()
-            current_app.logger.debug(comments)
+            # current_app.logger.debug(comments)
             
             conn.close()
 
@@ -406,7 +406,7 @@ def item_page_seller(item_id):
             
             cursor.execute(comments_query)
             comments = cursor.fetchall()
-            current_app.logger.debug(comments)
+            # current_app.logger.debug(comments)
             
             conn.close()
 
@@ -662,7 +662,7 @@ def report_item():
         if captcha_input != session.get('captcha_text'):
             return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         
-        current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
+        # current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
         
         result = create_report(title, body, item_id, seller_id, buyer_id)
         
@@ -693,7 +693,7 @@ def submit_comment(item_id):
         rating = int(request.form.get('rating'))
         user_id = current_user.id  # Assuming you have a way to get the current user ID
 
-        current_app.logger.debug(f"Received title: {title}, body: {body}, rating: {rating}, user_id: {user_id}, item_id: {item_id}")
+        # current_app.logger.debug(f"Received title: {title}, body: {body}, rating: {rating}, user_id: {user_id}, item_id: {item_id}")
 
         # Validate rating
         if rating < 1 or rating > 5:
@@ -719,6 +719,9 @@ def report_comment(comment_id):
     body = request.form.get('body')
     captcha_input = request.form.get('captcha')
     reporter_id = current_user.id  # Assuming you have a way to get the current logged-in user's ID
+    
+    # current_app.logger.debug(f"report comment route called comment id: {comment_id} title: {title} body: {body} captcha_input: {captcha_input} reporter_id: {reporter_id}")
+    
     # Verify CAPTCHA
     if captcha_input != session.get('captcha_text'):
         flash('Invalid CAPTCHA. Please try again.', 'danger')

@@ -672,7 +672,7 @@ def get_seller_info(seller_id):
         
 def create_report(title, body, item_id, seller_id, buyer_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
-    current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
+    # current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
     
     try:
         # Check if the item already exists in the reports table for this buyer
@@ -804,17 +804,21 @@ def get_comments_for_item(item_id):
         
 def create_comment_report(comment_id, reporter_id, title, body):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
     try:
         insert_query = """
             INSERT INTO comment_reports (comment_id, reporter_id, title, body) 
             VALUES (%s, %s, %s, %s)
         """
+            
         with engine.connect() as conn:
             conn.execute(insert_query, (comment_id, reporter_id, title, body))
         return {'message': 'Report created successfully.'}
     except SQLAlchemyError as e:
+        current_app.logger.debug(e)
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
+        current_app.logger.debug(e)
         return {'error': str(e)}
     finally:
         engine.dispose()
@@ -913,6 +917,80 @@ def get_comments_foradmin():
     finally:
         engine.dispose()
         
+def get_commentreports_foradmin():
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        commentreports_query = """
+            SELECT 
+                cr.id AS commentreport_id,
+                cr.comment_id AS commentreport_comment_id,
+                cr.reporter_id AS commentreport_reporter_id,
+                cr.title AS commentreport_title,
+                cr.body AS commentreport_body,
+                c.id AS commentreport_comment_id,
+                c.title AS commentreport_comment_title,
+                c.body AS commentreport_comment_body,
+                c.rating AS commentreport_comment_rating,
+                c.listing_id AS commentreport_comment_listing_id,
+                c.user_id AS commentreport_comment_user_id,
+                c.created_at AS commentreport_comment_created_at
+            FROM 
+                comment_reports cr
+            JOIN 
+                comments c ON c.id = cr.comment_id
+        """
+        
+        commentreports = engine.execute(commentreports_query).fetchall()
+        
+        return commentreports
+    except SQLAlchemyError as e:
+        return {'error': f"SQLAlchemy Error: {e}"}
+    except Exception as e:
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def get_listingreports_foradmin():
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        listingreports_query = """
+            SELECT 
+                lr.id AS listingreport_id,
+                lr.listing_id AS listingreport_listing_id,
+                lr.buyer_id AS listingreport_reporter_id,
+                lr.seller_id AS listingreport_seller_id,
+                lr.title AS listingreport_title,
+                lr.body AS listingreport_body,
+                lr.created_at AS listingreport_created_at,
+                l.id AS listing_id, 
+                l.title AS listing_title, 
+                l.description AS listing_description, 
+                l.keywords AS listing_keywords, 
+                l.release_date AS listing_release_date, 
+                l.author AS listing_author, 
+                l.publisher AS listing_publisher, 
+                l.price AS listing_price, 
+                l.stock AS listing_stock, 
+                l.type AS listing_type, 
+                l.seller_id AS listing_seller_id, 
+                l.imagepath AS listing_imagepath
+            FROM 
+                reports lr
+            JOIN 
+                listings l ON lr.listing_id = l.id
+        """
+        
+        listingreports = engine.execute(listingreports_query).fetchall()
+        
+        return listingreports
+    except SQLAlchemyError as e:
+        return {'error': f"SQLAlchemy Error: {e}"}
+    except Exception as e:
+        return {'error': str(e)}
+    finally:
+        engine.dispose()
+        
+        
 def admin_buyerdelete(user_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
     
@@ -971,6 +1049,7 @@ def admin_listingdelete(listing_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
     
     try:
+        
         # Check if the cart item exists and belongs to the user
         query = f"""
             SELECT * FROM listings WHERE id = '{listing_id}'
@@ -978,12 +1057,17 @@ def admin_listingdelete(listing_id):
         listing = engine.execute(query).fetchone()
         
         if listing:
+            delete_query1 = f"""
+                DELETE FROM reports
+                WHERE listing_id = '{listing_id}'
+            """
             # Delete the cart item
-            delete_query = f"""
+            delete_query2 = f"""
                 DELETE FROM listings
                 WHERE id = '{listing_id}'
             """
-            engine.execute(delete_query)
+            engine.execute(delete_query1)
+            engine.execute(delete_query2)
 
             return {'success': True}
         else:
@@ -998,6 +1082,8 @@ def admin_commentdelete(comment_id):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
     
     try:
+        
+        
         # Check if the cart item exists and belongs to the user
         query = f"""
             SELECT * FROM comments WHERE id = '{comment_id}'
@@ -1005,16 +1091,76 @@ def admin_commentdelete(comment_id):
         comment = engine.execute(query).fetchone()
         
         if comment:
+            
+            delete_query1 = f"""
+                DELETE FROM comment_reports
+                WHERE comment_id = '{comment_id}'
+            """
             # Delete the cart item
-            delete_query = f"""
+            delete_query2 = f"""
                 DELETE FROM comments
                 WHERE id = '{comment_id}'
+            """
+            engine.execute(delete_query1)
+            engine.execute(delete_query2)
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Comment not found'}
+    except SQLAlchemyError as e:
+        current_app.logger.debug(e)
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+
+def admin_commentreportdelete(report_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT * FROM comment_reports WHERE id = '{report_id}'
+        """
+        comment_report = engine.execute(query).fetchone()
+        
+        if comment_report:
+            # Delete the cart item
+            delete_query = f"""
+                DELETE FROM comment_reports
+                WHERE id = '{report_id}'
             """
             engine.execute(delete_query)
 
             return {'success': True}
         else:
-            return {'success': False, 'error': 'Comment not found'}
+            return {'success': False, 'error': 'Comment Report not found'}
+    except SQLAlchemyError as e:
+        current_app.logger.debug(e)
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+        
+def admin_listingreportdelete(report_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    
+    try:
+        # Check if the cart item exists and belongs to the user
+        query = f"""
+            SELECT * FROM reports WHERE id = '{report_id}'
+        """
+        listing_report = engine.execute(query).fetchone()
+        
+        if listing_report:
+            # Delete the cart item
+            delete_query = f"""
+                DELETE FROM reports
+                WHERE id = '{report_id}'
+            """
+            engine.execute(delete_query)
+
+            return {'success': True}
+        else:
+            return {'success': False, 'error': 'Listing Report not found'}
     except SQLAlchemyError as e:
         current_app.logger.debug(e)
         return {'success': False, 'error': str(e)}

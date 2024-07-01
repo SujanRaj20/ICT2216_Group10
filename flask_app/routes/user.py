@@ -304,7 +304,7 @@ def buyersignup():
         role = 'buyer'
         captcha_input = data.get('captcha')
 
-         # Validate CAPTCHA
+        # Validate CAPTCHA
         if captcha_input != session.get('captcha_text'):
             return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         

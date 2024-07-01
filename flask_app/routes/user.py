@@ -239,6 +239,7 @@ def add_listing():
         author = request.form['author']
         publisher = request.form['publisher']
         price = request.form['price']
+        sales = '0'
         stock = request.form['stock']
         type = request.form['type']
         seller_id = current_user.id  # Assuming you have a logged-in user with an 'id' attribute
@@ -256,10 +257,10 @@ def add_listing():
         cursor = conn.cursor()
 
         insert_query = """
-        INSERT INTO listings (title, description, keywords, release_date, author, publisher, price, stock, type, seller_id, imagepath)
+        INSERT INTO listings (title, description, keywords, release_date, author, publisher, price, sales, stock, type, seller_id, imagepath)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(insert_query, (title, description, keywords, release_date, author, publisher, price, stock, type, seller_id, image_path))
+        cursor.execute(insert_query, (title, description, keywords, release_date, author, publisher, price, sales, stock, type, seller_id, image_path))
         conn.commit()
         conn.close()
 

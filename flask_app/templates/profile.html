@@ -17,86 +17,53 @@
 
     <div id="profile" class="tab-content active">
         <h3>Edit Profile</h3>
-        <div class="container">
-            <div class="row gx-2 align-items-center">
-          
-                <div class="col-lg-4 col-md-12">
-                  <h5 style="float: left; padding-left:20%;">Username</h5>
+        <form id="editProfileForm">
+            <div class="container">
+                <div class="row gx-2 align-items-center">
+                    <div class="col-lg-4 col-md-12">
+                        <h5 style="float: left; padding-left:20%;">Username</h5>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <span id="username">{{ user_data.username }}</span>
+                    </div>
                 </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <span style="float: left;display: block;">{{ user_data.username }}</span>
-                  <input type="text" class="form-control" id="usernameInput" style="display: none;">
+                <div class="row gx-2 align-items-center">
+                    <div class="col-lg-4 col-md-12">
+                        <h5 style="float: left; padding-left:20%;">Email</h5>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <span id="email">{{ user_data.email }}</span>
+                    </div>
                 </div>
-            
-                <div class="col-lg-4 col-md-6">
-                    <button class="edit-btn" onclick="editField('username')">Edit</button>
+                <div class="row gx-2 align-items-center">
+                    <div class="col-lg-4 col-md-12">
+                        <h5 style="float: left; padding-left:20%;">Phone Number</h5>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <input type="text" class="form-control" id="phone_num" value="{{ user_data.phone_num }}">
+                    </div>
                 </div>
-            
-              </div>
-              <div class="row gx-2 align-items-center">
-          
-                <div class="col-lg-4 col-md-12">
-                  <h5 style="float: left; padding-left:20%;">Email</h5>
+                <div class="row gx-2 align-items-center">
+                    <div class="col-lg-4 col-md-12">
+                        <h5 style="float: left; padding-left:20%;">First Name</h5>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <input type="text" class="form-control" id="fname" value="{{ user_data.fname }}">
+                    </div>
                 </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <span style="float: left;">{{ user_data.email }}</span>
+                <div class="row gx-2 align-items-center">
+                    <div class="col-lg-4 col-md-12">
+                        <h5 style="float: left; padding-left:20%;">Last Name</h5>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <input type="text" class="form-control" id="lname" value="{{ user_data.lname }}">
+                    </div>
                 </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <i class="fas fa-edit "></i></button>
-                </div>
-            
-              </div>
-              <div class="row gx-2 align-items-center">
-          
-                <div class="col-lg-4 col-md-12">
-                  <h5 style="float: left; padding-left:20%;">Phone Number</h5>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <span style="float: left;">{{ user_data.phone_num }}</span>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <i class="fas fa-edit "></i></button>
-                </div>
-            
-              </div>
-              <div class="row gx-2 align-items-center">
-          
-                <div class="col-lg-4 col-md-12">
-                  <h5 style="float: left; padding-left:20%;">First Name</h5>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <span style="float: left;">{{ user_data.fname }}</span>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <i class="fas fa-edit "></i></button>
-                </div>
-            
-              </div>
-              <div class="row gx-2 align-items-center">
-          
-                <div class="col-lg-4 col-md-12">
-                  <h5 style="float: left; padding-left:20%;">Last Name</h5>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <span style="float: left;">{{ user_data.lname }}</span>
-                </div>
-            
-                <div class="col-lg-4 col-md-6">
-                  <i class="fas fa-edit "></i></button>
-                </div>
-            
-              </div>
-            
-          </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+            </div>
+        </form>
     </div>
+
     {% if user_role == 'buyer' %}
     <div id="history" class="tab-content">
         <h3>Transaction History</h3>
@@ -148,6 +115,37 @@
 </div>
 
 <script>
+    document.getElementById("editProfileForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        var formData = {
+            phone_num: document.getElementById("phone_num").value,
+            fname: document.getElementById("fname").value,
+            lname: document.getElementById("lname").value
+        };
+
+        fetch("{{ url_for('user.update_profile') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert("Profile updated successfully");
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while updating your profile.");
+        });
+    });
+
     function openTab(tabName) {
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("tab-content");
@@ -166,17 +164,6 @@
 
     // By default, open the profile tab
     document.getElementById("profile").style.display = "block";
-
-    function editField(fieldName) {
-        var spanElement = document.getElementById(fieldName);
-        var inputElement = document.getElementById(fieldName + 'Input');
-        
-        if (spanElement && inputElement) {
-            spanElement.style.display = 'none';
-            inputElement.style.display = 'block';
-            inputElement.value = spanElement.innerText.trim();
-        }
-    }
 </script>
         
 {% if user_role == 'buyer' %}

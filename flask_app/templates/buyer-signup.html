@@ -1,156 +1,198 @@
-{% include "buyer-navbar.html" %}
-{% block title %}Home{% endblock %}
+{% include "buyer-navbar.html" %} {% block title %}Home{% endblock %}
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-4">
-    <h1 class="text-center text-white display-6">Buyer Sign Up</h1>
+  <h1 class="text-center text-white display-6">Buyer Sign Up</h1>
 </div>
 <!-- Single Page Header End -->
 <!-- Signup Start -->
 <div class="container-fluid testimonial py-1">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="bg-light rounded p-4">
-                    <form id="signupForm">
-                        <div class="mb-3">
-                            <label for="fname" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="fname" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="lname" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lname" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" required>
-                            <span id="email-error" class="text-danger"></span> <!-- Error message for email -->
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone_num" class="form-label">Phone Number</label>
-                            <input type="text" class="form-control" id="phone_num">
-                            <span id="phone-error" class="text-danger"></span> <!-- Error message for phone number -->
-                        </div>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" required>
-                            <span id="username-error" class="text-danger"></span> <!-- Error message for username -->
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" required>
-                        </div>
-                        <div class="mb-3">
-                            <img src="/generate_captcha" alt="CAPTCHA" id="captcha_image">
-                            <input type="text" class="form-control" id="captcha" placeholder="Enter CAPTCHA" required>
-                        </div>
-                        <div class="mb-3">
-                            <button type="button" id="refresh_captcha" class="btn btn-secondary">Refresh CAPTCHA</button>
-                            <span id="username-error" class="text-danger"></span> <!-- Error message for username -->
-                        </div>
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-                        </div>
-                        <p id="error-message" style="color: red; display: none;">Passwords do not match!</p>
-                        <div class="mb-3">
-                            <a href="{{ url_for('main.login') }}" class="nav-item nav-link">Already have an account? Log in here</a>
-                        </div>
-                    </form>
-                </div>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="bg-light rounded p-4">
+          <form id="signupForm">
+            <div class="mb-3">
+              <label for="fname" class="form-label">First Name</label>
+              <input type="text" class="form-control" id="fname" required />
             </div>
+            <div class="mb-3">
+              <label for="lname" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="lname" required />
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" required />
+              <span id="email-error" class="text-danger"></span>
+              <!-- Error message for email -->
+            </div>
+            <div class="mb-3">
+              <label for="phone_num" class="form-label">Phone Number</label>
+              <input type="text" class="form-control" id="phone_num" />
+              <span id="phone-error" class="text-danger"></span>
+              <!-- Error message for phone number -->
+            </div>
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" id="username" required />
+              <span id="username-error" class="text-danger"></span>
+              <!-- Error message for username -->
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPassword"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <img src="/generate_captcha" alt="CAPTCHA" id="captcha_image" />
+              <input
+                type="text"
+                class="form-control"
+                id="captcha"
+                placeholder="Enter CAPTCHA"
+                required
+              />
+              <span id="captcha-error" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+              <button
+                type="button"
+                id="refresh_captcha"
+                class="btn btn-secondary"
+              >
+                Refresh CAPTCHA
+              </button>
+            </div>
+            <div class="mb-3">
+              <button type="submit" class="btn btn-primary w-100">
+                Sign Up
+              </button>
+            </div>
+            <p id="error-message" style="color: red; display: none">
+              Passwords do not match!
+            </p>
+            <div class="mb-3">
+              <a href="{{ url_for('main.login') }}" class="nav-item nav-link"
+                >Already have an account? Log in here</a
+              >
+            </div>
+          </form>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 <!-- Signup End -->
 
 <!-- Client-side validation script -->
 <script>
-    document.getElementById('signupForm').addEventListener('submit', function (event) {
-        document.getElementById('email-error').innerText = '';
-        document.getElementById('phone-error').innerText = '';
-        document.getElementById('username-error').innerText = '';
-        event.preventDefault();
-        const fname = sanitize(document.getElementById('fname').value);
-        const lname = sanitize(document.getElementById('lname').value);
-        const email = sanitize(document.getElementById('email').value);
-        const phone_num = sanitize(document.getElementById('phone_num').value);
-        const username = sanitize(document.getElementById('username').value);
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const captcha = document.getElementById('captcha').value;
+  document
+    .getElementById("signupForm")
+    .addEventListener("submit", function (event) {
+      document.getElementById("email-error").innerText = "";
+      document.getElementById("phone-error").innerText = "";
+      document.getElementById("username-error").innerText = "";
+      document.getElementById("captcha-error").innerText = "";
+      event.preventDefault();
 
-        // Basic client-side validation
-        if (!fname || !lname || !email || !username || !password || !confirmPassword || !captcha) {
-            alert('All fields except phone number are required.');
-            return;
-        } else if (password !== confirmPassword) {
-            document.getElementById('error-message').style.display = 'block';
-            return;
-        }
+      const fname = sanitize(document.getElementById("fname").value);
+      const lname = sanitize(document.getElementById("lname").value);
+      const email = sanitize(document.getElementById("email").value);
+      const phone_num = sanitize(document.getElementById("phone_num").value);
+      const username = sanitize(document.getElementById("username").value);
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const captcha = document.getElementById("captcha").value;
 
-        document.getElementById('error-message').style.display = 'none';
+      if (
+        !fname ||
+        !lname ||
+        !email ||
+        !username ||
+        !password ||
+        !confirmPassword ||
+        !captcha
+      ) {
+        alert("All fields except phone number are required.");
+        return;
+      } else if (password !== confirmPassword) {
+        document.getElementById("error-message").style.display = "block";
+        return;
+      }
 
-        const userData = {
-            fname,
-            lname,
-            email,
-            phone_num,
-            username,
-            password,
-            captcha
-        };
+      document.getElementById("error-message").style.display = "none";
 
-        fetch('/buyersignup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                // Clear previous error messages
-                document.getElementById('email-error').innerText = '';
-                document.getElementById('phone-error').innerText = '';
-                document.getElementById('username-error').innerText = '';
-                document.getElementById('captcha-error').innerText = '';
+      const userData = {
+        fname,
+        lname,
+        email,
+        phone_num,
+        username,
+        password,
+        captcha,
+      };
 
-                // Handle server-side validation errors
-                if (data.error.includes('Email')) {
-                    document.getElementById('email-error').innerText = 'Email already exists.';
-                }
-                if (data.error.includes('Phone Number')) {
-                    document.getElementById('phone-error').innerText = 'Phone number already exists.';
-                }
-                if (data.error.includes('Username')) {
-                    document.getElementById('username-error').innerText = 'Username already exists.';
-                }
-                if (data.error.includes('CAPTCHA')) {
-                    document.getElementById('captcha-error').innerText = '';
-                }
-            } else {
-                alert('Signup successful!');
-                window.location.href = "{{ url_for('main.login') }}";
+      fetch("/buyersignup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            if (data.error.includes("Email")) {
+              document.getElementById("email-error").innerText =
+                "Email already exists.";
             }
+            if (data.error.includes("Phone Number")) {
+              document.getElementById("phone-error").innerText =
+                "Phone number already exists.";
+            }
+            if (data.error.includes("Username")) {
+              document.getElementById("username-error").innerText =
+                "Username already exists.";
+            }
+            if (data.error.includes("CAPTCHA")) {
+              document.getElementById("captcha-error").innerText =
+                "Invalid CAPTCHA. Please try again.";
+            }
+          } else {
+            alert("Signup successful!");
+            window.location.href = "{{ url_for('main.login') }}";
+          }
         })
-        .catch(error => {
-            console.error('Error:', error);
+        .catch((error) => {
+          console.error("Error:", error);
         });
     });
 
-    function sanitize(input) {
-        const element = document.createElement('div');
-        element.innerText = input;
-        return element.innerHTML;
-    }
+  function sanitize(input) {
+    const element = document.createElement("div");
+    element.innerText = input;
+    return element.innerHTML;
+  }
 
-    // Add a script to refresh the CAPTCHA image when the button is clicked
-    document.getElementById('refresh_captcha').addEventListener('click', function() {
-        document.getElementById('captcha_image').src = '/generate_captcha?' + Date.now();
+  document
+    .getElementById("refresh_captcha")
+    .addEventListener("click", function () {
+      document.getElementById("captcha_image").src =
+        "/generate_captcha?" + Date.now();
     });
 </script>
-    {% include "buyer-footer.html" %}
+{% include "buyer-footer.html" %}

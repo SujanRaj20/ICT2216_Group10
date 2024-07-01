@@ -17,7 +17,7 @@ from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector
 import logging
-from email_utils import init_mail
+from flask_mail import Mail
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
@@ -25,8 +25,16 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
 
-# Flask-Mail initialization
-init_mail(app)
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = '***REMOVED***'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = '***REMOVED***'
+app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
+
+# Initialize Mail
+mail = Mail(app)
 
 @app.context_processor
 def inject_user_cart_count():
@@ -139,7 +147,7 @@ def search():
 @app.before_request
 def before_request():
     if request.endpoint in protected_endpoints and 'user_id' not in session:
-        return redirect(url_for('main.login'))  # Redirect to login page if not logged in
+        return redirect(url_for('user.login'))  # Redirect to login page if not logged in
 
 # Initialize the database tables when the app starts
 with app.app_context():

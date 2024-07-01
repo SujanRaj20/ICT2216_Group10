@@ -22,7 +22,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', changelog: false, credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', poll: false, url: 'https://github.com/SujanRaj20/ICT2216_Group10.git'
+                checkout scm
             }
         }
 
@@ -32,20 +32,6 @@ pipeline {
                     sh 'docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r flask_app/requirements.txt'
                 }
             }
-        }
-
-        stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ICT2216_Group10/flask_app/', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                // dependencyCheck additionalArguments: ''' 
-                //     -o './'
-                //     -s './'
-                //     -f 'ALL' 
-                //     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-        
-                // dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-            } 
         }
 
         stage('Build Docker Image') {
@@ -62,7 +48,19 @@ pipeline {
                     sh 'docker run --rm ${DOCKER_IMAGE} pytest || echo "No tests found. Skipping..."'
                 }
             }
-        }   
+        }
+
+        stage('OWASP Dependency-Check Vulnerabilities') {
+          steps {
+            dependencyCheck additionalArguments: ''' 
+                        -o './'
+                        -s './'
+                        -f 'ALL' 
+                        --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+            
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+          }
+        }
 
         stage('Install Docker Compose') {
             steps {

@@ -66,3 +66,28 @@
 <!-- Thank You Page End -->
 
 {% include "buyer-footer.html" %}
+
+<script>
+  function updateCartCount() {
+    fetch("/cart/count")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.count !== undefined) {
+          document.getElementById("cart-count").innerText = data.count;
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating cart count:", error);
+      });
+  }
+
+  function continueShopping() {
+    updateCartCount();
+    window.location.href = "{{ url_for('main.shop') }}";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Update the cart count when the success page loads
+    updateCartCount();
+  });
+</script>

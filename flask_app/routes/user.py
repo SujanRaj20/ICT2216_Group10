@@ -1,8 +1,12 @@
 import base64
+from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 import stripe
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item, create_comment_report
+from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, get_user_cart, get_user_cart_item_count, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item, create_comment_report
+from SqlAlchemy.createTable import local_mysql_host, local_mysql_port, local_mysql_user, local_mysql_password, local_mysql_db
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -764,6 +768,50 @@ def report_comment(comment_id):
 
 
 
+# @user_bp.route('/payment', methods=['POST'])
+# @login_required
+# def payment():
+#     try:
+#         # Fetch the cart value from the session or calculate it based on the current user
+#         cart_value = get_user_cart_value(current_user.id)
+
+#         if not cart_value or cart_value <= 0:
+#             current_app.logger.error("Invalid cart value.")
+#             return "Invalid cart value.", 400
+
+#         # Convert cart value to cents
+#         amount = int(cart_value * 100)
+
+#         data = request.form
+
+#         address = {
+#             "line1": data.get('address_line1'),
+#             "line2": data.get('address_line2'),
+#             "city": data.get('city'),
+#             "state": data.get('state'),
+#             "postal_code": data.get('postal_code'),
+#             "country": data.get('country')
+#         }
+
+#         customer = stripe.Customer.create(
+#             email=data.get('stripeEmail'),
+#             source=data.get('stripeToken'),
+#             address=address  # Add address to the customer creation
+#         )
+
+#         charge = stripe.Charge.create(
+#             customer=customer.id,
+#             description='BookWise Purchase',
+#             amount=amount,
+#             currency='sgd',
+#         )
+
+#         return redirect(url_for('user.success'))
+
+#     except Exception as e:
+#         current_app.logger.error(f"Error during payment: {e}")
+#         return f"Internal Server Error: {e}", 500
+
 @user_bp.route('/payment', methods=['POST'])
 @login_required
 def payment():
@@ -802,6 +850,11 @@ def payment():
             currency='sgd',
         )
 
+        # Clear the user's cart
+        clear_cart_result = clear_cart(current_user.id)
+        if not clear_cart_result['success']:
+            current_app.logger.error(f"Error clearing cart: {clear_cart_result['error']}")
+
         return redirect(url_for('user.success'))
 
     except Exception as e:
@@ -809,11 +862,59 @@ def payment():
         return f"Internal Server Error: {e}", 500
 
 
-
 @user_bp.route('/success')
 def success():
+    clear_cart(current_user.id)
     return render_template('success.html')
 
 @user_bp.route("/cancel")
 def cancel():
     return render_template ('cancel.html')
+
+# Define the clear_cart function
+def clear_cart(user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        # Get the user's cart
+        user_cart = get_user_cart(user_id)
+        if not user_cart:
+            return {'success': False, 'error': 'Cart not found'}
+
+        cart_id = user_cart['id']
+
+        # Delete all items in the cart
+        delete_items_query = f"DELETE FROM cart_items WHERE cart_id = '{cart_id}'"
+        engine.execute(delete_items_query)
+
+        # Reset the cart item count and total price
+        reset_cart_query = f"UPDATE carts SET item_count = 0, total_price = 0.0 WHERE id = '{cart_id}'"
+        engine.execute(reset_cart_query)
+        
+        return {'success': True}
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error clearing cart: {e}")
+        return {'success': False, 'error': str(e)}
+    finally:
+        engine.dispose()
+
+# Define the route for clearing the cart
+@user_bp.route('/clear_cart', methods=['POST'])
+@login_required
+def clear_cart_route():
+    try:
+        result = clear_cart(current_user.id)
+        if result['success']:
+            return jsonify({'message': 'Cart cleared successfully'}), 200
+        else:
+            return jsonify({'error': result['error']}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@user_bp.context_processor
+def inject_user_cart_count():
+    if current_user.is_authenticated:
+        cart = get_user_cart(current_user.id)
+        user_cart_count = cart['item_count'] if cart else 0
+    else:
+        user_cart_count = 0
+    return dict(user_cart_count=user_cart_count)

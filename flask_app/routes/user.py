@@ -46,33 +46,38 @@ def profile():
     return render_template("profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
 
 @user_bp.route('/update_profile', methods=['POST'])
-# @login_required
+@login_required
 def update_profile():
     try:
         data = request.get_json()
         fname = data.get('fname')
         lname = data.get('lname')
-        email = data.get('email')
         phone_num = data.get('phone_num')
-        username = data.get('username')
         
         # Basic server-side validation
-        if not (fname and lname and email and username):
-            return jsonify({'error': 'All fields except phone number are required'}), 400
+        if not (fname and lname):
+            return jsonify({'error': 'First name and Last name are required'}), 400
+
+        user_id = current_user.id
         
         # Update user data in the database
-        current_user.fname = fname
-        current_user.lname = lname
-        current_user.email = email
-        current_user.phone_num = phone_num
-        current_user.username = username
-        db.session.commit()  # Commit changes to the database
+        conn = get_mysql_connection()
+        if conn:
+            cursor = conn.cursor()
+            update_query = """
+            UPDATE users 
+            SET fname = %s, lname = %s, phone_num = %s 
+            WHERE id = %s
+            """
+            cursor.execute(update_query, (fname, lname, phone_num, user_id))
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'User information updated successfully'})
+        else:
+            return jsonify({'error': 'Failed to connect to database'}), 500
         
-        return jsonify({'message': 'User information updated successfully'})
-    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @user_bp.route('/generate_captcha')
 def generate_captcha():

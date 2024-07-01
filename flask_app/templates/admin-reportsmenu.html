@@ -17,15 +17,214 @@
             <div class="tab" onclick="openTab('listings')">Listings</div>
         </div>
         <div id="comments" class="tab-content active">
+            {% for report in comment_reports %}
             <div class="comment-container align-left-div" style="width: 100%; padding: 1%;">
-                comments
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Reporter ID</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Body</th>
+                            <th scope="col">Comment</th>
+                            <th scope="col">Delete Comment</th>
+                            <th scope="col">Delete Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.commentreport_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.commentreport_reporter_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.commentreport_title }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.commentreport_body }}</p>
+                            </td>
+                            <td>
+                                <button class="btn btn-success mt-3"
+                                    onclick="toggleCommentPanel('{{ report.commentreport_comment_id }}')">Comment</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                    onclick="confirmDeleteComment('{{report.commentreport_comment_id}}')">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                    onclick="confirmDeleteCommentReport('{{report.commentreport_id}}')">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="commentPanel_{{ report.commentreport_comment_id }}" style="display: none; margin-top:3%">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Body</th>
+                                <th scope="col">Rating</th>
+                                <th scope="col">User ID</th>
+                                <th scope="col">Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_id }}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_title }}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_body }}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_rating }}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_user_id }}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{ report.commentreport_comment_created_at }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            {% endfor %}
         </div>
         
         <div id="listings" class="tab-content">
+            {% for report in listing_reports %}
             <div class="comment-container align-left-div" style="width: 100%; padding: 1%;">
-                listings
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Reporter ID</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Body</th>
+                            <th scope="col">Comment</th>
+                            <th scope="col">Delete Comment</th>
+                            <th scope="col">Delete Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.listingreport_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.listingreport_reporter_id }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.listingreport_title }}</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">{{ report.listingreport_body }}</p>
+                            </td>
+                            <td>
+                                <button class="btn btn-success mt-3"
+                                    onclick="toggleListingPanel('{{ report.listingreport_listing_id }}')">Listing</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                    onclick="confirmDeleteListing('{{report.listingreport_listing_id}}')">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                    onclick="confirmDeleteListingReport('{{report.listingreport_id}}')">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="listingPanel_{{ report.listingreport_listing_id }}" style="display: none; margin-top:3%">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Image</th>
+                                <th scope="col">ID</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Keywords</th>
+                                <th scope="col">Release Date</th>
+                                <th scope="col">Author</th>
+                                <th scope="col">Publisher</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Stock</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Seller ID</th>
+                                <th scope="col">Created At</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            src="{{ report.listing_imagepath[4:] }}"
+                                            class="img-fluid me-5 rounded-circle"
+                                            style="width: 80px; height: 80px"
+                                            alt=""
+                                          />
+                                        </div>
+                                      </th>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_id }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_title }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_description }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_keywords }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_release_date }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_author }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_publisher }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_price }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_stock }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_type }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_seller_id }}</p>
+                                  </td>
+                                  <td>
+                                    <p class="mb-0 mt-4">{{ report.listing_imagepath }}</p>
+                                  </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 </div>
@@ -54,15 +253,15 @@
     // By default, open the profile tab
     document.getElementById("comments").style.display = "block";
 
-    function toggleUserPanel(itemId) {
-        var reportForm = document.getElementById(`userPanel_${itemId}`);
+    function toggleCommentPanel(itemId) {
+        var reportForm = document.getElementById(`commentPanel_${itemId}`);
         if (reportForm.style.display === "none") {
             reportForm.style.display = "block";
         } else {
             reportForm.style.display = "none";
         }
     }
-
+    
     function toggleListingPanel(itemId) {
         var reportForm = document.getElementById(`listingPanel_${itemId}`);
         if (reportForm.style.display === "none") {
@@ -72,13 +271,13 @@
         }
     }
 
-    function confirmDelete(listingId) {
+    function confirmDeleteComment(listingId) {
         if (confirm("Are you sure you want to delete this comment?")) {
-            deleteItem(listingId);
+            deleteComment(listingId);
         }
     }
 
-    function deleteItem(listingId) {
+    function deleteComment(listingId) {
         $.ajax({
             url: `/admin/commentdelete/${listingId}`,
             type: "POST",
@@ -86,7 +285,65 @@
                 window.location.reload();
             },
             error: function (xhr) {
-                alert("An error occurred while deleting the item.");
+                alert("An error occurred while deleting the comment.");
+            },
+        });
+    }
+    
+    function confirmDeleteCommentReport(listingId) {
+        if (confirm("Are you sure you want to delete this report?")) {
+            deleteCommentReport(listingId);
+        }
+    }
+
+    function deleteCommentReport(listingId) {
+        $.ajax({
+            url: `/admin/commentreportdelete/${listingId}`,
+            type: "POST",
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (xhr) {
+                alert("An error occurred while deleting the report.");
+            },
+        });
+    }
+
+    //listing stuff
+    function confirmDeleteListing(listingId) {
+        if (confirm("Are you sure you want to delete this listing?")) {
+            deleteListing(listingId);
+        }
+    }
+
+    function deleteListing(listingId) {
+        $.ajax({
+            url: `/admin/listingdelete/${listingId}`,
+            type: "POST",
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (xhr) {
+                alert("An error occurred while deleting the listing.");
+            },
+        });
+    }
+    
+    function confirmDeleteListingReport(listingId) {
+        if (confirm("Are you sure you want to delete this report?")) {
+            deleteListingReport(listingId);
+        }
+    }
+
+    function deleteListingReport(listingId) {
+        $.ajax({
+            url: `/admin/listingreportdelete/${listingId}`,
+            type: "POST",
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (xhr) {
+                alert("An error occurred while deleting the report.");
             },
         });
     }

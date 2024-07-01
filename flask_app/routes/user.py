@@ -203,6 +203,57 @@ def add_to_wishlist_route(listing_id):
         flash(str(e), 'danger')
         return jsonify({'error': 'Failed to add item to wishlist'}), 500
 
+@user_bp.route('/edit-listing/<int:item_id>', methods=['POST'])
+@login_required
+def edit_listing(item_id):
+    try:
+        # Access form data using request.form
+        title = request.form['title']
+        description = request.form['description']
+        keywords_str = request.form['keywords']
+        keywords = json.dumps(keywords_str.split(','))  # Convert to JSON array
+        release_date = request.form['release_date']
+        author = request.form['author']
+        publisher = request.form['publisher']
+        price = request.form['price']
+        stock = request.form['stock']
+        type = request.form['type']
+
+        # Basic server-side validation
+        if not (title and price and stock and type):
+            return jsonify({'error': 'Title, price, stock, and type are required fields.'}), 400
+
+        # Fetch the listing to verify the seller
+        conn = get_mysql_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT seller_id FROM listings WHERE id = %s"
+        cursor.execute(query, (item_id,))
+        listing = cursor.fetchone()
+        conn.close()
+
+        if not listing:
+            return jsonify({'error': 'Listing not found'}), 404
+
+        if listing['seller_id'] != current_user.id:
+            return jsonify({'error': 'Unauthorized access'}), 403
+
+        # Update listing in the database using direct MySQL connection
+        conn = get_mysql_connection()
+        cursor = conn.cursor()
+
+        update_query = """
+        UPDATE listings 
+        SET title = %s, description = %s, keywords = %s, release_date = %s, author = %s, publisher = %s, price = %s, stock = %s, type = %s 
+        WHERE id = %s AND seller_id = %s
+        """
+        cursor.execute(update_query, (title, description, keywords, release_date, author, publisher, price, stock, type, item_id, current_user.id))
+        conn.commit()
+        conn.close()
+
+        return '', 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
 @login_required
 def delete_listing(listing_id):

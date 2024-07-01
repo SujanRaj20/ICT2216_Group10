@@ -52,13 +52,12 @@ pipeline {
 
         stage('OWASP Dependency-Check Vulnerabilities') {
           steps {
-            dependencyCheck additionalArguments: ''' 
-                        -o './'
-                        -s './'
-                        -f 'HTML' 
+            dependencyCheck additionalArguments: '''
+                        -s './flask_app'
+                        -f 'ALL' 
                         --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             
-            dependencyCheckPublisher pattern: 'dependency-check-report.html'
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }
         }
 

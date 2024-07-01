@@ -196,6 +196,31 @@ def get_user_cart_item_count(userid):
         print(f"Error: {e}")
         return None
     
+def get_user_cart(user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        query = f"SELECT * FROM carts WHERE user_id = '{user_id}'"
+        result = engine.execute(query).fetchone()
+        
+        # If no cart exists, create a new cart
+        if result is None:
+            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            insert_query = f"""
+                    INSERT INTO carts (user_id, item_count, total_price, created_at) 
+                    VALUES ('{user_id}', 0, 0.0, '{created_at}')
+                """
+            engine.execute(insert_query)
+            # Fetch the newly created cart
+            result = engine.execute(query).fetchone()
+            
+        return result
+    
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        engine.dispose()
+    
     
 def get_wishlist_items(userid):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')

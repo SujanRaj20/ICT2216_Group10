@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import stripe
-from SqlAlchemy.createTable import User, get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete
+from SqlAlchemy.createTable import User, get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete, get_listings_foradmin, admin_listingdelete, get_comments_foradmin, admin_commentdelete
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -19,6 +19,9 @@ import io
 
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 # Define the route for the user profile page
 # @admin_bp.route("/admin/<userid>")
@@ -126,11 +129,31 @@ def admin_sellerdelete_route(seller_id):
 
 @admin_bp.route("/admin_listingsmenu")
 def admin_listingsmenu_route():
-    return render_template("admin-listingsmenu.html")  # Render the add admin template
+    listings = get_listings_foradmin()
+    return render_template("admin-listingsmenu.html", listings=listings)  # Render the add admin template
+
+@admin_bp.route('/admin/listingdelete/<int:listing_id>', methods=['POST'])
+@login_required
+def admin_listingdelete_route(listing_id):
+    result = admin_listingdelete(listing_id)
+    if result['success']:
+        return jsonify({'message': 'Listing deleted successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_commentsmenu")
 def admin_commentsmenu_route():
-    return render_template("admin-commentsmenu.html")  # Render the add admin template
+    comments = get_comments_foradmin()
+    return render_template("admin-commentsmenu.html", comments = comments)  # Render the add admin template
+
+@admin_bp.route('/admin/commentdelete/<int:comment_id>', methods=['POST'])
+@login_required
+def admin_commentdelete_route(comment_id):
+    result = admin_commentdelete(comment_id)
+    if result['success']:
+        return jsonify({'message': 'Comment deleted successfully'}), 200
+    else:
+        return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_reportsmenu")
 def admin_reportsmenu_route():

@@ -90,8 +90,8 @@
                                 <li><a href="{{ url_for('user.logout') }}" class="dropdown-item btn btn-danger">Logout</a></li>
                                 {% else %}
                                 <!-- Show these options when user is not logged in -->
-                                <li><a href="{{ url_for('main.seller_login') }}" class="dropdown-item">Seller</a></li>
-                                <li><a href="{{ url_for('main.login') }}" class="dropdown-item">Buyer</a></li>
+                                <li><a href="{{ url_for('main.login') }}" class="dropdown-item">Login</a></li>
+                                <li><a href="{{ url_for('main.signup') }}" class="dropdown-item">Signup</a></li>
                                 {% endif %}
                             </ul>
                         </div>

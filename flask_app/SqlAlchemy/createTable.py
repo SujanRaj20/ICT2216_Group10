@@ -65,6 +65,7 @@ def create_or_verify_tables(engine):
                     Column('author', String(255)),
                     Column('publisher', String(255)),
                     Column('price', DECIMAL(10, 2), nullable=False),
+                    Column('sales', Integer, nullable=False),
                     Column('stock', Integer, nullable=False),
                     Column('type', String(20), nullable=False),
                     Column('seller_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False),

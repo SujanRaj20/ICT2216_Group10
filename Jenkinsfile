@@ -22,7 +22,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', changelog: false, credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', poll: false, url: 'https://github.com/SujanRaj20/ICT2216_Group10.git'
             }
         }
 
@@ -53,7 +53,8 @@ pipeline {
         stage('OWASP Dependency-Check Vulnerabilities') {
           steps {
             dependencyCheck additionalArguments: '''
-                        -s './flask_app'
+                        -o './'
+                        -s './'
                         -f 'ALL' 
                         --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             

@@ -2,6 +2,8 @@
   {% include "buyer-navbar.html" %}
 {% elif user_role == 'seller' %}
   {% include "seller-navbar.html" %}
+{% elif user_role == 'admin' %}
+  {% include "admin-navbar.html" %}
 {% endif %}
 {% block title %}Home{% endblock %}
 
@@ -183,4 +185,6 @@
   {% include "buyer-footer.html" %}
 {% elif user_role == 'seller' %}
   {% include "seller-footer.html" %}
+{% elif user_role == 'admin' %}
+  {% include "admin-footer.html" %}
 {% endif %}

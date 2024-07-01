@@ -52,9 +52,8 @@ pipeline {
 
         stage('OWASP Dependency-Check Vulnerabilities') {
           steps {
-            dependencyCheck additionalArguments: ''' 
-                        -o './'
-                        -s './'
+            dependencyCheck additionalArguments: '''
+                        -s './flask_app'
                         -f 'ALL' 
                         --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             

@@ -71,6 +71,7 @@ def buyerlogin():
                     otp = generate_otp()
                     session['otp'] = otp
                     session['email'] = email
+                    session['purpose'] = 'login'
                     if send_otp_email(email, otp):
                         login_user(User(user), remember=True)
                         session.permanent = True
@@ -102,6 +103,7 @@ def sellerlogin():
             otp = generate_otp()
             session['otp'] = otp
             session['email'] = email
+            session['purpose'] = 'login'
             if send_otp_email(email, otp):
                 login_user(user, remember=True)
                 session['user_id'] = user.id
@@ -139,7 +141,7 @@ def verify_otp():
             flash('Failed to verify OTP. Please try again.')
             return redirect(url_for('user.verify_otp'))
     else:
-        return render_template('util-templates/verify_otp.html')
+        return render_template('util-templates/verify_otp.html', purpose='login')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
@@ -453,21 +455,75 @@ def buyersignup():
                 
                 return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
             
-            # Insert user into the database
-            insert_query = """
-            INSERT INTO users (fname, lname, email, phone_num, username, password_hash, role)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_query, (fname, lname, email, phone_num, username, hashed_password.decode('utf-8'), role))
-            conn.commit()
-            conn.close()
-            return jsonify({'message': 'User signed up successfully'})
+            # Generate OTP and send email
+            otp = generate_otp()
+            session['otp'] = otp
+            session['email'] = email
+            session['user_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'phone_num': phone_num,
+                'username': username,
+                'password_hash': hashed_password.decode('utf-8'),
+                'role': role
+            }
+            if send_otp_email(email, otp):
+                return jsonify({'redirect_url': url_for('user.signup_verify_otp')}), 200
+            else:
+                return jsonify({'error': 'Failed to send OTP email.'}), 500
         else:
             return jsonify({'error': 'Failed to connect to database'}), 500
     except mysql.connector.Error as err:
         return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@user_bp.route('/signup_verify_otp', methods=['GET', 'POST'])
+def signup_verify_otp():
+    if request.method == 'POST':
+        try:
+            otp = request.form.get('otp')
+
+            # Check if OTP entered matches the stored OTP in session
+            if otp == session.get('otp'):
+                user_data = session.get('user_data')
+                if user_data:
+                    conn = get_mysql_connection()
+                    if conn:
+                        cursor = conn.cursor()
+                        # Insert user into the database after OTP confirmation
+                        insert_query = """
+                        INSERT INTO users (fname, lname, email, phone_num, username, password_hash, role)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """
+                        cursor.execute(insert_query, (
+                            user_data['fname'], user_data['lname'], user_data['email'], 
+                            user_data['phone_num'], user_data['username'], 
+                            user_data['password_hash'], user_data['role']
+                        ))
+                        conn.commit()
+                        conn.close()
+                        session.pop('otp', None)
+                        session.pop('user_data', None)
+                        return redirect(url_for('main.index'))
+                    else:
+                        flash('Failed to connect to database.')
+                        return redirect(url_for('user.signup_verify_otp'))
+                else:
+                    flash('User data not found.')
+                    return redirect(url_for('user.signup_verify_otp'))
+            else:
+                # OTP mismatch: Display error message
+                flash('Invalid OTP. Please try again.')
+                return redirect(url_for('user.signup_verify_otp'))
+
+        except Exception as e:
+            current_app.logger.error(f"Error in signup_verify_otp: {str(e)}")
+            flash('Failed to verify OTP. Please try again.')
+            return redirect(url_for('user.signup_verify_otp'))
+    else:
+        return render_template('util-templates/verify_otp.html', purpose='signup')
        
        
 @user_bp.route('/item/<int:item_id>')

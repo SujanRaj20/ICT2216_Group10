@@ -173,8 +173,8 @@
                 "Invalid CAPTCHA. Please try again.";
             }
           } else {
-            alert("Signup successful!");
-            window.location.href = "{{ url_for('main.login') }}";
+            alert("Verification email sent. Please check your email to continue.");
+            window.location.href = data.redirect_url || "/signup_verify_otp"; // Redirect to OTP verification page
           }
         })
         .catch((error) => {

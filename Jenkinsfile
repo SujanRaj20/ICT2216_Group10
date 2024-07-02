@@ -49,6 +49,21 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency-Check Vulnerabilities') {
+          steps {
+            dependencyCheck additionalArguments: '''
+                    -o './'
+                    -s './flask_app'
+                    -f 'ALL'
+                    -n
+                    --prettyPrint
+                    --enableExperimental
+                    -DautoUpdate=true''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+            
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+          }
+        }
+
         stage('Install Docker Compose') {
             steps {
                 script {

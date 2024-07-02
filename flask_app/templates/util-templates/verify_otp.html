@@ -19,6 +19,12 @@
                     <div class="mb-3">
                         <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
                     </div>
+                    <div class="mb-3">
+                        <p>Time left: <span id="timeLeft">60</span> seconds</p>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-secondary w-100" id="fetchNewOtp">Fetch New OTP</button>
+                    </div>
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
                             <div class="alert alert-danger" role="alert">
@@ -36,5 +42,74 @@
 {% include "buyer-templates/buyer-footer.html" %}
 
 <script>
-    // You can add JavaScript here if needed
-</script>
+    let timeLeft = 60;
+    let alertShown = false;
+    const timeLeftElement = document.getElementById('timeLeft');
+    const fetchNewOtpButton = document.getElementById('fetchNewOtp');
+  
+    function updateTimeLeft() {
+      if (timeLeft > 0) {
+        timeLeft -= 1;
+        timeLeftElement.textContent = timeLeft;
+      } else {
+        clearInterval(timerInterval);
+        fetchNewOtpButton.disabled = false;
+        if (!alertShown) {
+          alert('OTP has expired. Please request a new one.');
+          alertShown = true;
+        }
+      }
+    }
+  
+    const timerInterval = setInterval(updateTimeLeft, 1000);
+  
+    fetchNewOtpButton.addEventListener('click', function() {
+      fetch('/generate_new_otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message) {
+          alert(data.message);
+          timeLeft = 60; // Reset the timer
+          fetchNewOtpButton.disabled = true;
+          alertShown = false; // Reset the alert flag
+          clearInterval(timerInterval);
+          setInterval(updateTimeLeft, 1000);
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred while fetching a new OTP.');
+      });
+    });
+  
+    document.getElementById('otpForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission
+  
+      const formData = new FormData(this);
+  
+      fetch('/verify_otp', {
+        method: 'POST',
+        body: formData,
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.redirect_url) {
+          // Redirect to the main page
+          window.location.href = data.redirect_url;
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred while verifying the OTP.');
+      });
+    });
+  </script>

@@ -1,5 +1,7 @@
 import base64
 from datetime import datetime
+import time
+from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
@@ -36,6 +38,25 @@ def generate_otp():
     """Generate a random 6-digit OTP."""
     return ''.join(random.choices(string.digits, k=6))
 
+@user_bp.route('/generate_new_otp', methods=['POST'])
+def generate_new_otp():
+    try:
+        email = session.get('email')
+        if not email:
+            return jsonify({'error': 'Session expired. Please log in again.'}), 401
+
+        otp = generate_otp()
+        session['otp'] = otp
+        session['otp_timestamp'] = time.time()  # Store new timestamp
+        
+        if send_otp_email(email, otp):
+            return jsonify({'message': 'A new OTP has been sent to your email.'}), 200
+        else:
+            return jsonify({'error': 'Failed to send new OTP email.'}), 500
+    except Exception as e:
+        current_app.logger.error(f"Error in generate_new_otp: {str(e)}")
+        return jsonify({'error': 'Failed to generate new OTP.'}), 500
+    
 def send_otp_email(email, otp):
     with mail.connect() as conn:
         msg = Message('Your OTP Code', sender='***REMOVED***', recipients=[email])
@@ -72,6 +93,7 @@ def buyerlogin():
                     session['otp'] = otp
                     session['email'] = email
                     session['purpose'] = 'login'
+                    session['otp_timestamp'] = time.time()  # Store current timestamp
                     if send_otp_email(email, otp):
                         login_user(User(user), remember=True)
                         session.permanent = True
@@ -104,6 +126,7 @@ def sellerlogin():
             session['otp'] = otp
             session['email'] = email
             session['purpose'] = 'login'
+            session['otp_timestamp'] = time.time()  # Store current timestamp
             if send_otp_email(email, otp):
                 login_user(user, remember=True)
                 session['user_id'] = user.id
@@ -127,19 +150,24 @@ def verify_otp():
 
             # Check if OTP entered matches the stored OTP in session
             if otp == session.get('otp'):
-                # OTP match: Proceed to main page
-                session.pop('otp', None)
-                session.pop('email', None)
-                return redirect(url_for('main.index'))
+                # Check if OTP has expired
+                otp_timestamp = session.get('otp_timestamp')
+                if otp_timestamp and time.time() - otp_timestamp <= 60:  # 60 seconds
+                    # OTP is valid and not expired
+                    session.pop('otp', None)
+                    session.pop('email', None)
+                    session.pop('otp_timestamp', None)
+                    return jsonify({'redirect_url': url_for('main.index')}), 200
+                else:
+                    # OTP has expired
+                    return jsonify({'error': 'OTP has expired. Please request a new one.'}), 400
             else:
                 # OTP mismatch: Display error message
-                flash('Invalid OTP. Please try again.')
-                return redirect(url_for('user.verify_otp'))
+                return jsonify({'error': 'Invalid OTP. Please try again.'}), 400
 
         except Exception as e:
             current_app.logger.error(f"Error in verify_otp: {str(e)}")
-            flash('Failed to verify OTP. Please try again.')
-            return redirect(url_for('user.verify_otp'))
+            return jsonify({'error': 'Failed to verify OTP.'}), 500
     else:
         return render_template('util-templates/verify_otp.html', purpose='login')
 

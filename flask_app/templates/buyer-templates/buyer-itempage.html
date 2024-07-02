@@ -1,10 +1,10 @@
 {% block title %}item{% endblock %}
 {% if user_role == 'buyer' %}
-{% include "buyer-navbar.html" %}
+{% include "buyer-templates/buyer-navbar.html" %}
 {% elif user_role == 'seller' %}
-{% include "seller-navbar.html" %}
+{% include "seller-templates/seller-navbar.html" %}
 {% else %}
-{% include "buyer-navbar.html" %}
+{% include "buyer-templates/buyer-navbar.html" %}
 {% endif %}
 <style>
     .align-left-div {
@@ -183,11 +183,11 @@
 
 
 {% if user_role == 'buyer' %}
-{% include "buyer-footer.html" %}
+{% include "buyer-templates/buyer-footer.html" %}
 {% elif user_role == 'seller' %}
-{% include "seller-footer.html" %}
+{% include "seller-templates/seller-footer.html" %}
 {% else %}
-{% include "buyer-footer.html" %}
+{% include "buyer-templates/buyer-footer.html" %}
 {% endif %}
 
 

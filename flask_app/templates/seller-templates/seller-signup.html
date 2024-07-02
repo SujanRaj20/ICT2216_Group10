@@ -1,4 +1,4 @@
-{% include "buyer-navbar.html" %}
+{% include "buyer-templates/buyer-navbar.html" %}
 {% block title %}Home{% endblock %}
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-4">
@@ -152,4 +152,4 @@
         document.getElementById('captcha_image').src = '/generate_captcha?' + Date.now();
     });
     </script>
-    {% include "buyer-footer.html" %}
+    {% include "buyer-templates/buyer-footer.html" %}

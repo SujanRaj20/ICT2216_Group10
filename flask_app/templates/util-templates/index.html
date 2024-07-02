@@ -1,0 +1,19 @@
+{% block title %}Home{% endblock %}
+
+{% if user_role == 'buyer' %}
+    {% include "buyer-templates/buyer-navbar.html" %}
+    {% include "buyer-templates/buyer-home.html" %}
+    {% include "buyer-templates/buyer-footer.html" %}
+{% elif user_role == 'seller' %}
+    {% include "seller-templates/seller-navbar.html" %}
+    {% include "seller-templates/seller-home.html" %}
+    {% include "seller-templates/seller-footer.html" %}
+{% elif user_role == 'admin' %}
+    {% include "admin-templates/admin-navbar.html" %}
+    {% include "admin-templates/admin-dashboard.html" %}
+    {% include "admin-templates/admin-footer.html" %}
+{% else %}
+    {% include "buyer-templates/buyer-navbar.html" %}
+    {% include "buyer-templates/buyer-home.html" %}
+    {% include "buyer-templates/buyer-footer.html" %}
+{% endif %}

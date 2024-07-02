@@ -18,12 +18,12 @@ def rolechecker():
 @main_bp.route("/")
 def index():
     user_role = rolechecker()
-    return render_template("index.html", user_role=user_role)  # Render the / 
+    return render_template("util-templates/index.html", user_role=user_role)  # Render the / 
 
 # Add more routes here
 @main_bp.route("/contact")
 def contact():
-    return render_template("contact.html")  # Render the /contact template
+    return render_template("util-templates/contact.html")  # Render the /contact template
 
 @main_bp.route("/shop")
 def shop():
@@ -31,23 +31,23 @@ def shop():
     category = request.args.get('category', 'all')
     listings = fetch_all_listings_forbuyer(sort_option, category)
     category_counts = fetch_category_counts_for_shop_buyer()
-    return render_template("shop.html", listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)  # Render the /shop template
+    return render_template("buyer-templates/buyer-shop.html", listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)  # Render the /shop template
 
 @main_bp.route("/checkout")
 def checkout():
-    return render_template("checkout.html")  # Render the /checkout template
+    return render_template("buyer-templates/buyer-checkout.html")  # Render the /checkout template
 
 @main_bp.route("/buyer-account")
 def buyeraccount():
-    return render_template("buyer-account.html")  # Render the /buyer-account template
+    return render_template("buyer-templates/buyer-account.html")  # Render the /buyer-account template
 
 @main_bp.route("/login")
 def login():
-    return render_template("login.html")  # Render the /login template
+    return render_template("util-templates/login.html")  # Render the /login template
 
 @main_bp.route("/signup")
 def signup():
-    return render_template("buyer-signup.html")  # Render the /signup template
+    return render_template("buyer-templates/buyer-signup.html")  # Render the /signup template
 
 @main_bp.route("/seller-login")
 def seller_login():
@@ -55,7 +55,7 @@ def seller_login():
 
 @main_bp.route("/seller-signup")
 def seller_signup():
-    return render_template("seller-signup.html")  # Render the /seller-signup template
+    return render_template("seller-templates/seller-signup.html")  # Render the /seller-signup template
 
 
 # Define the route to serve images from the static/img directory for testing purposes 

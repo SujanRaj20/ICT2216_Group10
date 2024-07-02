@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 @admin_bp.route("/add_admin")
 def add_admin_route():
-    return render_template("admin-addaccount.html")  # Render the add admin template
+    return render_template("admin-templates/admin-addaccount.html")  # Render the add admin template
 
 @admin_bp.route("/add-admin-account", methods=["POST"])
 @login_required
@@ -102,7 +102,7 @@ def add_admin_account():
 @login_required
 def admin_buyersmenu_route():
     buyers = get_buyers_foradmin()
-    return render_template("admin-buyersmenu.html", buyers=buyers)  # Render the add admin template
+    return render_template("admin-templates/admin-buyersmenu.html", buyers=buyers)  # Render the add admin template
 
 @admin_bp.route('/admin/buyeraccountdelete/<int:buyer_id>', methods=['POST'])
 @login_required
@@ -116,7 +116,7 @@ def admin_buyerdelete_route(buyer_id):
 @admin_bp.route("/admin_sellersmenu")
 def admin_sellersmenu_route():
     sellers = get_sellers_foradmin()
-    return render_template("admin-sellersmenu.html", sellers=sellers)  # Render the add admin template
+    return render_template("admin-templates/admin-sellersmenu.html", sellers=sellers)  # Render the add admin template
 
 @admin_bp.route('/admin/selleraccountdelete/<int:seller_id>', methods=['POST'])
 @login_required
@@ -130,7 +130,7 @@ def admin_sellerdelete_route(seller_id):
 @admin_bp.route("/admin_listingsmenu")
 def admin_listingsmenu_route():
     listings = get_listings_foradmin()
-    return render_template("admin-listingsmenu.html", listings=listings)  # Render the add admin template
+    return render_template("admin-templates/admin-listingsmenu.html", listings=listings)  # Render the add admin template
 
 @admin_bp.route('/admin/listingdelete/<int:listing_id>', methods=['POST'])
 @login_required
@@ -144,7 +144,7 @@ def admin_listingdelete_route(listing_id):
 @admin_bp.route("/admin_commentsmenu")
 def admin_commentsmenu_route():
     comments = get_comments_foradmin()
-    return render_template("admin-commentsmenu.html", comments = comments)  # Render the add admin template
+    return render_template("admin-templates/admin-commentsmenu.html", comments = comments)  # Render the add admin template
 
 @admin_bp.route('/admin/commentdelete/<int:comment_id>', methods=['POST'])
 @login_required
@@ -164,7 +164,7 @@ def admin_reportsmenu_route():
     comment_reports = get_commentreports_foradmin()
     current_app.logger.debug(comment_reports)
     current_app.logger.debug(listing_reports)
-    return render_template("admin-reportsmenu.html", listing_reports=listing_reports, comment_reports=comment_reports )  # Render the add admin template
+    return render_template("admin-templates/admin-reportsmenu.html", listing_reports=listing_reports, comment_reports=comment_reports )  # Render the add admin template
 
 @admin_bp.route('/admin/commentreportdelete/<int:report_id>', methods=['POST'])
 @login_required
@@ -192,4 +192,4 @@ def admin_listingreportdelete_route(report_id):
 
 @admin_bp.route("/admin_logs")
 def admin_logsview_route():
-    return render_template("admin-logsview.html")  # Render the add admin template
+    return render_template("admin-templates/admin-logsview.html")  # Render the add admin template

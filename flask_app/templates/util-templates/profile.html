@@ -1,9 +1,9 @@
 {% if user_role == 'buyer' %}
-  {% include "buyer-navbar.html" %}
+  {% include "buyer-templates/buyer-navbar.html" %}
 {% elif user_role == 'seller' %}
-  {% include "seller-navbar.html" %}
+  {% include "seller-templates/seller-navbar.html" %}
 {% elif user_role == 'admin' %}
-  {% include "admin-navbar.html" %}
+  {% include "admin-templates/admin-navbar.html" %}
 {% endif %}
 {% block title %}Home{% endblock %}
 
@@ -169,9 +169,9 @@
 </script>
         
 {% if user_role == 'buyer' %}
-  {% include "buyer-footer.html" %}
+  {% include "buyer-templates/buyer-footer.html" %}
 {% elif user_role == 'seller' %}
-  {% include "seller-footer.html" %}
+  {% include "seller-templates/seller-footer.html" %}
 {% elif user_role == 'admin' %}
-  {% include "admin-footer.html" %}
+  {% include "admin-templates/admin-footer.html" %}
 {% endif %}

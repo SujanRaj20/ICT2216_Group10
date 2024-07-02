@@ -639,15 +639,23 @@ def sellersignup():
                 
                 return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
             
-            # Insert user into the database
-            insert_query = """
-            INSERT INTO users (fname, lname, email, phone_num, username, password_hash, role)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_query, (fname, lname, email, phone_num, username, hashed_password.decode('utf-8'), role))
-            conn.commit()
-            conn.close()
-            return jsonify({'message': 'User signed up successfully'})
+            # Generate OTP and send email
+            otp = generate_otp()
+            session['otp'] = otp
+            session['email'] = email
+            session['user_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'phone_num': phone_num,
+                'username': username,
+                'password_hash': hashed_password.decode('utf-8'),
+                'role': role
+            }
+            if send_otp_email(email, otp):
+                return jsonify({'redirect_url': url_for('user.signup_verify_otp')}), 200
+            else:
+                return jsonify({'error': 'Failed to send OTP email.'}), 500
         else:
             return jsonify({'error': 'Failed to connect to database'}), 500
     except mysql.connector.Error as err:

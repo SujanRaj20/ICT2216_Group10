@@ -22,7 +22,6 @@ from db_connector import get_mysql_connection
 from flask import send_file
 from captcha.image import ImageCaptcha
 import io
-# from email_utils import send_otp_email
 
 # Initialize Stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -127,7 +126,7 @@ def sellerlogin():
         current_app.logger.error(f"Error in sellerlogin: {str(e)}")
         return jsonify({'error': 'Failed to authenticate user'}), 500
 
-@user_bp.route('/verify-otp', methods=['GET', 'POST'])
+@user_bp.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
     if request.method == 'POST':
         try:

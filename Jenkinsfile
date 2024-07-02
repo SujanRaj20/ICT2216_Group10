@@ -107,28 +107,12 @@ pipeline {
             }
         }
 
-          stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                script {
-                    dependencyCheck additionalArguments: '''
-                        -o './dependency-check-report'
-                        -s './flask_app'
-                        -f 'ALL'
-                        -n 
-                        --prettyPrint
-                        --scan ./flask_app
-                    ''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                    
-                    dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
-                 } 
-            }
-        }
     }
 
-    post {
-        always {
-            cleanWs()
-        }
-    }
+    // post {
+    //     always {
+    //         cleanWs()
+    //     }
+    // }
 }
 

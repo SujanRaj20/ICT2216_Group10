@@ -119,8 +119,8 @@
           if (data.status === 200) {
             // Clear the form fields
             document.getElementById("loginForm").reset();
-            // Redirect to the main page
-            window.location.href = data.body.redirect_url || "/";
+            // Redirect to the otp page
+            window.location.href = data.body.redirect_url || "verify_otp";
           } else {
             // Handle invalid CAPTCHA or other errors
             alert(data.body.error);

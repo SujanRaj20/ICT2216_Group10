@@ -74,6 +74,7 @@ def buyerlogin():
                     if send_otp_email(email, otp):
                         login_user(User(user), remember=True)
                         session.permanent = True
+                        current_app.logger.info(f"Logged in user {email}. Redirecting to verify_otp.")
                         return redirect(url_for('user.verify_otp'))
                     else:
                         return jsonify({'error': 'Failed to send OTP email.'}), 500
@@ -105,6 +106,7 @@ def sellerlogin():
                 login_user(user, remember=True)
                 session['user_id'] = user.id
                 session.permanent = True
+                current_app.logger.info(f"Logged in user {email}. Redirecting to verify_otp.")
                 return redirect(url_for('user.verify_otp'))
             else:
                 return jsonify({'error': 'Failed to send OTP email.'}), 500

@@ -57,7 +57,8 @@ pipeline {
                     -s './flask_app'
                     -f 'ALL'
                     --prettyPrint
-                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    --enableExperimental
+                    --purge''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             
             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }

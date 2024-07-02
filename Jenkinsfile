@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
+        NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634'
     }
 
     triggers {
@@ -56,7 +57,8 @@ pipeline {
                     -s './flask_app'
                     -f 'ALL'
                     --prettyPrint
-                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    --enableExperimental
+                    --nvdApiKey ${NVD_API_KEY}''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             
             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }

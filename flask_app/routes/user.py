@@ -149,7 +149,7 @@ def verify_otp():
             flash('Failed to verify OTP. Please try again.')
             return redirect(url_for('user.verify_otp'))
     else:
-        return render_template('verify_otp.html')
+        return render_template('util-templates/verify_otp.html')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
@@ -167,7 +167,7 @@ def profile():
         'phone_num': current_user.phone_num
     }
     user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
-    return render_template("profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
+    return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
 
 @user_bp.route('/update_profile', methods=['POST'])
 @login_required
@@ -221,11 +221,11 @@ def seller_listings():
     category = request.args.get('category', 'all')
     seller_listings = fetch_seller_listings(current_user.id, sort_option, category)
     category_counts = fetch_category_counts(current_user.id)
-    return render_template("seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
+    return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route("/seller-listing-add")
 def seller_listing_add():
-    return render_template("seller-listing-add.html")  # Render seller-listings.html with the userid
+    return render_template("seller-templates/seller-listing-add.html")  # Render seller-listings.html with the userid
 
 @user_bp.route('/add-listing', methods=['POST'])
 def add_listing():
@@ -502,7 +502,7 @@ def item_page(item_id):
             
             conn.close()
 
-            return render_template('buyer-itempage.html', item=item, seller_name=seller_name, comments=comments)
+            return render_template('buyer-templates/buyer-itempage.html', item=item, seller_name=seller_name, comments=comments)
 
         else:
             flash('Failed to connect to database', 'danger')
@@ -535,7 +535,7 @@ def item_page_seller(item_id):
             
             conn.close()
 
-            return render_template('seller-itempage.html', item=item, seller_name=seller_name, comments=comments)
+            return render_template('seller-templates/seller-itempage.html', item=item, seller_name=seller_name, comments=comments)
 
         else:
             flash('Failed to connect to database', 'danger')
@@ -614,7 +614,7 @@ def sellersignup():
 def cart():
     cart_items = get_cart_items(current_user.id)
     cart_value = get_user_cart_value(current_user.id)
-    return render_template('buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
+    return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
 
 @user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
 @login_required
@@ -653,7 +653,7 @@ def logout():
 @login_required
 def wishlist():
     wishlist_items = get_wishlist_items(current_user.id)
-    return render_template("buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
+    return render_template("buyer-templates/buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
 
 @user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST'])
 @login_required
@@ -700,7 +700,7 @@ def buyer_seller_page(seller_id):
     category = request.args.get('category', 'all')
     listings = fetch_seller_listings(seller_id, sort_option, category)
     category_counts = fetch_category_counts_for_shop_buyer()
-    return render_template('buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
+    return render_template('buyer-templates/buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])
 def submit_comment(item_id):
@@ -924,11 +924,11 @@ def get_cart_items(buyer_id):
 @user_bp.route('/success')
 def success():
     clear_cart(current_user.id)
-    return render_template('success.html')
+    return render_template('util-templates/success.html')
 
 @user_bp.route("/cancel")
 def cancel():
-    return render_template ('cancel.html')
+    return render_template ('util-templates/cancel.html')
 
 
 @user_bp.context_processor

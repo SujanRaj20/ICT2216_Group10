@@ -57,8 +57,7 @@ pipeline {
                     -f 'ALL'
                     -n
                     --prettyPrint
-                    --enableExperimental
-                    -DautoUpdate=true''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             
             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }
@@ -104,23 +103,6 @@ pipeline {
                         '''
                     }
                 }
-            }
-        }
-
-          stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                script {
-                    dependencyCheck additionalArguments: '''
-                        -o './dependency-check-report'
-                        -s './flask_app'
-                        -f 'ALL'
-                        -n 
-                        --prettyPrint
-                        --scan ./flask_app
-                    ''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                    
-                    dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
-                 } 
             }
         }
     }

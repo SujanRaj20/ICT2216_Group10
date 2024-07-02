@@ -858,12 +858,66 @@ def report_comment(comment_id):
     
     return redirect(request.referrer or url_for('main.shop'))
 
+# @user_bp.route('/payment', methods=['POST'])
+# @login_required
+# def payment():
+#     try:
+#         # Fetch the cart value from the session or calculate it based on the current user
+#         cart_value = get_user_cart_value(current_user.id)
+
+#         if not cart_value or cart_value <= 0:
+#             current_app.logger.error("Invalid cart value.")
+#             return "Invalid cart value.", 400
+
+#         # Convert cart value to cents
+#         amount = int(cart_value * 100)
+
+#         data = request.form
+
+#         address = {
+#             "line1": data.get('address_line1'),
+#             "line2": data.get('address_line2'),
+#             "city": data.get('city'),
+#             "state": data.get('state'),
+#             "postal_code": data.get('postal_code'),
+#             "country": data.get('country')
+#         }
+
+#         customer = stripe.Customer.create(
+#             email=data.get('stripeEmail'),
+#             source=data.get('stripeToken'),
+#             address=address  # Add address to the customer creation
+#         )
+
+#         charge = stripe.Charge.create(
+#             customer=customer.id,
+#             description='BookWise Purchase',
+#             amount=amount,
+#             currency='sgd',
+#         )
+
+#         # Create a new transaction record
+#         transaction_id = create_transaction(current_user.id, 'completed')
+
+#         # Create a new order record
+#         create_order(transaction_id, cart_value, current_user.id)
+
+#         # Clear the cart after successful purchase
+#         clear_cart(current_user.id)
+
+#         return redirect(url_for('user.success'))
+
+#     except Exception as e:
+#         current_app.logger.error(f"Error during payment: {e}")
+#         return f"Internal Server Error: {e}", 500
+
 @user_bp.route('/payment', methods=['POST'])
 @login_required
 def payment():
     try:
         # Fetch the cart value from the session or calculate it based on the current user
         cart_value = get_user_cart_value(current_user.id)
+        cart_items = get_user_cart_items(current_user.id)
 
         if not cart_value or cart_value <= 0:
             current_app.logger.error("Invalid cart value.")
@@ -896,6 +950,17 @@ def payment():
             currency='sgd',
         )
 
+         # Update stock quantities
+        engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+        with engine.connect() as conn:
+            for item in cart_items:
+                update_stock_query = text("""
+                    UPDATE listings
+                    SET stock = stock - :quantity
+                    WHERE id = :listing_id
+                """)
+                conn.execute(update_stock_query, {'quantity': item['quantity'], 'listing_id': item['listing_id']})
+
         # Create a new transaction record
         transaction_id = create_transaction(current_user.id, 'completed')
 
@@ -910,6 +975,41 @@ def payment():
     except Exception as e:
         current_app.logger.error(f"Error during payment: {e}")
         return f"Internal Server Error: {e}", 500
+
+
+    
+def clear_user_cart(user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        with engine.connect() as conn:
+            delete_query = text("""
+                DELETE ci
+                FROM cart_items ci
+                JOIN carts c ON ci.cart_id = c.id
+                WHERE c.user_id = :user_id
+            """)
+            conn.execute(delete_query, {'user_id': user_id})
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error clearing user cart: {e}")
+
+
+def get_user_cart_items(user_id):
+    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT ci.id, l.imagepath, l.title, l.price, ci.quantity, ci.listing_id
+                FROM cart_items ci
+                JOIN listings l ON ci.listing_id = l.id
+                JOIN carts c ON ci.cart_id = c.id
+                WHERE c.user_id = :user_id
+            """)
+            result = conn.execute(query, {'user_id': user_id})
+            return [dict(row) for row in result]
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error fetching cart items: {e}")
+        return []
+
 
 def create_transaction(user_id, status):
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')

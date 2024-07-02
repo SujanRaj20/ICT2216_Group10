@@ -59,7 +59,7 @@ pipeline {
                     -n
                     --prettyPrint
                     --enableExperimental
-                    --property autoUpdate=true''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    -DautoUpdate=true''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             
             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }

@@ -32,16 +32,16 @@ publishable_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
 user_bp = Blueprint('user', __name__)
 mail = Mail()
 
-def init_mail(app):
-    # Flask-Mail configuration for Gmail
-    app.config['MAIL_SERVER'] = '***REMOVED***'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USE_SSL'] = False
-    app.config['MAIL_USERNAME'] = '***REMOVED***'
-    app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
+# def init_mail(app):
+#     # Flask-Mail configuration for Gmail
+#     app.config['MAIL_SERVER'] = '***REMOVED***'
+#     app.config['MAIL_PORT'] = 587
+#     app.config['MAIL_USE_TLS'] = True
+#     app.config['MAIL_USE_SSL'] = False
+#     app.config['MAIL_USERNAME'] = '***REMOVED***'
+#     app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
 
-    mail.init_app(app)
+#     mail.init_app(app)
 
 def generate_otp():
     """Generate a random 6-digit OTP."""

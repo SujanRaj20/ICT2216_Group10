@@ -57,7 +57,8 @@ pipeline {
                     -s './flask_app'
                     -f 'ALL'
                     --prettyPrint
-                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    --enableExperimental
+                    --nvdApiKey 43d9065d-8664-4cf5-9b09-b0f600b6c3ff''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
           }
         }

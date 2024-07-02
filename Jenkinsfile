@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
         NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634'
+        //43d9065d-8664-4cf5-9b09-b0f600b6c3ff
     }
 
     triggers {
@@ -50,17 +51,28 @@ pipeline {
             }
         }
 
+        // stage('OWASP Dependency-Check Vulnerabilities') {
+        //   steps {
+        //     dependencyCheck additionalArguments: '''
+        //             -o './'
+        //             -s './flask_app'
+        //             -f 'ALL'
+        //             --prettyPrint
+        //             --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+        //     dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+        //   }
+        // }
+
         stage('OWASP Dependency-Check Vulnerabilities') {
-          steps {
-            dependencyCheck additionalArguments: '''
+            steps {
+                dependencyCheck additionalArguments: ''' 
                     -o './'
-                    -s './flask_app'
-                    -f 'ALL'
-                    --prettyPrint
-                    --enableExperimental
-                    --nvdApiKey 43d9065d-8664-4cf5-9b09-b0f600b6c3ff''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-          }
+                    -s './'
+                    -f 'ALL' 
+                    --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+        
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
         }
 
         stage('Install Docker Compose') {

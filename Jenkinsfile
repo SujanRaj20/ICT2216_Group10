@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
-        NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634' // Add your NVD API Key here
     }
 
     triggers {
@@ -93,24 +92,28 @@ pipeline {
             }
         }
 
-        stage('OWASP Dependency-Check Vulnerabilities') {
-          steps {
-            dependencyCheck additionalArguments: '''
-                    -o './'
-                    -s './flask_app'
-                    -f 'ALL'
-                    -n 
-                    --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-            
-            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-          }
+          stage('OWASP Dependency-Check Vulnerabilities') {
+            steps {
+                script {
+                    dependencyCheck additionalArguments: '''
+                        -o './dependency-check-report'
+                        -s './flask_app'
+                        -f 'ALL'
+                        -n 
+                        --prettyPrint
+                        --scan ./flask_app
+                    ''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                    
+                    dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
+                 } 
+            }
         }
     }
 
-    // post {
-    //     always {
-    //         cleanWs()
-    //     }
-    // }
+    post {
+        always {
+            cleanWs()
+        }
+    }
 }
 

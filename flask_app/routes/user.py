@@ -64,6 +64,12 @@ def validate_otp(otp):
     """Validate the OTP entered by the user."""
     stored_otp = session.get('otp')
     otp_timestamp = session.get('otp_timestamp')
+    
+    current_app.logger.debug(f"otp: {otp}")
+    current_app.logger.debug(f"stored_otp: {stored_otp}")
+    current_app.logger.debug(f"otp_timestamp: {otp_timestamp}")
+    current_app.logger.debug(f"time.time() : { time.time() }")
+    
     if stored_otp and otp_timestamp:
         return otp == stored_otp and time.time() - otp_timestamp <= 120  # 120 seconds (2 minutes)
     return False
@@ -71,8 +77,15 @@ def validate_otp(otp):
 def store_otp_in_session(email, otp):
     """Store OTP and related information in the session."""
     session['otp'] = otp
+    current_app.logger.debug(f"store_otp_in_session pushing otp: {otp}")
     session['otp_timestamp'] = time.time()
+    current_app.logger.debug(f"store_otp_in_session pushing otp_timestamp: {time.time()}")
     session['email'] = email
+    current_app.logger.debug(f"store_otp_in_session pushing email: {email}")
+    
+    current_app.logger.debug(f"store_otp_in_session saved otp: {session.get('otp')}")
+    current_app.logger.debug(f"store_otp_in_session saved otp_timestamp: {session.get('otp_timestamp')}")
+    current_app.logger.debug(f"store_otp_in_session saved email: {session.get('email')}")
 
 @user_bp.route('/generate_new_otp', methods=['POST'])
 def generate_new_otp():
@@ -222,6 +235,7 @@ def buyersignup():
             session['otp_data'] = data
             session['otp_role'] = 'buyer'
             session['purpose'] = 'signup'
+            session['otp_timestamp'] = time.time()
                 
             # otp_data = session.get('otp_data')
             # otp_role = session.get('otp_role')
@@ -231,6 +245,7 @@ def buyersignup():
             
             # Generate OTP and send email
             otp = generate_otp()
+            
             session['otp'] = otp
             session['otp_expiry'] = datetime.utcnow() + timedelta(seconds=60)
             session['email'] = email
@@ -329,6 +344,7 @@ def signup_verify_otp():
         role = session.get('otp_role')
         current_app.logger.debug(f"otpdata is {otpdata}")
         if validate_otp(otpdata):
+            current_app.logger.debug(f"otpdata validated")
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor()
@@ -344,7 +360,7 @@ def signup_verify_otp():
                 conn.commit()
                 cursor.close()
                 conn.close()
-                return jsonify({'redirect_url': url_for('main.index')}), 200
+                return jsonify({'redirect_url': url_for('main.login')}), 200
             else:
                 return jsonify({'error': 'Failed to connect to database'}), 500
         else:

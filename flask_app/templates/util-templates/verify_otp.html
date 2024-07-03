@@ -41,6 +41,7 @@
 
 <script>
   document.getElementById("otpForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent default form submission
     const otp = sanitize(document.getElementById("otp").value);
 
     if (!otp)
@@ -56,22 +57,13 @@
       },
       body: JSON.stringify(otp), 
     })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json(); // Attempt to parse JSON
-    })
+    .then((response) => response.json())
     .then((data) => {
-
-      console.log("data: ", data)
-
-      if (data.error) {
-        alert("There was an error signing up")
-        console.log(data.error)
+      if (data.redirect_url) {
+        alert("Signed up successfully.");
+        window.location.href = data.redirect_url;
       } else {
-        alert("Signed up successfuly.");
-        window.location.href = data.redirect_url || "/login"; // Redirect to OTP verification page
+        alert(data.error);
       }
     })
     .catch((error) => {
@@ -130,29 +122,7 @@
       });
     });
   
-    document.getElementById('otpForm').addEventListener('submit', function(event) {
-      event.preventDefault(); // Prevent default form submission
-  
-      const formData = new FormData(this);
-  
-      fetch('/verify_otp', {
-        method: 'POST',
-        body: formData,
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.redirect_url) {
-          // Redirect to the main page
-          window.location.href = data.redirect_url;
-        } else {
-          alert(data.error);
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        alert('An error occurred while verifying the OTP.');
-      });
-    });
+    
 
     function sanitize(input) {
       const element = document.createElement("div");

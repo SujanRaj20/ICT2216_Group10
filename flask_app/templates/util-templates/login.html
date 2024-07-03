@@ -93,11 +93,23 @@
     .addEventListener("submit", function (event) {
       event.preventDefault(); // Prevent default form submission
 
-      const formData = new FormData(this);
+
+      const email = sanitize(document.getElementById("email").value);
+      const password = document.getElementById("password").value;
+      const captcha = document.getElementById("captcha").value;
+
+      const userData = {
+        email,
+        password,
+        captcha,
+      };
 
       fetch("/buyerlogin", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
       })
         .then((response) => {
           return response.text().then((text) => {
@@ -143,4 +155,10 @@
           document.getElementById("password").value = "";
         });
     });
+
+    function sanitize(input) {
+      const element = document.createElement("div");
+      element.innerText = input;
+      return element.innerHTML;
+    }
 </script>

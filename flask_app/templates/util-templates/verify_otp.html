@@ -40,6 +40,10 @@
 {% include "buyer-templates/buyer-footer.html" %}
 
 <script>
+
+  const purpose = "{{ purpose }}";
+  console.log(purpose)
+
   document.getElementById("otpForm").addEventListener("submit", function (event) {
     event.preventDefault(); // Prevent default form submission
     const otp = sanitize(document.getElementById("otp").value);
@@ -50,25 +54,47 @@
         return;
     }
 
-    fetch("/signup_verify_otp", {
-      method: "POST",
-      headers:{
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(otp), 
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.redirect_url) {
-        alert("Signed up successfully.");
-        window.location.href = data.redirect_url;
-      } else {
-        alert(data.error);
-      }
-    })
-    .catch((error) => {
-      console.error("Catch Error:", error);
-    });
+    if (purpose === 'signup') {
+      fetch("/signup_verify_otp", {
+        method: "POST",
+        headers:{
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(otp), 
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.redirect_url) {
+          alert("Signed up successfully.");
+          window.location.href = data.redirect_url;
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Catch Error:", error);
+      });
+    }else if (purpose === 'login') {
+      fetch("/login_verify_otp", {
+        method: "POST",
+        headers:{
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(otp), 
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.redirect_url) {
+          alert("Logged in successfully.");
+          window.location.href = data.redirect_url;
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Catch Error:", error);
+      });
+    }
     
   });
 

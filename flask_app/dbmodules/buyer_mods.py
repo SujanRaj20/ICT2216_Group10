@@ -1,12 +1,22 @@
 from dbmodules.db_engine import get_engine
 
+
+import logging
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE
+from sqlalchemy.sql import select
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import current_app
+from datetime import datetime
+import os
+
 class Buyer_Cart:
     @staticmethod
     def add_to_cart(user_id, listing_id):
         engine = get_engine()
         try:
             # Get the user's cart
-            user_cart = get_user_cart(user_id)
+            user_cart = Buyer_Cart.get_user_cart(user_id)  # Corrected
 
             cart_id = user_cart['id']
             
@@ -60,7 +70,8 @@ class Buyer_Cart:
         finally:
             engine.dispose()
 
-    def get_user_cart(user_id):
+    @staticmethod
+    def get_user_cart(user_id):  # Corrected to staticmethod
         engine = get_engine()
         try:
             query = f"SELECT * FROM carts WHERE user_id = '{user_id}'"
@@ -90,7 +101,7 @@ class Buyer_Cart:
         engine = get_engine()
         try:
             # Get the user's cart
-            user_cart = get_user_cart(userid)
+            user_cart = Buyer_Cart.get_user_cart(userid)  # Corrected
 
             cart_id = user_cart['id']
             
@@ -141,7 +152,7 @@ class Buyer_Cart:
 
     @staticmethod
     def get_user_cart_value(userid):
-        user_cart = get_user_cart(userid)
+        user_cart = Buyer_Cart.get_user_cart(userid)  # Corrected
         cart_value = user_cart['total_price']
         
         return cart_value
@@ -149,7 +160,7 @@ class Buyer_Cart:
     @staticmethod
     def get_user_cart_item_count(userid):
         try:
-            cart = get_user_cart(userid)
+            cart = Buyer_Cart.get_user_cart(userid)  # Corrected
             cart_count = cart['item_count']
             return cart_count
         except SQLAlchemyError as e:
@@ -179,7 +190,7 @@ class Buyer_Cart:
                 engine.execute(update_query)
 
                 # Update cart totals
-                update_cart_totals(cart_item['cart_id'])
+                Buyer_Cart.update_cart_totals(cart_item['cart_id'])  # Corrected
 
                 return {'success': True}
             else:
@@ -220,7 +231,7 @@ class Buyer_Cart:
                     engine.execute(delete_query)
 
                 # Update cart totals
-                update_cart_totals(cart_item['cart_id'])
+                Buyer_Cart.update_cart_totals(cart_item['cart_id'])  # Corrected
 
                 return {'success': True}
             else:
@@ -252,7 +263,7 @@ class Buyer_Cart:
                 engine.execute(delete_query)
 
                 # Update cart totals
-                update_cart_totals(cart_item['cart_id'])
+                Buyer_Cart.update_cart_totals(cart_item['cart_id'])  # Corrected
 
                 return {'success': True}
             else:
@@ -261,6 +272,7 @@ class Buyer_Cart:
             return {'success': False, 'error': str(e)}
         finally:
             engine.dispose()
+
  
 class Buyer_Wishlist:
     @staticmethod

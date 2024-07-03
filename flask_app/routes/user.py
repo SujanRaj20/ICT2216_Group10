@@ -1077,7 +1077,7 @@ def clear_cart(user_id):
     engine = get_engine()
     try:
         # Get the user's cart
-        user_cart = get_user_cart(user_id)
+        user_cart = Buyer_Cart.get_user_cart(user_id)
         if not user_cart:
             return {'success': False, 'error': 'Cart not found'}
 
@@ -1144,7 +1144,7 @@ def cancel():
 @user_bp.context_processor
 def inject_user_cart_count():
     if current_user.is_authenticated:
-        cart = get_user_cart(current_user.id)
+        cart = Buyer_Cart.get_user_cart(current_user.id)
         user_cart_count = cart['item_count'] if cart else 0
     else:
         user_cart_count = 0

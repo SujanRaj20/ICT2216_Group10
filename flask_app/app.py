@@ -41,7 +41,7 @@ mail = Mail(app)
 @app.context_processor
 def inject_user_cart_count():
     if current_user.is_authenticated:
-        user_cart_count = get_user_cart_item_count(current_user.id)
+        user_cart_count = Buyer_Cart.get_user_cart_item_count(current_user.id)
     else:
         user_cart_count = '0'
     return dict(user_cart_count=user_cart_count)

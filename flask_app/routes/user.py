@@ -68,6 +68,7 @@ def validate_otp(otp):
     current_app.logger.debug(f"stored OTP is {stored_otp}")
     otp_timestamp = session.get('otp_timestamp')
     if stored_otp and otp_timestamp:
+        return otp == stored_otp and time.time() - otp_timestamp <= 120
     return False
 
 def store_otp_in_session(email, otp):

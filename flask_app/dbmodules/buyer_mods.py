@@ -497,3 +497,20 @@ def create_report(title, body, item_id, seller_id, buyer_id):
     finally:
         engine.dispose()
 
+
+def fetch_top_five_bestsellers():
+    query = """
+    SELECT id, title, imagepath, sales
+    FROM listings
+    ORDER BY sales DESC
+    LIMIT 5
+    """
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            result = conn.execute(text(query))
+            listings = [dict(row) for row in result]
+        return listings
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error fetching top five bestsellers: {e}")
+        return []

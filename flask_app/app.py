@@ -21,6 +21,7 @@ import mysql.connector
 import logging
 from flask_mail import Mail
 
+
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
@@ -37,6 +38,13 @@ app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password her
 
 # Initialize Mail
 mail = Mail(app)
+
+# Define the custom filter for enumerate
+def jinja2_enumerate(sequence, start=0):
+    return enumerate(sequence, start=start)
+
+# Register the filter
+app.jinja_env.filters['enumerate'] = jinja2_enumerate
 
 @app.context_processor
 def inject_user_cart_count():

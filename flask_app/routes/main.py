@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, send_from_directory, request
+from flask import Blueprint, current_app, render_template, send_from_directory, request
 
 from flask_login import current_user
 
 from dbmodules.seller_mods import Listing_Modules
 from dbmodules.user_model import User
-from dbmodules.buyer_mods import Buyer_Shop, Buyer_Cart
+from dbmodules.buyer_mods import Buyer_Shop, Buyer_Cart, fetch_top_five_bestsellers
 
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
@@ -18,10 +18,20 @@ def rolechecker():
     return user_role
 
 # Define the route for the home page
+# @main_bp.route("/")
+# def index():
+#     user_role = rolechecker()
+#     return render_template("util-templates/index.html", user_role=user_role)  # Render the / 
+
 @main_bp.route("/")
 def index():
-    user_role = rolechecker()
-    return render_template("util-templates/index.html", user_role=user_role)  # Render the / 
+    try:
+        user_role = rolechecker()
+        top_listings = fetch_top_five_bestsellers()
+        return render_template("util-templates/index.html", user_role=user_role, top_listings=top_listings)
+    except Exception as e:
+        current_app.logger.error(f"Exception on / [GET]: {e}")
+        return "Internal Server Error", 500
 
 # Add more routes here
 @main_bp.route("/contact")

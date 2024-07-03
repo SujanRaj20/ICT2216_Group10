@@ -643,5 +643,11 @@
     to {bottom: 0; opacity: 0;}
 }
 
+.bestseller-img {
+    width: 100%;
+    height: 150px; /* Adjust height as needed */
+    object-fit: cover;
+    border-radius: 50%;
+}
 
 

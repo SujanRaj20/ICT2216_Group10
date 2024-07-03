@@ -438,6 +438,7 @@ def seller_listings():
 def seller_listing_add():
     return render_template("seller-templates/seller-listing-add.html")  # Render seller-listings.html with the userid
 
+
 @user_bp.route('/add-listing', methods=['POST'])
 def add_listing():
     try:
@@ -450,11 +451,14 @@ def add_listing():
         author = request.form['author']
         publisher = request.form['publisher']
         price = request.form['price']
-        sales = '0'
+        sales = request.form.get('sales', '0')  # Default value for sales if not provided
         stock = request.form['stock']
         type = request.form['type']
         seller_id = current_user.id  # Assuming you have a logged-in user with an 'id' attribute
         image = request.files['image']  # Handle file upload separately if needed
+
+        # Log received data for debugging
+        current_app.logger.debug(f"Received data: title={title}, description={description}, keywords={keywords}, release_date={release_date}, author={author}, publisher={publisher}, price={price}, sales={sales}, stock={stock}, type={type}, seller_id={seller_id}, image={image.filename if image else 'None'}")
         
         # Basic server-side validation
         if not (title and price and stock and type and image):
@@ -469,7 +473,7 @@ def add_listing():
 
         insert_query = """
         INSERT INTO listings (title, description, keywords, release_date, author, publisher, price, sales, stock, type, seller_id, imagepath)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(insert_query, (title, description, keywords, release_date, author, publisher, price, sales, stock, type, seller_id, image_path))
         conn.commit()
@@ -478,7 +482,7 @@ def add_listing():
         return jsonify({'message': 'Listing added successfully'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    
 def save_image(image):
     # Define the directory where you want to save images
     upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'listingpictures')
@@ -892,6 +896,7 @@ def report_comment(comment_id):
 #         current_app.logger.error(f"Error during payment: {e}")
 #         return f"Internal Server Error: {e}", 500
 
+
 @user_bp.route('/payment', methods=['POST'])
 @login_required
 def payment():
@@ -937,7 +942,7 @@ def payment():
             for item in cart_items:
                 update_stock_query = text("""
                     UPDATE listings
-                    SET stock = stock - :quantity
+                    SET stock = stock - :quantity, sales = sales + :quantity
                     WHERE id = :listing_id
                 """)
                 conn.execute(update_stock_query, {'quantity': item['quantity'], 'listing_id': item['listing_id']})

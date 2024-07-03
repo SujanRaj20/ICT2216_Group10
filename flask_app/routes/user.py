@@ -13,7 +13,6 @@ from dbmodules.seller_mods import Listing_Modules, get_seller_info
 from dbmodules.user_model import User
 from dbmodules.db_engine import get_engine
 from dbmodules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report
-
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -340,8 +339,8 @@ def generate_captcha():
 def seller_listings():
     sort_option = request.args.get('sort', 'none')
     category = request.args.get('category', 'all')
-    seller_listings = fetch_seller_listings(current_user.id, sort_option, category)
-    category_counts = fetch_category_counts(current_user.id)
+    seller_listings = Listing_Modules.fetch_seller_listings(current_user.id, sort_option, category)
+    category_counts = Buyer_Shop.fetch_category_counts(current_user.id)
     return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route("/seller-listing-add")
@@ -410,7 +409,7 @@ def add_to_cart_route(listing_id):
     try:
         user_id = current_user.id
         # current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to cart")
-        result = add_to_cart(user_id, listing_id)
+        result = Buyer_Cart.add_to_cart(user_id, listing_id)
         
         if 'error' in result:
             current_app.logger.error(result['error'])
@@ -433,7 +432,7 @@ def add_to_wishlist_route(listing_id):
     try:
         user_id = current_user.id
         # current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to wishlist")
-        result = add_to_wishlist(user_id, listing_id)
+        result = Buyer_Wishlist.add_to_wishlist(user_id, listing_id)
         
         if 'error' in result:
             current_app.logger.error(result['error'])
@@ -504,7 +503,7 @@ def edit_listing(item_id):
 @login_required
 def delete_listing(listing_id):
     try:
-        listing = get_listing_byid(listing_id)
+        listing = Listing_Modules.get_listing_byid(listing_id)
         if not listing:
             return jsonify({"success": False, "message": "Listing not found"}), 404
 
@@ -515,7 +514,7 @@ def delete_listing(listing_id):
         # Fetch the image path before deleting the listing
         image_path = listing['imagepath']
         
-        delete_listing_fromdb(listing_id)
+        Listing_Modules.delete_listing_fromdb(listing_id)
         
         # Delete the image file from the filesystem
         if image_path:
@@ -606,13 +605,13 @@ def item_page_seller(item_id):
 @login_required
 def cart():
     cart_items = get_cart_items(current_user.id)
-    cart_value = get_user_cart_value(current_user.id)
+    cart_value = Buyer_Cart.get_user_cart_value(current_user.id)
     return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
 
 @user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
 @login_required
 def increase_quantity(cart_item_id):
-    result = increase_cart_item_quantity(cart_item_id, current_user.id)
+    result = Buyer_Cart.increase_cart_item_quantity(cart_item_id, current_user.id)
     if result['success']:
         return jsonify({'message': 'Quantity increased successfully'}), 200
     else:
@@ -621,7 +620,7 @@ def increase_quantity(cart_item_id):
 @user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])
 @login_required
 def decrease_quantity(cart_item_id):
-    result = decrease_cart_item_quantity(cart_item_id, current_user.id)
+    result = Buyer_Cart.decrease_cart_item_quantity(cart_item_id, current_user.id)
     if result['success']:
         return jsonify({'message': 'Quantity decreased successfully'}), 200
     else:
@@ -630,7 +629,7 @@ def decrease_quantity(cart_item_id):
 @user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])
 @login_required
 def delete_item(cart_item_id):
-    result = delete_cart_item(cart_item_id, current_user.id)
+    result = Buyer_Cart.delete_cart_item(cart_item_id, current_user.id)
     if result['success']:
         return jsonify({'message': 'Item deleted successfully'}), 200
     else:
@@ -645,13 +644,13 @@ def logout():
 @user_bp.route("/wishlist")
 @login_required
 def wishlist():
-    wishlist_items = get_wishlist_items(current_user.id)
+    wishlist_items = Buyer_Wishlist.get_wishlist_items(current_user.id)
     return render_template("buyer-templates/buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
 
 @user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST'])
 @login_required
 def delete_item_wishlist(wishlist_item_id):
-    result = delete_wishlist_item(wishlist_item_id, current_user.id)
+    result = Buyer_Wishlist.delete_wishlist_item(wishlist_item_id, current_user.id)
     if result['success']:
         return jsonify({'message': 'Item deleted successfully'}), 200
     else:
@@ -691,8 +690,8 @@ def buyer_seller_page(seller_id):
     seller_info = get_seller_info(seller_id)
     sort_option = request.args.get('sort', 'none')
     category = request.args.get('category', 'all')
-    listings = fetch_seller_listings(seller_id, sort_option, category)
-    category_counts = fetch_category_counts_for_shop_buyer()
+    listings = Listing_Modules.fetch_seller_listings(seller_id, sort_option, category)
+    category_counts = Buyer_Shop.fetch_category_counts_for_shop_buyer()
     return render_template('buyer-templates/buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])
@@ -807,7 +806,7 @@ def report_comment(comment_id):
 def payment():
     try:
         # Fetch the cart value from the session or calculate it based on the current user
-        cart_value = get_user_cart_value(current_user.id)
+        cart_value = Buyer_Cart.get_user_cart_value(current_user.id)
         cart_items = get_user_cart_items(current_user.id)
 
         if not cart_value or cart_value <= 0:
@@ -868,7 +867,6 @@ def payment():
     except Exception as e:
         current_app.logger.error(f"Error during payment: {e}")
         return f"Internal Server Error: {e}", 500
-
 
     
 def clear_user_cart(user_id):

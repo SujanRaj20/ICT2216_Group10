@@ -6,13 +6,15 @@ from datetime import timedelta
 
 import stripe
 
-from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created, User, authenticate_user, get_user_by_id, get_user_cart_item_count
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created
 from routes.main import main_bp  # Import the Blueprint from the routes module
 from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
 from endpoint_config import protected_endpoints  # Import protected endpoints
 
-from db_connector import get_mysql_connection
+from dbmodules.user_model import User
+from dbmodules.buyer_mods import Buyer_Cart
+from dbmodules.db_connector import get_mysql_connection
 from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 # from sqlalchemy import text
 import mysql.connector

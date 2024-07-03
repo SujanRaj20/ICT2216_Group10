@@ -8,8 +8,12 @@ from flask_mail import Mail, Message
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
-from SqlAlchemy.createTable import User, fetch_seller_listings, get_listing_byid, delete_listing_fromdb, fetch_category_counts, add_to_cart, get_cart_items, get_user_cart, get_user_cart_item_count, increase_cart_item_quantity, decrease_cart_item_quantity, delete_cart_item, get_user_cart_value, add_to_wishlist, get_wishlist_items,delete_wishlist_item,create_report, get_seller_info, fetch_all_listings_forbuyer, fetch_category_counts_for_shop_buyer, create_comment, get_comments_for_item, create_comment_report
-from SqlAlchemy.createTable import local_mysql_host, local_mysql_port, local_mysql_user, local_mysql_password, local_mysql_db
+
+from dbmodules.seller_mods import Listing_Modules, get_seller_info
+from dbmodules.user_model import User
+from dbmodules.db_engine import get_engine
+from dbmodules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report
+
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -20,7 +24,7 @@ import string
 from bcrypt import hashpw, gensalt, checkpw
 import bcrypt  # Import bcrypt module directly
 import mysql.connector
-from db_connector import get_mysql_connection
+from dbmodules.db_connector import get_mysql_connection
 from flask import send_file
 from captcha.image import ImageCaptcha
 import io
@@ -514,7 +518,9 @@ def buyersignup():
 
 @user_bp.route('/signup_verify_otp', methods=['GET', 'POST'])
 def signup_verify_otp():
+    current_app.logger.info(f"Redirected to signup_verify_otp")
     if request.method == 'POST':
+        current_app.logger.info(f"POST method called")
         try:
             otp = request.form.get('otp')
             current_app.logger.info(f"Received OTP: {otp}")
@@ -951,7 +957,7 @@ def payment():
         )
 
          # Update stock quantities
-        engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+        engine = get_engine()
         with engine.connect() as conn:
             for item in cart_items:
                 update_stock_query = text("""
@@ -969,6 +975,8 @@ def payment():
 
         # Clear the cart after successful purchase
         clear_cart(current_user.id)
+        
+        engine.dispose
 
         return redirect(url_for('user.success'))
 
@@ -979,7 +987,7 @@ def payment():
 
     
 def clear_user_cart(user_id):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         with engine.connect() as conn:
             delete_query = text("""
@@ -994,7 +1002,7 @@ def clear_user_cart(user_id):
 
 
 def get_user_cart_items(user_id):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         with engine.connect() as conn:
             query = text("""
@@ -1012,7 +1020,7 @@ def get_user_cart_items(user_id):
 
 
 def create_transaction(user_id, status):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         query = """
             INSERT INTO transactions (user_id, status)
@@ -1029,7 +1037,7 @@ def create_transaction(user_id, status):
         engine.dispose()
 
 def create_order(transaction_id, total_price, buyer_id):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         query = text("""
             INSERT INTO orders (transaction_id, keywords, total_price, buyer_id, quantity)
@@ -1066,7 +1074,7 @@ def calculate_total_quantity(user_id):
     return total_quantity
 
 def clear_cart(user_id):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         # Get the user's cart
         user_cart = get_user_cart(user_id)
@@ -1103,7 +1111,7 @@ def clear_cart_route():
         return jsonify({'error': str(e)}), 500
 
 def get_cart_items(buyer_id):
-    engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
+    engine = get_engine()
     try:
         query = """
             SELECT ci.id, l.imagepath, l.title, l.price, ci.quantity, l.keywords

@@ -1,21 +1,10 @@
-from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-import stripe
-from SqlAlchemy.createTable import User, get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete, get_listings_foradmin, admin_listingdelete, get_comments_foradmin, admin_commentdelete, get_commentreports_foradmin, get_listingreports_foradmin, admin_commentreportdelete, admin_listingreportdelete
-import json
-import os
-from werkzeug.utils import secure_filename
+from flask import Blueprint, render_template, request, jsonify, session, current_app
+from flask_login import login_required
+from dbmodules.admin_mods import get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete, get_listings_foradmin, admin_listingdelete, get_comments_foradmin, admin_commentdelete, get_commentreports_foradmin, get_listingreports_foradmin, admin_commentreportdelete, admin_listingreportdelete
 import logging
-import random
-import string
-
-from bcrypt import hashpw, gensalt, checkpw
-import bcrypt  # Import bcrypt module directly
+from bcrypt import hashpw, gensalt
 import mysql.connector
-from db_connector import get_mysql_connection
-from flask import send_file
-from captcha.image import ImageCaptcha
-import io
+from dbmodules.db_connector import get_mysql_connection
 
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)

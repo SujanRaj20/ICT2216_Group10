@@ -190,9 +190,12 @@ def sellerlogin():
 def buyersignup():
     try:
         data = request.get_json()
+        fname = data.get('fname')
+        lname = data.get('lname')
         email = data.get('email')
         phone_num = data.get('phone_num')
         username = data.get('username')
+        password = data.get('password')
         captcha_input = data.get('captcha')
 
         # Validate CAPTCHA
@@ -203,6 +206,7 @@ def buyersignup():
         if not (fname and lname and email and username and password):
             return jsonify({'error': 'All fields except phone number are required'}), 400
         
+
         conn = get_mysql_connection()
         if conn:
             cursor = conn.cursor()
@@ -258,7 +262,77 @@ def buyersignup():
 
 @user_bp.route('/sellersignup', methods=['POST'])
 def sellersignup():
-    return handle_signup('seller')
+    try:
+        data = request.get_json()
+        fname = data.get('fname')
+        lname = data.get('lname')
+        email = data.get('email')
+        phone_num = data.get('phone_num')
+        username = data.get('username')
+        password = data.get('password')
+        captcha_input = data.get('captcha')
+
+        # Validate CAPTCHA
+        if captcha_input != session.get('captcha_text'):
+            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
+        
+        # Basic server-side validation
+        if not (fname and lname and email and username and password):
+            return jsonify({'error': 'All fields except phone number are required'}), 400
+        
+
+        conn = get_mysql_connection()
+        if conn:
+            cursor = conn.cursor()
+            
+            # Check if email, username, or phone number already exists
+            query = """
+            SELECT * FROM users WHERE email = %s OR username = %s OR phone_num = %s
+            """
+            cursor.execute(query, (email, username, phone_num))
+            existing_users = cursor.fetchall()
+            
+            if existing_users:
+                existing_fields = []
+                for user in existing_users:
+                    if user[5] == email:
+                        existing_fields.append("Email")
+                    if user[1] == username:
+                        existing_fields.append("Username")
+                    if user[6] == phone_num:
+                        existing_fields.append("Phone Number")
+                        
+                return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
+
+            # Store user data in session for OTP verification
+            session['otp_data'] = data
+            session['otp_role'] = 'seller'
+            session['purpose'] = 'signup'
+            session['otp_timestamp'] = time.time()
+                
+            # otp_data = session.get('otp_data')
+            # otp_role = session.get('otp_role')
+                
+            # current_app.logger.debug(f"pushed otp_data: {otp_data}" )
+            # current_app.logger.debug(f"pushed otp_data: {otp_role}" )
+            
+            # Generate OTP and send email
+            otp = generate_otp()
+            
+            session['otp'] = otp
+            session['otp_expiry'] = datetime.utcnow() + timedelta(seconds=60)
+            session['email'] = email
+            
+            if send_otp_email(email, otp):
+                return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200
+            else:
+                return jsonify({'error': 'Failed to send OTP email.'}), 500
+            
+    except mysql.connector.Error as err:
+        return jsonify({'error': f"Database error: {err}"}), 500
+    except Exception as e:
+        current_app.logger.debug(f"e: {e}" )
+        return jsonify({'error': str(e)}), 500
 
 def handle_signup(role):
     try:

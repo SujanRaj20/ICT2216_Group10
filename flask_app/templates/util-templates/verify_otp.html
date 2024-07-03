@@ -62,16 +62,16 @@
       }
       return response.json(); // Attempt to parse JSON
     })
-    .then((otp) => {
+    .then((data) => {
 
-      console.log("data: ", otp)
+      console.log("data: ", data)
 
       if (data.error) {
         alert("There was an error signing up")
         console.log(data.error)
       } else {
         alert("Signed up successfuly.");
-        window.location.href = data.redirect_url || "/"; // Redirect to OTP verification page
+        window.location.href = data.redirect_url || "/login"; // Redirect to OTP verification page
       }
     })
     .catch((error) => {

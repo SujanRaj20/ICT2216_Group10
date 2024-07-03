@@ -153,8 +153,16 @@
         },
         body: JSON.stringify(userData),
       })
-        .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); // Attempt to parse JSON
+      })
         .then((data) => {
+
+          console.log("data: ", data)
+
           if (data.error) {
             if (data.error.includes("Email")) {
               document.getElementById("email-error").innerText =
@@ -174,11 +182,11 @@
             }
           } else {
             alert("Verification email sent. Please check your email to continue.");
-            window.location.href = data.redirect_url || "/signup_verify_otp"; // Redirect to OTP verification page
+            window.location.href = data.redirect_url || "/verify_otp"; // Redirect to OTP verification page
           }
         })
         .catch((error) => {
-          console.error("Error:", error);
+          console.error("Catch Error:", error);
         });
     });
 

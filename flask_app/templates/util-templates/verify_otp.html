@@ -5,13 +5,11 @@
 <div class="container-fluid page-header py-4">
   <h1 class="text-center text-white display-6">OTP Verification</h1>
 </div>
-
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="bg-light rounded p-4">
-                <form id="otpForm" method="POST" action="{{ url_for('user.verify_otp' if purpose == 'login' else 'user.signup_verify_otp') }}">
-
+                <form id="otpForm">
                     <div class="mb-3">
                         <label for="otp" class="form-label">Enter OTP</label>
                         <input type="text" class="form-control" id="otp" name="otp" required>
@@ -42,6 +40,49 @@
 {% include "buyer-templates/buyer-footer.html" %}
 
 <script>
+  document.getElementById("otpForm").addEventListener("submit", function (event) {
+    const otp = sanitize(document.getElementById("otp").value);
+
+    if (!otp)
+    {
+      alert("Please fill in the OTP.");
+        return;
+    }
+
+    fetch("/signup_verify_otp", {
+      method: "POST",
+      headers:{
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(otp), 
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json(); // Attempt to parse JSON
+    })
+    .then((otp) => {
+
+      console.log("data: ", otp)
+
+      if (data.error) {
+        alert("There was an error signing up")
+        console.log(data.error)
+      } else {
+        alert("Signed up successfuly.");
+        window.location.href = data.redirect_url || "/"; // Redirect to OTP verification page
+      }
+    })
+    .catch((error) => {
+      console.error("Catch Error:", error);
+    });
+    
+  });
+
+
+
+
     let timeLeft = 60;
     let alertShown = false;
     const timeLeftElement = document.getElementById('timeLeft');
@@ -112,4 +153,10 @@
         alert('An error occurred while verifying the OTP.');
       });
     });
+
+    function sanitize(input) {
+      const element = document.createElement("div");
+      element.innerText = input;
+      return element.innerHTML;
+    }
   </script>

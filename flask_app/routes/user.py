@@ -61,8 +61,11 @@ def validate_captcha(captcha_input):
     return captcha_input == session.get('captcha_text')
 
 def validate_otp(otp):
+    current_app.logger.debug(f"validate otp func called")
+    current_app.logger.debug(f"OTP passes is {otp}")
     """Validate the OTP entered by the user."""
     stored_otp = session.get('otp')
+    current_app.logger.debug(f"stored OTP is {stored_otp}")
     otp_timestamp = session.get('otp_timestamp')
     if stored_otp and otp_timestamp:
         return otp == stored_otp and time.time() - otp_timestamp <= 120  # 120 seconds (2 minutes)
@@ -154,34 +157,27 @@ def sellerlogin():
         current_app.logger.error(f"Error in sellerlogin: {str(e)}")
         return jsonify({'error': 'Failed to authenticate user'}), 500
 
-@user_bp.route('/verify_otp', methods=['GET', 'POST'])
-def verify_otp():
-    if request.method == 'POST':
-        try:
-            otp = request.form.get('otp')
+# @user_bp.route('/verify_otp', methods=['GET', 'POST'])
+# def verify_otp():
+#     if request.method == 'POST':
+#         try:
+#             otp = request.form.get('otp')
 
-            if validate_otp(otp):
-                session.pop('otp', None)
-                session.pop('email', None)
-                session.pop('otp_timestamp', None)
-                return jsonify({'redirect_url': url_for('main.index')}), 200
-            else:
-                return jsonify({'error': 'Invalid or expired OTP. Please try again.'}), 400
-        except Exception as e:
-            current_app.logger.error(f"Error in verify_otp: {str(e)}")
-            return jsonify({'error': 'Failed to verify OTP.'}), 500
-    else:
-        return render_template('util-templates/verify_otp.html', purpose='login')
+#             if validate_otp(otp):
+#                 session.pop('otp', None)
+#                 session.pop('email', None)
+#                 session.pop('otp_timestamp', None)
+#                 return jsonify({'redirect_url': url_for('main.index')}), 200
+#             else:
+#                 return jsonify({'error': 'Invalid or expired OTP. Please try again.'}), 400
+#         except Exception as e:
+#             current_app.logger.error(f"Error in verify_otp: {str(e)}")
+#             return jsonify({'error': 'Failed to verify OTP.'}), 500
+#     else:
+#         return render_template('util-templates/verify_otp.html', purpose='login')
 
 @user_bp.route('/buyersignup', methods=['POST'])
 def buyersignup():
-    return handle_signup('buyer')
-
-@user_bp.route('/sellersignup', methods=['POST'])
-def sellersignup():
-    return handle_signup('seller')
-
-def handle_signup(role):
     try:
         data = request.get_json()
         fname = data.get('fname')
@@ -192,46 +188,96 @@ def handle_signup(role):
         password = data.get('password')
         captcha_input = data.get('captcha')
 
-        if not validate_captcha(captcha_input):
+        # Validate CAPTCHA
+        if captcha_input != session.get('captcha_text'):
             return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
-
-        if not (fname, lname, email, username, password):
+        
+        # Basic server-side validation
+        if not (fname and lname and email and username and password):
             return jsonify({'error': 'All fields except phone number are required'}), 400
-
+        
+        # Hash the password before saving
         hashed_password = hashpw(password.encode('utf-8'), gensalt())
-
         conn = get_mysql_connection()
         if conn:
             cursor = conn.cursor()
+            
+            # Check if email, username, or phone number already exists
             query = """
             SELECT * FROM users WHERE email = %s OR username = %s OR phone_num = %s
             """
             cursor.execute(query, (email, username, phone_num))
             existing_users = cursor.fetchall()
-
+            
             if existing_users:
-                existing_fields = [user[5] for user in existing_users]
+                existing_fields = []
+                for user in existing_users:
+                    if user[5] == email:
+                        existing_fields.append("Email")
+                    if user[1] == username:
+                        existing_fields.append("Username")
+                    if user[6] == phone_num:
+                        existing_fields.append("Phone Number")
+                        
                 return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
 
+            # Store user data in session for OTP verification
+            session['otp_data'] = data
+            session['otp_role'] = 'buyer'
+            session['purpose'] = 'signup'
+                
+            
+            # Generate OTP and send email
             otp = generate_otp()
+            session['otp'] = otp
+            session['otp_expiry'] = datetime.utcnow() + timedelta(seconds=60)
+            session['email'] = email
+            
             if send_otp_email(email, otp):
-                return render_template('util-templates/verify_otp.html', purpose='signup', data=data)
+                return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200
             else:
                 return jsonify({'error': 'Failed to send OTP email.'}), 500
-        else:
-            return jsonify({'error': 'Failed to connect to database'}), 500
+            
+    except mysql.connector.Error as err:
+        return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
-        current_app.logger.error(f"Error in handle_signup: {str(e)}")
-        return jsonify({'error': 'Failed to handle signup'}), 500
+        current_app.logger.debug(f"e: {e}" )
+        return jsonify({'error': str(e)}), 500
+
+@user_bp.route('/sellersignup', methods=['POST'])
+def sellersignup():
+    return handle_signup('seller')
+
+@user_bp.route('/verify_otp')
+def verify_otp_route():
+    current_app.logger.error(f"signup_verify_otp called")
+    purpose = session.get('purpose')
+    data = session.get('otp_data')
+    role = session.get('otp_role')
+    current_app.logger.debug(f"{data}, {role}")
+    return render_template('util-templates/verify_otp.html', purpose=purpose, role=role, data=data)
+    
+
 
 @user_bp.route('/signup_verify_otp', methods=['POST'])
 def signup_verify_otp():
     try:
-        data = request.get_json()
-        otp = data.get('otp')
-        email = data.get('email')
-
-        if validate_otp(otp):
+        userdata = session.get('otp_data')
+        otpdata = request.get_json()
+        fname = userdata['fname']
+        lname = userdata['lname']
+        email = userdata['email']
+        phone_num = userdata['phone_num']
+        username = userdata['username']
+        password = userdata['password']
+        role = session.get('otp_role')
+        
+        # Hash the password before saving
+        hashed_password = hashpw(password.encode('utf-8'), gensalt())
+        
+        current_app.logger.debug(f"otpdata is {otpdata}")
+        if validate_otp(otpdata):
+            current_app.logger.debug(f"otpdata is validated")
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor()
@@ -240,18 +286,19 @@ def signup_verify_otp():
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(insert_query, (
-                    data['fname'], data['lname'], data['email'],
-                    data['phone_num'], data['username'],
-                    data['password_hash'], data['role']
+                    fname, lname, email,
+                    phone_num, username,
+                    hashed_password, role
                 ))
                 conn.commit()
                 cursor.close()
                 conn.close()
-                return jsonify({'redirect_url': url_for('main.index')}), 200
+                return jsonify({'redirect_url': url_for('main.login')}), 200
             else:
                 return jsonify({'error': 'Failed to connect to database'}), 500
         else:
             return jsonify({'error': 'Invalid or expired OTP. Please try again.'}), 400
+        
     except Exception as e:
         current_app.logger.error(f"Error in signup_verify_otp: {str(e)}")
         return jsonify({'error': 'Failed to verify OTP.'}), 500

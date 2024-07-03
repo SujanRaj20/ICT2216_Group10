@@ -190,12 +190,9 @@ def sellerlogin():
 def buyersignup():
     try:
         data = request.get_json()
-        fname = data.get('fname')
-        lname = data.get('lname')
         email = data.get('email')
         phone_num = data.get('phone_num')
         username = data.get('username')
-        password = data.get('password')
         captcha_input = data.get('captcha')
 
         # Validate CAPTCHA
@@ -206,8 +203,6 @@ def buyersignup():
         if not (fname and lname and email and username and password):
             return jsonify({'error': 'All fields except phone number are required'}), 400
         
-        # Hash the password before saving
-        hashed_password = hashpw(password.encode('utf-8'), gensalt())
         conn = get_mysql_connection()
         if conn:
             cursor = conn.cursor()

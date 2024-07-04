@@ -199,7 +199,7 @@
                                         <div class="btn-container">
                                             <p class="text-dark fs-5 fw-bold mb-0">{{ listing.price }}</p>
                                             {% if listing.stock > 0 %}
-                                            <a onclick="add_to_cart('{{ listing.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
+                                            <a onclick="add_to_cart('{{ listing.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary" {% if listing.stock <= 0 %} disabled {% endif %}><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
                                             {% else %}
                                             <button class="btn btn-sold-out rounded-pill px-3" disabled>Sold Out</button>
                                             {% endif %}
@@ -241,6 +241,7 @@
     }
 
     function add_to_cart(listingId) {
+    console.log(listingId);
     fetch(`/add-to-cart/${listingId}`, {
         method: 'POST',
         headers: {
@@ -251,6 +252,14 @@
         if (response.status === 401) {
             alert('You must be logged in to add items to the cart.');
             window.location.href = '/login'; // Redirect to login page
+        } else if (response.status === 400 || response.status === 500) {
+            return response.json().then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    throw new Error('Failed to add item to cart.');
+                }
+            });
         } else if (!response.ok) {
             throw new Error('Failed to add item to cart.');
         } else {
@@ -258,12 +267,8 @@
         }
     })
     .then(data => {
-        if (data && data.success) {
-            location.reload();
-        } else if (data && data.error) {
-            alert(data.error);
-        } else {
-            throw new Error('Invalid response from server.');
+        if (data && data.message) {
+            location.reload(); // Reload the page to update the cart icon and status
         }
     })
     .catch(error => {

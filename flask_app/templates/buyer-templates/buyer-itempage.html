@@ -1,317 +1,466 @@
-{% block title %}item{% endblock %}
-{% if user_role == 'buyer' %}
-{% include "buyer-templates/buyer-navbar.html" %}
-{% elif user_role == 'seller' %}
-{% include "seller-templates/seller-navbar.html" %}
-{% else %}
-{% include "buyer-templates/buyer-navbar.html" %}
-{% endif %}
+{% block title %}item{% endblock %} {% if user_role == 'buyer' %} {% include
+"buyer-templates/buyer-navbar.html" %} {% elif user_role == 'seller' %} {%
+include "seller-templates/seller-navbar.html" %} {% else %} {% include
+"buyer-templates/buyer-navbar.html" %} {% endif %}
 <style>
-    .align-left-div {
-        text-align: left;
-        /* Ensure text is aligned to the left */
-        padding-left: 5%;
-    }
+  .align-left-div {
+    text-align: left;
+    padding-left: 5%;
+  }
 </style>
-<div class="container-main itempage-container" style="width: 80%;">
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-5">
-                <img src="{{ item.imagepath[4:] }}" class="img-fluid rounded" alt="Item Image">
-            </div>
-            <div class="col-md-7 align-left-div">
-                <h1>{{ item.title }}</h1>
-                <h4 class="text-muted">S${{ item.price }}</h4>
-                <p><strong>Tags:</strong>
-                    {% set tags_string = item.keywords %}
-                    {% set tags_list = tags_string[2:-2].split('", "') %}
-                    {% for tag in tags_list %}
-                    <span class="badge bg-primary">{{ tag }}</span>
-                    {% endfor %}
-                </p>
-                <p><strong>Seller: </strong><a  href="{{ url_for('user.buyer_seller_page', seller_id=item.seller_id) }}" >{{ seller_name }}</a></p>
-                <p><strong>Stock: </strong>{{ item.stock }}</p>
-                <p><strong>Release Date: </strong>{{ item.release_date }}</p>
-                <p><strong>Author: </strong>{{ item.author }}</p>
-                <p><strong>Publisher: </strong>{{ item.publisher }}</p>
-                <p><strong>Type: </strong>{{ item.type }}</p>
+<div class="container-main itempage-container" style="width: 80%">
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-5">
+        <img
+          src="{{ item.imagepath[4:] }}"
+          class="img-fluid rounded"
+          alt="Item Image"
+        />
+      </div>
+      <div class="col-md-7 align-left-div">
+        <h1>{{ item.title }}</h1>
+        <h4 class="text-muted">S${{ item.price }}</h4>
+        <p>
+          <strong>Tags:</strong>
+          {% set tags_string = item.keywords %} {% set tags_list =
+          tags_string[2:-2].split('", "') %} {% for tag in tags_list %}
+          <span class="badge bg-primary">{{ tag }}</span>
+          {% endfor %}
+        </p>
+        <p>
+          <strong>Seller: </strong
+          ><a
+            href="{{ url_for('user.buyer_seller_page', seller_id=item.seller_id) }}"
+            >{{ seller_name }}</a
+          >
+        </p>
+        <p><strong>Stock: </strong>{{ item.stock }}</p>
+        <p><strong>Release Date: </strong>{{ item.release_date }}</p>
+        <p><strong>Author: </strong>{{ item.author }}</p>
+        <p><strong>Publisher: </strong>{{ item.publisher }}</p>
+        <p><strong>Type: </strong>{{ item.type }}</p>
 
-                            <div class="d-flex justify-content-between flex-lg-wrap" >
-                                <a onclick="add_to_cart('{{ item.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
-                                </div>
-                            <button class="btn btn-danger mt-3" onclick="toggleReportForm('{{ item.id }}', '{{ item.seller_id }}')">Report</button>
-
-                <!-- Report Form -->
-                <div id="reportForm_{{ item.id }}" style="display: none; margin-top:3%">
-                    <form id="form_{{ item.id }}" onsubmit="submitReport('{{ item.id }}', '{{ item.seller_id }}', '{{ current_user.id }}'); return false;">
-                        <div class="mb-3">
-                            <label for="reportTitle">Report Title</label>
-                            <input type="text" class="form-control" id="reportTitle" name="reportTitle" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="reportBody">Report Body</label>
-                            <textarea class="form-control" id="reportBody" name="reportBody" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="captcha">Enter CAPTCHA</label>
-                            <input type="text" class="form-control" id="captcha" name="captcha" required>
-                            <img src="/generate_captcha" alt="CAPTCHA" id="captchaImage">
-                            <button type="button" onclick="refreshCaptcha()">Refresh CAPTCHA</button>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit Report</button>
-                    </form>
-                </div>
-                
-            </div>
-
+        <div class="d-flex justify-content-between flex-lg-wrap">
+          {% if item.stock > 0 %}
+          <a
+            onclick="add_to_cart('{{ item.id }}')"
+            class="btn border border-secondary rounded-pill px-3 text-primary"
+            ><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a
+          >
+          {% else %}
+          <button
+            class="btn border border-secondary rounded-pill px-3 text-primary"
+            disabled
+          >
+            <i class="fa fa-shopping-bag me-2 text-primary"></i>Out of Stock
+          </button>
+          {% endif %}
         </div>
+        <button
+          class="btn btn-danger mt-3"
+          onclick="toggleReportForm('{{ item.id }}', '{{ item.seller_id }}')"
+        >
+          Report
+        </button>
 
-
-    </div>
-
-
-    <!-- Add comment form -->
-    <div class="container mt-5 align-left-div">
-        <h2>Add Comment</h2>
-        <form id="commentForm" action="{{ url_for('user.submit_comment', item_id=item.id) }}" method="post">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="mb-2">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label class="form-label">Rating</label>
-                        <div id="rating" name="rating">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="rating" id="rating1" value="1" required>
-                                <label class="form-check-label" for="rating1">1</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="rating" id="rating2" value="2" required>
-                                <label class="form-check-label" for="rating2">2</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="rating" id="rating3" value="3" required>
-                                <label class="form-check-label" for="rating3">3</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="rating" id="rating4" value="4" required>
-                                <label class="form-check-label" for="rating4">4</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="rating" id="rating5" value="5" required>
-                                <label class="form-check-label" for="rating5">5</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    
+        <!-- Report Form -->
+        <div
+          id="reportForm_{{ item.id }}"
+          style="display: none; margin-top: 3%"
+        >
+          <form
+            id="form_{{ item.id }}"
+            onsubmit="submitReport('{{ item.id }}', '{{ item.seller_id }}', '{{ current_user.id }}'); return false;"
+          >
             <div class="mb-3">
-                <label for="body" class="form-label">Comment</label>
-                <textarea class="form-control" id="body" name="body" rows="3" required></textarea>
+              <label for="reportTitle">Report Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="reportTitle"
+                name="reportTitle"
+                required
+              />
             </div>
-    
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+            <div class="mb-3">
+              <label for="reportBody">Report Body</label>
+              <textarea
+                class="form-control"
+                id="reportBody"
+                name="reportBody"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="captcha">Enter CAPTCHA</label>
+              <input
+                type="text"
+                class="form-control"
+                id="captcha"
+                name="captcha"
+                required
+              />
+              <img src="/generate_captcha" alt="CAPTCHA" id="captchaImage" />
+              <button type="button" onclick="refreshCaptcha()">
+                Refresh CAPTCHA
+              </button>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Report</button>
+          </form>
+        </div>
+      </div>
     </div>
-    
+  </div>
 
+  <!-- Add comment form -->
+  <div class="container mt-5 align-left-div">
+    <h2>Add Comment</h2>
+    <form
+      id="commentForm"
+      action="{{ url_for('user.submit_comment', item_id=item.id) }}"
+      method="post"
+    >
+      <div class="row">
+        <div class="col-md-8">
+          <div class="mb-2">
+            <label for="title" class="form-label">Title</label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              name="title"
+              required
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Rating</label>
+            <div id="rating" name="rating">
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rating"
+                  id="rating1"
+                  value="1"
+                  required
+                />
+                <label class="form-check-label" for="rating1">1</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rating"
+                  id="rating2"
+                  value="2"
+                  required
+                />
+                <label class="form-check-label" for="rating2">2</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rating"
+                  id="rating3"
+                  value="3"
+                  required
+                />
+                <label class="form-check-label" for="rating3">3</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rating"
+                  id="rating4"
+                  value="4"
+                  required
+                />
+                <label class="form-check-label" for="rating4">4</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="rating"
+                  id="rating5"
+                  value="5"
+                  required
+                />
+                <label class="form-check-label" for="rating5">5</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class=" align-left-div" style="padding-left: 0;">
-        <h2>Comments</h2>
-        {% if comments %}
-            {% for comment in comments %}
-            <div class="comment-container align-left-div" style="width: 100%; padding: 1%;">
-                <div class="row">
-                <div class="col-md-11">
-                    <strong style="padding: 0; margin:0%">{{ comment.fname }} {{ comment.lname }} ({{ comment.username }}):</strong>
-                    <p style="padding: 0; margin:0%">{{ comment.title }} - Rating: {{ comment.rating }}/5</p>
-                    <p style="padding: 0; margin:0%">{{ comment.body }}</p>
-                    <p style="padding: 0; margin:0%">Posted on: {{ comment.created_at }}</p>
+      <div class="mb-3">
+        <label for="body" class="form-label">Comment</label>
+        <textarea
+          class="form-control"
+          id="body"
+          name="body"
+          rows="3"
+          required
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <div class="align-left-div" style="padding-left: 0">
+    <h2>Comments</h2>
+    {% if comments %} {% for comment in comments %}
+    <div
+      class="comment-container align-left-div"
+      style="width: 100%; padding: 1%"
+    >
+      <div class="row">
+        <div class="col-md-11">
+          <strong style="padding: 0; margin: 0%"
+            >{{ comment.fname }} {{ comment.lname }} ({{ comment.username
+            }}):</strong
+          >
+          <p style="padding: 0; margin: 0%">
+            {{ comment.title }} - Rating: {{ comment.rating }}/5
+          </p>
+          <p style="padding: 0; margin: 0%">{{ comment.body }}</p>
+          <p style="padding: 0; margin: 0%">
+            Posted on: {{ comment.created_at }}
+          </p>
+        </div>
+        <div class="col-md-1">
+          <button
+            type="button"
+            class="btn btn-danger btn-link"
+            data-toggle="modal"
+            data-target="#reportModal{{ comment.id }}"
+          >
+            <p style="color: white; padding: 0; margin: 0%">Report</p>
+          </button>
+          <div
+            class="modal fade"
+            id="reportModal{{ comment.id }}"
+            tabindex="-1"
+            aria-labelledby="reportModalLabel{{ comment.id }}"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="reportModalLabel{{ comment.id }}">
+                    Report Comment
+                  </h5>
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-danger btn-link" data-toggle="modal" data-target="#reportModal{{ comment.id }}">
-                        <p style="color: white; padding: 0; margin:0%;">Report</p>
-                    </button>
-                    <div class="modal fade" id="reportModal{{ comment.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ comment.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="reportModalLabel{{ comment.id }}">Report Comment</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="{{ url_for('user.report_comment', comment_id=comment.id) }}" method="post">
-                                        <div class="mb-3">
-                                            <label for="title{{ comment.id }}" class="form-label">Title</label>
-                                            <input type="text" class="form-control" id="title{{ comment.id }}" name="title" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="body{{ comment.id }}" class="form-label">Body</label>
-                                            <textarea class="form-control" id="body{{ comment.id }}" name="body" rows="3" required></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="captcha{{ comment.id }}">Enter CAPTCHA</label>
-                                            <input type="text" class="form-control" id="captcha{{ comment.id }}" name="captcha" required>
-                                            <img src="/generate_captcha" alt="CAPTCHA" id="captchaImage{{ comment.id }}">
-                                            <button type="button" onclick="refreshCaptchaForComment('{{ comment.id }}')">Refresh CAPTCHA</button>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit Report</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                <div class="modal-body">
+                  <form
+                    action="{{ url_for('user.report_comment', comment_id=comment.id) }}"
+                    method="post"
+                  >
+                    <div class="mb-3">
+                      <label for="title{{ comment.id }}" class="form-label"
+                        >Title</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="title{{ comment.id }}"
+                        name="title"
+                        required
+                      />
                     </div>
+                    <div class="mb-3">
+                      <label for="body{{ comment.id }}" class="form-label"
+                        >Body</label
+                      >
+                      <textarea
+                        class="form-control"
+                        id="body{{ comment.id }}"
+                        name="body"
+                        rows="3"
+                        required
+                      ></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label for="captcha{{ comment.id }}">Enter CAPTCHA</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="captcha{{ comment.id }}"
+                        name="captcha"
+                        required
+                      />
+                      <img
+                        src="/generate_captcha"
+                        alt="CAPTCHA"
+                        id="captchaImage{{ comment.id }}"
+                      />
+                      <button
+                        type="button"
+                        onclick="refreshCaptchaForComment('{{ comment.id }}')"
+                      >
+                        Refresh CAPTCHA
+                      </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                      Submit Report
+                    </button>
+                  </form>
                 </div>
+              </div>
             </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <p>No comments yet.</p>
-        {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
-
+    {% endfor %} {% else %}
+    <p>No comments yet.</p>
+    {% endif %}
+  </div>
 </div>
 
-<!-- Display existing comments -->
-
-
-{% if user_role == 'buyer' %}
-{% include "buyer-templates/buyer-footer.html" %}
-{% elif user_role == 'seller' %}
-{% include "seller-templates/seller-footer.html" %}
-{% else %}
-{% include "buyer-templates/buyer-footer.html" %}
-{% endif %}
-
+{% if user_role == 'buyer' %} {% include "buyer-templates/buyer-footer.html" %}
+{% elif user_role == 'seller' %} {% include
+"seller-templates/seller-footer.html" %} {% else %} {% include
+"buyer-templates/buyer-footer.html" %} {% endif %}
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    function refreshCaptcha() {
-        document.getElementById('captchaImage').src = '/generate_captcha?' + new Date().getTime();
+  function refreshCaptcha() {
+    document.getElementById("captchaImage").src =
+      "/generate_captcha?" + new Date().getTime();
+  }
+
+  function refreshCaptchaForComment(commentId) {
+    document.getElementById(`captchaImage${commentId}`).src =
+      "/generate_captcha?" + new Date().getTime();
+  }
+
+  function toggleReportForm(itemId, sellerId) {
+    var reportForm = document.getElementById(`reportForm_${itemId}`);
+    if (reportForm.style.display === "none") {
+      reportForm.style.display = "block";
+    } else {
+      reportForm.style.display = "none";
     }
-    </script>
-    <script>
-    function refreshCaptchaForComment(commentId) {
-        document.getElementById(`captchaImage${commentId}`).src = '/generate_captcha?' + new Date().getTime();
-    }
-</script>
-<script>
-    function toggleReportForm(itemId, sellerId) {
-        var reportForm = document.getElementById(`reportForm_${itemId}`);
-        if (reportForm.style.display === "none") {
-            reportForm.style.display = "block";
+  }
+
+  function add_to_cart(listingId) {
+    console.log(listingId);
+    fetch(`/add-to-cart/${listingId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          alert("You must be logged in to add items to the cart.");
+          window.location.href = "main.login"; // Redirect to login page
+        } else if (!response.ok) {
+          throw new Error("Failed to add item to cart.");
         } else {
-            reportForm.style.display = "none";
+          return response.json();
         }
-    }
+      })
+      .then((data) => {
+        if (data && data.success) {
+          location.reload();
+        } else if (data && data.error) {
+          alert(data.error);
+        } else {
+          throw new Error("Invalid response from server.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 
-    function add_to_cart(listingId) {
-        console.log(listingId)
-        fetch(`/add-to-cart/${listingId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.status === 401) {
-                alert('You must be logged in to add items to the cart.');
-                window.location.href = 'main.login'; // Redirect to login page
-            } else if (!response.ok) {
-                throw new Error('Failed to add item to cart.');
-            } else {
-                return response.json();
-            }
-        })
-        .then(data => {
-            if (data && data.success) {
-                location.reload();
-            } else if (data && data.error) {
-                alert(data.error);
-            } else {
-                throw new Error('Invalid response from server.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
+  function submitReport(itemId, sellerId, buyerId) {
+    var form = document.getElementById(`form_${itemId}`);
+    var title = form.elements["reportTitle"].value;
+    var body = form.elements["reportBody"].value;
+    var captcha = form.elements["captcha"].value;
 
-    function submitReport(itemId, sellerId, buyerId) {
-        var form = document.getElementById(`form_${itemId}`);
-    var title = form.elements['reportTitle'].value;
-    var body = form.elements['reportBody'].value;
-    var captcha = form.elements['captcha'].value;
+    console.log("title", title);
+    console.log("body", body);
+    console.log("itemId", itemId);
+    console.log("sellerId", sellerId);
+    console.log("buyerId", buyerId);
 
-        console.log("title", title)
-        console.log("body", body)
-        console.log("itemId", itemId)
-        console.log("sellerId", sellerId)
-        console.log("buyerId", buyerId)
+    fetch("/report-item", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+        body: body,
+        item_id: itemId,
+        seller_id: sellerId,
+        buyer_id: buyerId,
+        captcha: captcha,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to submit report.");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        alert(data.message); // Display success message
+        // Optionally, you can reload or update the page after submission
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Failed to submit report.");
+      });
+  }
 
-        fetch('/report-item', {
-            method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            title: title,
-            body: body,
-            item_id: itemId,
-            seller_id: sellerId,
-            buyer_id: buyerId,
-            captcha: captcha
-            })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to submit report.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(data.message); // Display success message
-                // Optionally, you can reload or update the page after submission
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to submit report.');
+  document
+    .getElementById("commentForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault(); // Prevent the form from submitting the traditional way
+
+      const form = event.target;
+      const formData = new FormData(form);
+
+      fetch(form.action, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Reload the page on success
+            location.reload();
+          } else {
+            return response.json().then((data) => {
+              // Handle errors
+              alert(data.error || "An error occurred");
             });
-    }
-
-    document.getElementById('commentForm').addEventListener('submit', function(event) {
-        event.preventDefault();  // Prevent the form from submitting the traditional way
-
-        const form = event.target;
-        const formData = new FormData(form);
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
+          }
         })
-        .then(response => {
-            if (response.ok) {
-                // Reload the page on success
-                location.reload();
-            } else {
-                return response.json().then(data => {
-                    // Handle errors
-                    alert(data.error || 'An error occurred');
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred');
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred");
         });
     });
 </script>

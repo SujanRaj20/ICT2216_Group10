@@ -11,13 +11,72 @@ from datetime import datetime
 import os
 
 class Buyer_Cart:
+    # @staticmethod
+    # def add_to_cart(user_id, listing_id):
+    #     engine = get_engine()
+    #     try:
+    #         # Get the user's cart
+    #         user_cart = Buyer_Cart.get_user_cart(user_id)  # Corrected
+
+    #         cart_id = user_cart['id']
+            
+    #         # Check if the item already exists in the cart
+    #         check_query = f"""
+    #             SELECT * FROM cart_items 
+    #             WHERE cart_id = '{cart_id}' AND listing_id = '{listing_id}'
+    #         """
+    #         existing_item = engine.execute(check_query).fetchone()
+            
+    #         # Get the price of the item from the listing table
+    #         price_query = f"SELECT price FROM listings WHERE id = '{listing_id}'"
+    #         listing = engine.execute(price_query).fetchone()
+    #         if not listing:
+    #             return {'error': 'Listing not found.'}
+            
+    #         price = listing['price']
+            
+    #         if existing_item:
+    #             # Update the quantity if the item already exists
+    #             new_quantity = existing_item['quantity'] + 1
+    #             update_query = f"""
+    #                 UPDATE cart_items 
+    #                 SET quantity = '{new_quantity}' 
+    #                 WHERE cart_id = '{cart_id}' AND listing_id = '{listing_id}'
+    #             """
+    #             engine.execute(update_query)
+    #         else:
+    #             # Insert a new item if it doesn't exist
+    #             insert_query = f"""
+    #                 INSERT INTO cart_items (cart_id, listing_id, quantity) 
+    #                 VALUES ('{cart_id}', '{listing_id}', 1)
+    #             """
+    #             engine.execute(insert_query)
+                
+    #         # Update the item_count and total_price in the carts table
+    #         new_item_count = user_cart['item_count'] + 1
+    #         new_total_price = user_cart['total_price'] + price
+    #         update_cart_query = f"""
+    #             UPDATE carts 
+    #             SET item_count = '{new_item_count}', total_price = '{new_total_price}'
+    #             WHERE id = '{cart_id}'
+    #         """
+    #         engine.execute(update_cart_query)
+                
+    #         return {'message': 'Item added to cart successfully.'}
+        
+    #     except SQLAlchemyError as e:
+    #         print(f"Error: {e}")
+    #         return {'error': str(e)}
+    #     finally:
+    #         engine.dispose()
+
+
     @staticmethod
     def add_to_cart(user_id, listing_id):
         engine = get_engine()
         try:
             # Get the user's cart
-            user_cart = Buyer_Cart.get_user_cart(user_id)  # Corrected
-
+            user_cart = Buyer_Cart.get_user_cart(user_id)
             cart_id = user_cart['id']
             
             # Check if the item already exists in the cart
@@ -27,17 +86,20 @@ class Buyer_Cart:
             """
             existing_item = engine.execute(check_query).fetchone()
             
-            # Get the price of the item from the listing table
-            price_query = f"SELECT price FROM listings WHERE id = '{listing_id}'"
-            listing = engine.execute(price_query).fetchone()
+            # Get the price and stock of the item from the listing table
+            listing_query = f"SELECT price, stock FROM listings WHERE id = '{listing_id}'"
+            listing = engine.execute(listing_query).fetchone()
             if not listing:
                 return {'error': 'Listing not found.'}
             
             price = listing['price']
+            stock = listing['stock']
             
             if existing_item:
-                # Update the quantity if the item already exists
                 new_quantity = existing_item['quantity'] + 1
+                if new_quantity > stock:
+                    return {'error': 'Cannot add more than available stock.'}
+                # Update the quantity if the item already exists
                 update_query = f"""
                     UPDATE cart_items 
                     SET quantity = '{new_quantity}' 
@@ -45,6 +107,8 @@ class Buyer_Cart:
                 """
                 engine.execute(update_query)
             else:
+                if stock < 1:
+                    return {'error': 'Cannot add item to cart, no stock available.'}
                 # Insert a new item if it doesn't exist
                 insert_query = f"""
                     INSERT INTO cart_items (cart_id, listing_id, quantity) 
@@ -69,6 +133,9 @@ class Buyer_Cart:
             return {'error': str(e)}
         finally:
             engine.dispose()
+
+            
+
 
     @staticmethod
     def get_user_cart(user_id):  # Corrected to staticmethod
@@ -167,39 +234,79 @@ class Buyer_Cart:
             print(f"Error: {e}")
             return None
 
+    # @staticmethod
+    # def increase_cart_item_quantity(cart_item_id, user_id):
+    #     engine = get_engine()
+    #     try:
+    #         # Check if the cart item exists and belongs to the user
+    #         query = f"""
+    #             SELECT ci.*, c.id as cart_id, c.user_id FROM cart_items ci
+    #             JOIN carts c ON ci.cart_id = c.id
+    #             WHERE ci.id = '{cart_item_id}' AND c.user_id = '{user_id}'
+    #         """
+    #         cart_item = engine.execute(query).fetchone()
+            
+    #         if cart_item:
+    #             # Increase the quantity
+    #             new_quantity = cart_item['quantity'] + 1
+    #             update_query = f"""
+    #                 UPDATE cart_items
+    #                 SET quantity = '{new_quantity}'
+    #                 WHERE id = '{cart_item_id}'
+    #             """
+    #             engine.execute(update_query)
+
+    #             # Update cart totals
+    #             Buyer_Cart.update_cart_totals(cart_item['cart_id'])  # Corrected
+
+    #             return {'success': True}
+    #         else:
+    #             return {'success': False, 'error': 'Cart item not found or does not belong to user'}
+    #     except SQLAlchemyError as e:
+    #         return {'success': False, 'error': str(e)}
+    #     finally:
+    #         engine.dispose()
+            
+
     @staticmethod
     def increase_cart_item_quantity(cart_item_id, user_id):
         engine = get_engine()
         try:
             # Check if the cart item exists and belongs to the user
             query = f"""
-                SELECT ci.*, c.id as cart_id, c.user_id FROM cart_items ci
+                SELECT ci.*, c.id as cart_id, c.user_id, l.stock as max_stock FROM cart_items ci
                 JOIN carts c ON ci.cart_id = c.id
+                JOIN listings l ON ci.listing_id = l.id
                 WHERE ci.id = '{cart_item_id}' AND c.user_id = '{user_id}'
             """
             cart_item = engine.execute(query).fetchone()
             
             if cart_item:
-                # Increase the quantity
-                new_quantity = cart_item['quantity'] + 1
-                update_query = f"""
-                    UPDATE cart_items
-                    SET quantity = '{new_quantity}'
-                    WHERE id = '{cart_item_id}'
-                """
-                engine.execute(update_query)
+                # Check if the current quantity is less than the max stock
+                if cart_item['quantity'] < cart_item['max_stock']:
+                    # Increase the quantity
+                    new_quantity = cart_item['quantity'] + 1
+                    update_query = f"""
+                        UPDATE cart_items
+                        SET quantity = '{new_quantity}'
+                        WHERE id = '{cart_item_id}'
+                    """
+                    engine.execute(update_query)
 
-                # Update cart totals
-                Buyer_Cart.update_cart_totals(cart_item['cart_id'])  # Corrected
+                    # Update cart totals
+                    Buyer_Cart.update_cart_totals(cart_item['cart_id'])
 
-                return {'success': True}
+                    return {'success': True}
+                else:
+                    return {'success': False, 'error': 'Maximum stock reached'}
             else:
                 return {'success': False, 'error': 'Cart item not found or does not belong to user'}
         except SQLAlchemyError as e:
             return {'success': False, 'error': str(e)}
         finally:
             engine.dispose()
-            
+
+
     @staticmethod
     def decrease_cart_item_quantity(cart_item_id, user_id):
         engine = get_engine()
@@ -275,12 +382,39 @@ class Buyer_Cart:
 
  
 class Buyer_Wishlist:
-    @staticmethod
-    def add_to_wishlist(user_id, listing_id):
+    # @staticmethod
+    # def add_to_wishlist(user_id, listing_id):
+    #     engine = get_engine()
+    #     try:
+        
+    #         # Check if the item already exists in the cart
+    #         check_query = f"""
+    #             SELECT * FROM wishlist_items 
+    #             WHERE user_id = '{user_id}' AND listing_id = '{listing_id}'
+    #         """
+    #         existing_item = engine.execute(check_query).fetchone()
+            
+    #         if not existing_item:
+    #             # Insert a new item if it doesn't exist
+    #             insert_query = f"""
+    #                 INSERT INTO wishlist_items (listing_id, user_id) 
+    #                 VALUES ('{listing_id}', '{user_id}')
+    #             """
+    #             engine.execute(insert_query)
+                
+    #         return {'message': 'Item added to wishlist.'}
+        
+    #     except SQLAlchemyError as e:
+    #         print(f"Error: {e}")
+    #         return {'error': str(e)}
+    #     finally:
+    #         engine.dispose()
+
+     @staticmethod
+     def add_to_wishlist(user_id, listing_id):
         engine = get_engine()
         try:
-        
-            # Check if the item already exists in the cart
+            # Check if the item already exists in the wishlist
             check_query = f"""
                 SELECT * FROM wishlist_items 
                 WHERE user_id = '{user_id}' AND listing_id = '{listing_id}'

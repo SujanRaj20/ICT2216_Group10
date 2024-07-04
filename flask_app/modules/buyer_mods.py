@@ -323,9 +323,9 @@ class Buyer_Wishlist:
             return None
         finally:
             engine.dispose()
-        
-        @staticmethod    
-        def delete_wishlist_item(wishlist_item_id, user_id):
+     
+    @staticmethod    
+    def delete_wishlist_item(wishlist_item_id, user_id):
             engine = get_engine()
             
             try:

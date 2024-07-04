@@ -129,11 +129,6 @@ pipeline {
     }
 
     post {
-        success {
-            dir('flask_app') {
-                dependencyCheckPublisher pattern: './dependency-check-report.xml'
-            }
-        }
         always {
             cleanWs()
         }

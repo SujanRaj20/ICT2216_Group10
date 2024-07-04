@@ -571,22 +571,17 @@
 /*** Footer End ***/
 
 .toast {
-    visibility: hidden;
-    max-width: 50px;
-    height: 50px;
-    /*margin-left: -125px;*/
-    margin: auto;
-    background-color: #5cb85c;
-    color: #fff;
-    text-align: center;
-    border-radius: 2px;
     position: fixed;
-    z-index: 1;
-    left: 0;
-    right: 0;
-    bottom: 30px;
-    font-size: 17px;
-    white-space: nowrap;
+    top: 20px;
+    right: 20px;
+    min-width: 200px;
+    padding: 15px;
+    border-radius: 5px;
+    color: #fff;
+    background-color: #333;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 1000;
 }
 
 .toast #img {
@@ -616,8 +611,7 @@
 }
 
 .toast.show {
-    visibility: visible;
-    opacity: 1; /* Fade in */
+    opacity: 1;
 }
 
 .toast.hide {
@@ -648,6 +642,28 @@
     height: 150px; /* Adjust height as needed */
     object-fit: cover;
     border-radius: 50%;
+}
+
+.btn-sold-out {
+    background-color: #f8c471; /* Adjust the color as needed */
+    color: #fff;
+    cursor: not-allowed;
+}
+
+.btn-sold-out:hover {
+    background-color: #e67e22; /* Adjust the hover color as needed */
+}
+
+.stock-info {
+    text-align: left;
+    margin-top: 1%;
+    font-size: 0.9rem;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 

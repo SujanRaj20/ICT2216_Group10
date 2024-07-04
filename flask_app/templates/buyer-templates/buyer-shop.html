@@ -39,6 +39,28 @@
     .toast.show {
         opacity: 1;
     }
+
+    .btn-sold-out {
+        background-color: #f8c471; /* Adjust the color as needed */
+        color: #fff;
+        cursor: not-allowed;
+    }
+
+    .btn-sold-out:hover {
+        background-color: #e67e22; /* Adjust the hover color as needed */
+    }
+
+    .stock-info {
+        text-align: left;
+        margin-top: 1%;
+        font-size: 0.9rem;
+    }
+
+    .btn-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 </style>
 
 <!-- Single Page Header start -->
@@ -167,21 +189,25 @@
                             <div class="col-md-6 col-lg-6 col-xl-4">
                                 <div class="rounded position-relative fruite-item">
                                     <div class="fruite-img" onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')">
-                                        <img  src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
+                                        <img src="{{ listing.imagepath[4:] }}" class="img-fluid w-100 rounded-top" alt="">
                                     </div>
                                     <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">{{ listing.type }}</div>
-                                    <div class="text-white px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;"><i class="fa fa-heart fa-2x text-danger" onclick="add_to_wishlist('{{ listing.id }}')" ></i></div>
+                                    <div class="text-white px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;"><i class="fa fa-heart fa-2x text-danger" onclick="add_to_wishlist('{{ listing.id }}')"></i></div>
                                     <div class="p-4 border border-secondary border-top-0 rounded-bottom">
                                         <h4>{{ listing.title }}</h4>
                                         <p>{{ listing.description }}</p>
-                                        <div class="d-flex justify-content-between flex-lg-wrap">
+                                        <div class="btn-container">
                                             <p class="text-dark fs-5 fw-bold mb-0">{{ listing.price }}</p>
+                                            {% if listing.stock > 0 %}
                                             <a onclick="add_to_cart('{{ listing.id }}')" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i>Add to Cart</a>
-                                            <p style="margin-top: 1%;" class="text-dark fs-9 mb-0">{{ listing.stock }} in stock</p>
+                                            {% else %}
+                                            <button class="btn btn-sold-out rounded-pill px-3" disabled>Sold Out</button>
+                                            {% endif %}
                                         </div>
+                                        <p class="stock-info">{{ listing.stock }} in stock</p>
                                     </div>
                                 </div>
-                                </div>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>

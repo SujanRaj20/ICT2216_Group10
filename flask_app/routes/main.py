@@ -6,7 +6,7 @@ from modules.seller_mods import Listing_Modules
 from modules.user_model import User
 from modules.buyer_mods import Buyer_Shop, Buyer_Cart, fetch_top_five_bestsellers
 
-from modules.decorators import anonymous_required
+from modules.decorators import anonymous_required, buyer_required
 
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
@@ -61,11 +61,13 @@ def shop():
     return render_template("buyer-templates/buyer-shop.html", listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)  # Render the /shop template
 
 @main_bp.route("/checkout")
+@buyer_required()
 @login_required
 def checkout():
     return render_template("buyer-templates/buyer-checkout.html")  # Render the /checkout template
 
 @main_bp.route("/buyer-account")
+@buyer_required()
 @login_required
 def buyeraccount():
     return render_template("buyer-templates/buyer-account.html")  # Render the /buyer-account template

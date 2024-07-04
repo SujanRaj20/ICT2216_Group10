@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
-from modules.decorators import anonymous_required
+from modules.decorators import anonymous_required, seller_required, buyer_required
 
 from modules.seller_mods import Listing_Modules, get_seller_info
 from modules.user_model import User
@@ -444,6 +444,7 @@ def generate_captcha():
 
 
 @user_bp.route("/seller-listings", methods=["GET"])
+@seller_required()
 @login_required
 def seller_listings():
     sort_option = request.args.get('sort', 'none')
@@ -453,12 +454,14 @@ def seller_listings():
     return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route("/seller-listing-add")
+@seller_required()
 @login_required
 def seller_listing_add():
     return render_template("seller-templates/seller-listing-add.html")  # Render seller-listings.html with the userid
 
 
 @user_bp.route('/add-listing', methods=['POST'])
+@seller_required()
 @login_required
 def add_listing():
     try:
@@ -519,6 +522,7 @@ def save_image(image):
     return image_path
 
 @user_bp.route("/add-to-cart/<int:listing_id>", methods=["POST"])
+@buyer_required()
 @login_required
 def add_to_cart_route(listing_id):
     try:
@@ -542,6 +546,7 @@ def add_to_cart_route(listing_id):
     
     
 @user_bp.route("/add-to-wishlist/<int:listing_id>", methods=["POST"])
+@buyer_required()
 @login_required
 def add_to_wishlist_route(listing_id):
     try:
@@ -564,6 +569,7 @@ def add_to_wishlist_route(listing_id):
         return jsonify({'error': 'Failed to add item to wishlist'}), 500
 
 @user_bp.route('/edit-listing/<int:item_id>', methods=['POST'])
+@seller_required()
 @login_required
 def edit_listing(item_id):
     try:
@@ -615,6 +621,7 @@ def edit_listing(item_id):
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
+@seller_required()
 @login_required
 def delete_listing(listing_id):
     try:
@@ -684,6 +691,8 @@ def item_page(item_id):
         return redirect(url_for('main.shop'))
     
 @user_bp.route('/selleritem/<int:item_id>')
+@seller_required()
+@login_required
 def item_page_seller(item_id):
     try:
         conn = get_mysql_connection()
@@ -717,6 +726,7 @@ def item_page_seller(item_id):
         return redirect(url_for('main.shop'))
     
 @user_bp.route('/cart')
+@buyer_required()
 @login_required
 def cart():
     cart_items = get_cart_items(current_user.id)
@@ -724,6 +734,7 @@ def cart():
     return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
 
 @user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
+@buyer_required()
 @login_required
 def increase_quantity(cart_item_id):
     result = Buyer_Cart.increase_cart_item_quantity(cart_item_id, current_user.id)
@@ -733,6 +744,7 @@ def increase_quantity(cart_item_id):
         return jsonify({'error': result['error']}), 400
 
 @user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])
+@buyer_required()
 @login_required
 def decrease_quantity(cart_item_id):
     result = Buyer_Cart.decrease_cart_item_quantity(cart_item_id, current_user.id)
@@ -742,6 +754,7 @@ def decrease_quantity(cart_item_id):
         return jsonify({'error': result['error']}), 400
 
 @user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])
+@buyer_required()
 @login_required
 def delete_item(cart_item_id):
     result = Buyer_Cart.delete_cart_item(cart_item_id, current_user.id)
@@ -758,12 +771,14 @@ def logout():
     return redirect(url_for('main.index'))  # Redirect to index page after logout
 
 @user_bp.route("/wishlist")
+@buyer_required()
 @login_required
 def wishlist():
     wishlist_items = Buyer_Wishlist.get_wishlist_items(current_user.id)
     return render_template("buyer-templates/buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
 
 @user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST'])
+@buyer_required()
 @login_required
 def delete_item_wishlist(wishlist_item_id):
     result = Buyer_Wishlist.delete_wishlist_item(wishlist_item_id, current_user.id)
@@ -803,7 +818,6 @@ def report_item():
         return jsonify({'error': str(e)}), 500
     
 @user_bp.route('/seller/<int:seller_id>')
-@login_required
 def buyer_seller_page(seller_id):
     seller_info = get_seller_info(seller_id)
     sort_option = request.args.get('sort', 'none')
@@ -922,6 +936,7 @@ def report_comment(comment_id):
 
 
 @user_bp.route('/payment', methods=['POST'])
+@buyer_required()
 @login_required
 def payment():
     try:
@@ -1102,6 +1117,7 @@ def clear_cart(user_id):
         engine.dispose()
 
 @user_bp.route('/clear_cart', methods=['POST'])
+@buyer_required()
 @login_required
 def clear_cart_route():
     try:

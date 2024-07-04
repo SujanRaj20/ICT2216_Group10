@@ -144,8 +144,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
-        NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634'
-        //43d9065d-8664-4cf5-9b09-b0f600b6c3ff
     }
 
     triggers {
@@ -229,53 +227,70 @@ pipeline {
             }
         }
 
+    //     stage('Deploy') {
+    //         steps {
+    //             dir('/home/student25/ICT2216_Group10') {
+    //                 script {
+    //                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+    //                         sh '''
+    //                             echo "Pulling latest code from Git"
+    //                             git config --global credential.helper store
+    //                             echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
+
+    //                             # Stash local changes
+    //                             git stash
+
+    //                             # Pull the latest code
+    //                             git pull origin main
+
+    //                             echo "Checking if any container is using port 5000"
+    //                             CONTAINER_ID=$(docker ps -q -f publish=5000)
+    //                             if [ "$CONTAINER_ID" ]; then
+    //                                 echo "Port 5000 is in use. Stopping the container using it..."
+    //                                 docker stop $CONTAINER_ID
+    //                                 docker rm $CONTAINER_ID
+    //                             fi
+
+    //                             echo "Bringing down any running containers and pruning system"
+    //                             docker-compose down
+    //                             yes | docker system prune -a --volumes
+
+    //                             echo "Building and bringing up new containers"
+    //                             docker-compose up --build -d
+
+    //                             echo "Deployment completed"
+
+    //                             echo "Checking logs for exited containers"
+    //                             EXITED_CONTAINER=$(docker ps -a -q -f status=exited -f ancestor=${DOCKER_IMAGE})
+    //                             if [ "$EXITED_CONTAINER" ]; then
+    //                                 echo "Container exited with error. Logs:"
+    //                                 docker logs $EXITED_CONTAINER
+    //                                 exit 1
+    //                             fi
+    //                         '''
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+
         stage('Deploy') {
             steps {
                 dir('/home/student25/ICT2216_Group10') {
-                    script {
-                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                            sh '''
-                                echo "Pulling latest code from Git"
-                                git config --global credential.helper store
-                                echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
-
-                                # Stash local changes
-                                git stash
-
-                                # Pull the latest code
-                                git pull origin main
-
-                                echo "Checking if any container is using port 5000"
-                                CONTAINER_ID=$(docker ps -q -f publish=5000)
-                                if [ "$CONTAINER_ID" ]; then
-                                    echo "Port 5000 is in use. Stopping the container using it..."
-                                    docker stop $CONTAINER_ID
-                                    docker rm $CONTAINER_ID
-                                fi
-
-                                echo "Bringing down any running containers and pruning system"
-                                docker-compose down
-                                docker system prune -a --volumes
-
-                                echo "Building and bringing up new containers"
-                                docker-compose up --build -d
-
-                                echo "Deployment completed"
-
-                                echo "Checking logs for exited containers"
-                                EXITED_CONTAINER=$(docker ps -a -q -f status=exited -f ancestor=${DOCKER_IMAGE})
-                                if [ "$EXITED_CONTAINER" ]; then
-                                    echo "Container exited with error. Logs:"
-                                    docker logs $EXITED_CONTAINER
-                                    exit 1
-                                fi
-                            '''
-                        }
-                    }
+                    git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '5e9ba646-cf8c-4396-8cf8-ad2e11fd49f6'
+                    sh '''
+                        cd /home/student25/ICT2216_Group10 &&
+                        docker-compose down &&
+                        docker system prune -f &&
+                        docker-compose up --build -d
+                    '''
                 }
             }
         }
     }
+
 
     post {
         always {

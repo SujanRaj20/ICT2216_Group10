@@ -44,7 +44,7 @@ pipeline {
         stage('OWASP Dependency Check') {
             steps {
                 dir('flask_app') {
-                    dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'Default'
+                    dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
                 }
             }
         }

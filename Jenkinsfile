@@ -29,7 +29,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh 'docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r flask_app/requirements.txt'
+                    sh '''
+                    cd flask_app
+                    docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r flask_app/requirements.txt
+                    '''
                 }
             }
         }
@@ -37,7 +40,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    sh '''
+                    cd flask_app
+                    docker build -t ${DOCKER_IMAGE} .
+                    '''
                 }
             }
         }
@@ -45,7 +51,10 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh 'docker run --rm ${DOCKER_IMAGE} pytest || echo "No tests found. Skipping..."'
+                    sh '''
+                    cd flask_app
+                    docker run --rm ${DOCKER_IMAGE} pytest || echo "No tests found. Skipping..."
+                    '''
                 }
             }
         }
@@ -78,7 +87,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                dir('/home/student25/ICT2216_Group10/flask_app') {
+                dir('/home/student25/ICT2216_Group10') {
                     script {
                         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                             sh '''
@@ -86,6 +95,8 @@ pipeline {
                                 git config --global credential.helper store
                                 echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
                                 git pull origin main
+
+                                cd flask_app
 
                                 echo "Checking if any container is using port 5000"
                                 CONTAINER_ID=$(docker ps -q -f publish=5000)
@@ -111,12 +122,10 @@ pipeline {
         }
     }
 
-    // post {
-    //     always {
-    //         echo 'Cleaning workspace'
-    //         cleanWs()
-    //     }
-    // }
+    post {
+        always {
+            echo 'Cleaning workspace'
+            cleanWs()
+        }
+    }
 }
-
-

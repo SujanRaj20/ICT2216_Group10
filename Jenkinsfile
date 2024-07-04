@@ -100,12 +100,20 @@ pipeline {
 
                                 echo "Bringing down any running containers and pruning system"
                                 docker-compose down
-                                docker system prune -f
+                                docker system prune -a --volumes
 
                                 echo "Building and bringing up new containers"
                                 docker-compose up --build -d
 
                                 echo "Deployment completed"
+
+                                echo "Checking logs for exited containers"
+                                EXITED_CONTAINER=$(docker ps -a -q -f status=exited -f ancestor=${DOCKER_IMAGE})
+                                if [ "$EXITED_CONTAINER" ]; then
+                                    echo "Container exited with error. Logs:"
+                                    docker logs $EXITED_CONTAINER
+                                    exit 1
+                                fi
                             '''
                         }
                     }

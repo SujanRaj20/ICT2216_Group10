@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_container'
         NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634'
-        //43d9065d-8664-4cf5-9b09-b0f600b6c3ff
     }
 
     triggers {
@@ -52,28 +51,16 @@ pipeline {
         }
 
         stage('OWASP Dependency-Check Vulnerabilities') {
-          steps {
-            dependencyCheck additionalArguments: '''
+            steps {
+                dependencyCheck additionalArguments: '''
                     -o './'
                     -s './'
                     -f 'ALL'
                     --prettyPrint
                     --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-          }
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
         }
-
-        // stage('OWASP Dependency-Check Vulnerabilities') {
-        //     steps {
-        //         dependencyCheck additionalArguments: ''' 
-        //             -o './'
-        //             -s './'
-        //             -f 'ALL' 
-        //             --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                    
-        //         dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-        //     }
-        // }
 
         stage('Install Docker Compose') {
             steps {
@@ -93,8 +80,8 @@ pipeline {
             steps {
                 dir('/home/student25/ICT2216_Group10') {
                     script {
-                        git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
                         sh '''
+                            git pull origin main
                             # Check if any container is using port 5000
                             CONTAINER_ID=$(docker ps -q -f publish=5000)
                             if [ "$CONTAINER_ID" ]; then
@@ -103,9 +90,6 @@ pipeline {
                                 docker rm $CONTAINER_ID
                             fi
 
-                            # Navigate to the project directory
-                            cd /home/student25/ICT2216_Group10
-                            
                             # Bring down any running containers and prune system
                             docker-compose down
                             docker system prune -f
@@ -125,4 +109,3 @@ pipeline {
         }
     }
 }
-

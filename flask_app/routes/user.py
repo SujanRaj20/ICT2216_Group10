@@ -9,10 +9,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
-from dbmodules.seller_mods import Listing_Modules, get_seller_info
-from dbmodules.user_model import User
-from dbmodules.db_engine import get_engine
-from dbmodules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report
+from modules.decorators import anonymous_required
+
+from modules.seller_mods import Listing_Modules, get_seller_info
+from modules.user_model import User
+from modules.db_engine import get_engine
+from modules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -23,7 +25,7 @@ import string
 from bcrypt import hashpw, gensalt, checkpw
 import bcrypt  # Import bcrypt module directly
 import mysql.connector
-from dbmodules.db_connector import get_mysql_connection
+from modules.db_connector import get_mysql_connection
 from flask import send_file
 from captcha.image import ImageCaptcha
 import io
@@ -88,6 +90,7 @@ def store_otp_in_session(email, otp):
     current_app.logger.debug(f"store_otp_in_session saved email: {session.get('email')}")
 
 @user_bp.route('/generate_new_otp', methods=['POST'])
+@anonymous_required()
 def generate_new_otp():
     try:
         email = session.get('email')
@@ -106,7 +109,8 @@ def generate_new_otp():
         return jsonify({'error': 'Failed to generate new OTP.'}), 500
 
 @user_bp.route('/buyerlogin', methods=['POST'])
-def buyerlogin():
+@anonymous_required()
+def buyerlogin():    
     try:
         data = request.get_json()
         email = data.get('email')
@@ -148,6 +152,7 @@ def buyerlogin():
 
 
 @user_bp.route('/buyersignup', methods=['POST'])
+@anonymous_required()
 def buyersignup():
     try:
         data = request.get_json()
@@ -222,6 +227,7 @@ def buyersignup():
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route('/sellersignup', methods=['POST'])
+@anonymous_required()
 def sellersignup():
     try:
         data = request.get_json()
@@ -296,6 +302,7 @@ def sellersignup():
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route('/verify_otp')
+@anonymous_required()
 def verify_otp_route():
     current_app.logger.error(f"signup_verify_otp called")
     purpose = session.get('purpose')
@@ -306,6 +313,7 @@ def verify_otp_route():
 
 
 @user_bp.route('/signup_verify_otp', methods=['POST'])
+@anonymous_required()
 def signup_verify_otp():
     try:
         userdata = session.get('otp_data')
@@ -343,6 +351,7 @@ def signup_verify_otp():
         return jsonify({'error': 'Failed to verify OTP.'}), 500
     
 @user_bp.route('/login_verify_otp', methods=['POST'])
+@anonymous_required()
 def login_verify_otp():
     try:
         userdata = session.get('otp_data')
@@ -377,7 +386,7 @@ def login_verify_otp():
 
 # Define the route for the user profile page
 @user_bp.route("/profile")
-# @login_required
+@login_required
 def profile():
     user_data = {
         'username': current_user.username,
@@ -444,11 +453,13 @@ def seller_listings():
     return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route("/seller-listing-add")
+@login_required
 def seller_listing_add():
     return render_template("seller-templates/seller-listing-add.html")  # Render seller-listings.html with the userid
 
 
 @user_bp.route('/add-listing', methods=['POST'])
+@login_required
 def add_listing():
     try:
         # Access form data using request.form and request.files
@@ -740,6 +751,7 @@ def delete_item(cart_item_id):
         return jsonify({'error': result['error']}), 400
     
 @user_bp.route('/logout')
+@login_required
 def logout():
     logout_user()
     session.pop('user_id', None)  # Clear the 'user_id' from session
@@ -762,6 +774,7 @@ def delete_item_wishlist(wishlist_item_id):
     
     
 @user_bp.route('/report-item', methods=['POST'])
+@login_required
 def report_item():
     try:
         data = request.get_json()
@@ -790,6 +803,7 @@ def report_item():
         return jsonify({'error': str(e)}), 500
     
 @user_bp.route('/seller/<int:seller_id>')
+@login_required
 def buyer_seller_page(seller_id):
     seller_info = get_seller_info(seller_id)
     sort_option = request.args.get('sort', 'none')
@@ -799,6 +813,7 @@ def buyer_seller_page(seller_id):
     return render_template('buyer-templates/buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
 @user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])
+@login_required
 def submit_comment(item_id):
     try:
         title = request.form.get('title')
@@ -1120,11 +1135,13 @@ def get_cart_items(buyer_id):
 
 
 @user_bp.route('/success')
+@login_required
 def success():
     clear_cart(current_user.id)
     return render_template('util-templates/success.html')
 
 @user_bp.route("/cancel")
+@login_required
 def cancel():
     return render_template ('cancel.html')
 

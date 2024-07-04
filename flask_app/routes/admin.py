@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, session, current_app
 from flask_login import login_required
-from dbmodules.admin_mods import get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete, get_listings_foradmin, admin_listingdelete, get_comments_foradmin, admin_commentdelete, get_commentreports_foradmin, get_listingreports_foradmin, admin_commentreportdelete, admin_listingreportdelete
+from modules.admin_mods import get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete, get_listings_foradmin, admin_listingdelete, get_comments_foradmin, admin_commentdelete, get_commentreports_foradmin, get_listingreports_foradmin, admin_commentreportdelete, admin_listingreportdelete
 import logging
 from bcrypt import hashpw, gensalt
 import mysql.connector
-from dbmodules.db_connector import get_mysql_connection
+from modules.db_connector import get_mysql_connection
 
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)
@@ -117,6 +117,7 @@ def admin_sellerdelete_route(seller_id):
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_listingsmenu")
+@login_required
 def admin_listingsmenu_route():
     listings = get_listings_foradmin()
     return render_template("admin-templates/admin-listingsmenu.html", listings=listings)  # Render the add admin template
@@ -131,6 +132,7 @@ def admin_listingdelete_route(listing_id):
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_commentsmenu")
+@login_required
 def admin_commentsmenu_route():
     comments = get_comments_foradmin()
     return render_template("admin-templates/admin-commentsmenu.html", comments = comments)  # Render the add admin template
@@ -148,6 +150,7 @@ def admin_commentdelete_route(comment_id):
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_reportsmenu")
+@login_required
 def admin_reportsmenu_route():
     listing_reports = get_listingreports_foradmin()
     comment_reports = get_commentreports_foradmin()
@@ -180,5 +183,6 @@ def admin_listingreportdelete_route(report_id):
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_logs")
+@login_required
 def admin_logsview_route():
     return render_template("admin-templates/admin-logsview.html")  # Render the add admin template

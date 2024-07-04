@@ -12,11 +12,14 @@ from routes.user import user_bp  # Import the user Blueprint
 from routes.admin import admin_bp  # Import the admin Blueprint
 from endpoint_config import protected_endpoints  # Import protected endpoints
 
-from dbmodules.user_model import User
-from dbmodules.buyer_mods import Buyer_Cart
-from dbmodules.db_connector import get_mysql_connection
+from modules.user_model import User
+from modules.buyer_mods import Buyer_Cart
+from modules.db_engine import get_engine
+from modules.db_connector import get_mysql_connection
 from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
-# from sqlalchemy import text
+
+from modules.decorators import anonymous_required
+
 import mysql.connector
 import logging
 from flask_mail import Mail
@@ -64,12 +67,7 @@ app.logger.debug("This is a debug message")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-local_mysql_host = os.getenv('MYSQL_HOST', 'mysql-container')
-local_mysql_port = 3306
-local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
-local_mysql_password = os.getenv('MYSQL_PASSWORD', '***REMOVED***')
-local_mysql_db = os.getenv('MYSQL_DB', '***REMOVED***')
+# login_manager.login_view = 'login'
 
 # Register the Blueprint with the app
 app.register_blueprint(main_bp)
@@ -86,15 +84,13 @@ app.register_blueprint(admin_bp)
 # def template_not_found(e):
 #     return render_template('404.html'), 404
 
-# Route to create a user (just for example)
 
 
 def initialize_database():
     """Function to initialize the database and create/verify tables."""
     print("Initializing database...")
     try:
-        local_db_uri = f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}'
-        local_engine = create_engine(local_db_uri)
+        local_engine = get_engine()
         print("Engine created.")
         
         tables_or_fields = create_or_verify_tables(local_engine)

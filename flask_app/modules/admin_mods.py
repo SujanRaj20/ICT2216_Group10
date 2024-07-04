@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 import logging
-from dbmodules.db_engine import get_engine
+from modules.db_engine import get_engine
 
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 

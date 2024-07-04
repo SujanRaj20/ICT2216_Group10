@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from dbmodules.db_engine import get_engine
+from modules.db_engine import get_engine
 
 import logging
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, TIMESTAMP, ForeignKey, text, DECIMAL, JSON, DATE

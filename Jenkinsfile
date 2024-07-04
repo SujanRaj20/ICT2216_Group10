@@ -80,27 +80,31 @@ pipeline {
             steps {
                 dir('/home/student25/ICT2216_Group10') {
                     script {
-                        sh '''
-                            echo "Pulling latest code from Git"
-                            git pull origin main
+                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                            sh '''
+                                echo "Pulling latest code from Git"
+                                git config --global credential.helper store
+                                echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
+                                git pull origin main
 
-                            echo "Checking if any container is using port 5000"
-                            CONTAINER_ID=$(docker ps -q -f publish=5000)
-                            if [ "$CONTAINER_ID" ]; then
-                                echo "Port 5000 is in use. Stopping the container using it..."
-                                docker stop $CONTAINER_ID
-                                docker rm $CONTAINER_ID
-                            fi
+                                echo "Checking if any container is using port 5000"
+                                CONTAINER_ID=$(docker ps -q -f publish=5000)
+                                if [ "$CONTAINER_ID" ]; then
+                                    echo "Port 5000 is in use. Stopping the container using it..."
+                                    docker stop $CONTAINER_ID
+                                    docker rm $CONTAINER_ID
+                                fi
 
-                            echo "Bringing down any running containers and pruning system"
-                            docker-compose down
-                            docker system prune -f
+                                echo "Bringing down any running containers and pruning system"
+                                docker-compose down
+                                docker system prune -f
 
-                            echo "Building and bringing up new containers"
-                            docker-compose up --build -d
+                                echo "Building and bringing up new containers"
+                                docker-compose up --build -d
 
-                            echo "Deployment completed"
-                        '''
+                                echo "Deployment completed"
+                            '''
+                        }
                     }
                 }
             }

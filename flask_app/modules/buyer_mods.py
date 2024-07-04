@@ -410,8 +410,8 @@ class Buyer_Wishlist:
     #     finally:
     #         engine.dispose()
 
-     @staticmethod
-     def add_to_wishlist(user_id, listing_id):
+    @staticmethod
+    def add_to_wishlist(user_id, listing_id):
         engine = get_engine()
         try:
             # Check if the item already exists in the wishlist

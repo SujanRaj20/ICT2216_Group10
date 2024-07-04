@@ -81,8 +81,10 @@ pipeline {
                 dir('/home/student25/ICT2216_Group10') {
                     script {
                         sh '''
+                            echo "Pulling latest code from Git"
                             git pull origin main
-                            # Check if any container is using port 5000
+
+                            echo "Checking if any container is using port 5000"
                             CONTAINER_ID=$(docker ps -q -f publish=5000)
                             if [ "$CONTAINER_ID" ]; then
                                 echo "Port 5000 is in use. Stopping the container using it..."
@@ -90,12 +92,14 @@ pipeline {
                                 docker rm $CONTAINER_ID
                             fi
 
-                            # Bring down any running containers and prune system
+                            echo "Bringing down any running containers and pruning system"
                             docker-compose down
                             docker system prune -f
-                            
-                            # Bring up new containers
+
+                            echo "Building and bringing up new containers"
                             docker-compose up --build -d
+
+                            echo "Deployment completed"
                         '''
                     }
                 }
@@ -105,6 +109,7 @@ pipeline {
 
     post {
         always {
+            echo 'Cleaning workspace'
             cleanWs()
         }
     }

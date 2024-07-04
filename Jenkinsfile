@@ -52,8 +52,13 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    cd flask_app
-                    docker build -t ${DOCKER_IMAGE} .
+                    cd ${WORKSPACE}
+                    if [ -f Dockerfile ]; then
+                        docker build -t ${DOCKER_IMAGE} .
+                    else
+                        echo "Dockerfile not found in root directory"
+                        exit 1
+                    fi
                     '''
                 }
             }
@@ -63,7 +68,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    cd flask_app
                     docker run --rm ${DOCKER_IMAGE} pytest || echo "No tests found. Skipping..."
                     '''
                 }
@@ -72,13 +76,18 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                dir('/home/student25/ICT2216_Group10/flask_app') {
+                dir('/home/student25/ICT2216_Group10') {
                     script {
                         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                             sh '''
                                 echo "Pulling latest code from Git"
                                 git config --global credential.helper store
                                 echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
+
+                                # Stash local changes
+                                git stash
+
+                                # Pull the latest code
                                 git pull origin main
 
                                 echo "Checking if any container is using port 5000"

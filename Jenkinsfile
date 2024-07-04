@@ -12,27 +12,38 @@ pipeline {
     }
 
     stages {
-        stage('Test Docker') {
+        stage("List Docker Images") {
             steps {
                 script {
-                    sh 'docker ps'
+                    sh 'docker images'
                 }
+            }
+        }
+
+        stage("Test Docker") {
+            steps {
+                sh 'docker ps'
             }
         }
 
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '5e9ba646-cf8c-4396-8cf8-ad2e11fd49f6']]])
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install dependencies') {
             steps {
-                script {
-                    sh '''
-                    cd flask_app
-                    docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r requirements.txt
-                    '''
+                dir('flask_app') {
+                    sh 'docker run --rm -v $(pwd):/app -w /app python:3.8-slim pip install -r requirements.txt'
+                }
+            }
+        }
+
+        stage('OWASP Dependency Check') {
+            steps {
+                dir('flask_app') {
+                    dependencyCheck additionalArguments: '--format HTML --format XML', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
                 }
             }
         }
@@ -59,35 +70,9 @@ pipeline {
             }
         }
 
-        stage('OWASP Dependency-Check Vulnerabilities') {
-            steps {
-                dependencyCheck additionalArguments: '''
-                    -o './'
-                    -s './'
-                    -f 'ALL'
-                    --prettyPrint
-                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-            }
-        }
-
-        stage('Install Docker Compose') {
-            steps {
-                script {
-                    sh '''
-                    if ! [ -x "$(command -v docker-compose)" ]; then
-                        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        chmod +x /usr/local/bin/docker-compose
-                        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-                    fi
-                    '''
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
-                dir('/home/student25/ICT2216_Group10/flask_app') {
+                dir('/home/student25/ICT2216_Group10') {
                     script {
                         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                             sh '''
@@ -121,8 +106,12 @@ pipeline {
     }
 
     post {
+        success {
+            dir('flask_app') {
+                dependencyCheckPublisher pattern: './dependency-check-report.xml'
+            }
+        }
         always {
-            echo 'Cleaning workspace'
             cleanWs()
         }
     }

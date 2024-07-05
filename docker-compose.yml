@@ -15,6 +15,7 @@ services:
       MYSQL_USER: bookwise_flask
       MYSQL_PASSWORD: ***REMOVED***
       MYSQL_DB: ***REMOVED***
+      FLASK_APP= app
     depends_on:
       mysql-container:
         condition: service_healthy

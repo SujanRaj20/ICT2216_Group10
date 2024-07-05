@@ -83,12 +83,15 @@ pipeline {
         stage('Deploy') {
             steps {
                 dir('/home/student25/ICT2216_Group10/flask_app') {
+                    echo "Pulling latest code from Git"
+                     git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
+                }
                             sh '''
-                                echo "Pulling latest code from Git"
-                                git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
+
+                                sh /home/student25/ICT2216_Group10/flask_app 
 
                                 # Stash local changes
-                                git stash
+                                git stash &&
 
                                 # Pull the latest code
                                 git pull origin main

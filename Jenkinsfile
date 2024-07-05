@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_1'
-        NVD_API_KEY = '779643d0-11fc-4b1e-b599-9545de56634'
+
     }
 
     triggers {

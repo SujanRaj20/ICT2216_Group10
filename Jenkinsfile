@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ict2216_group10_web'
         DOCKER_CONTAINER = 'ict2216_group10_web_1'
-
     }
 
     triggers {
@@ -40,19 +39,17 @@ pipeline {
             }
         }
 
-
-       stage('OWASP Dependency-Check Vulnerabilities') {
-          steps {
-            dependencyCheck additionalArguments: '''
-                    -o './'
-                    -s './'
-                    -f 'ALL'
-                    --prettyPrint
-                    --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-          }
+        stage('OWASP Dependency-Check Vulnerabilities') {
+            steps {
+                dependencyCheck additionalArguments: '''
+                        -o './'
+                        -s './'
+                        -f 'ALL'
+                        --prettyPrint
+                        --enableExperimental''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
         }
-
 
         stage('Build Docker Image') {
             steps {
@@ -84,11 +81,8 @@ pipeline {
             steps {
                 dir('/home/student25/ICT2216_Group10') {
                     echo "Pulling latest code from Git"
-                    git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
-                }
-                script {
                     sh '''
-                        cd /home/student25/ICT2216_Group10 &&
+                        git pull origin main &&
                         docker-compose down &&
                         docker system prune -f &&
                         docker-compose up --build -d
@@ -98,13 +92,13 @@ pipeline {
         }
     }
 
-
     post {
         always {
             cleanWs()
         }
     }
 }
+
 
 
 

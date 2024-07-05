@@ -15,6 +15,7 @@ services:
       MYSQL_USER: bookwise_flask
       MYSQL_PASSWORD: ***REMOVED***
       MYSQL_DB: ***REMOVED***
+      #added
       FLASK_APP= app
     depends_on:
       mysql-container:
@@ -29,6 +30,7 @@ services:
       MYSQL_DATABASE: ***REMOVED***
       MYSQL_USER: bookwise_flask
       MYSQL_PASSWORD: ***REMOVED***
+      FLASK_APP: app.py  # Ensure this is pointing to the correct module
     ports:
       - "3306:3306"
     volumes:

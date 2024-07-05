@@ -82,7 +82,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                dir('/home/student25/ICT2216_Group10') {
+                dir('/home/student25/ICT2216_Group10/flask_app') {
                     script {
                         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                             sh '''

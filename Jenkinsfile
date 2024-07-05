@@ -84,11 +84,10 @@ pipeline {
             steps {
                 dir('/home/student25/ICT2216_Group10/flask_app') {
                     script {
-                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                         
                             sh '''
                                 echo "Pulling latest code from Git"
-                                git config --global credential.helper store
-                                echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
+                                git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'
 
                                 # Stash local changes
                                 git stash
@@ -121,7 +120,7 @@ pipeline {
                                     exit 1
                                 fi
                             '''
-                        }
+                        
                     }
                 }
             }

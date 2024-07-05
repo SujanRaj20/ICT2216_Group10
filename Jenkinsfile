@@ -33,6 +33,8 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd']]])
                 echo "Pulling latest code from GitHub..."
                 sh 'git pull origin main'
+                sh 'echo "Current branch:" && git branch'
+                sh 'echo "Latest commit:" && git log -1'
             }
         }
 
@@ -92,11 +94,13 @@ pipeline {
                 dir('/home/student25/ICT2216_Group10') {
                     echo "Pulling latest code from Git"
                     sh '''
-                        git pull origin main &&
+                        git pull origin main
+                        echo "After git pull, listing files:"
+                        ls -la
                         echo "Shutting down existing Docker containers..."
-                        docker-compose down &&
+                        docker-compose down
                         echo "Pruning Docker system..."
-                        docker system prune -f &&
+                        docker system prune -f
                         echo "Building and starting Docker containers..."
                         docker-compose up --build --force-recreate -d
                     '''

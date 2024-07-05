@@ -40,7 +40,7 @@ COPY flask_app/ /app/
 EXPOSE 5000
 
 # Define environment variable
-ENV FLASK_APP=app
+ENV FLASK_APP=app.py
 
 # Run flask command when the container launches
 CMD ["flask", "run", "--host=0.0.0.0"]

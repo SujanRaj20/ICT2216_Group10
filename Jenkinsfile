@@ -88,7 +88,7 @@ pipeline {
                 }
                 script {
                     sh '''
-                        cd /home/student25/ICT2216_Group10/flask_app &&
+                        cd /home/student25/ICT2216_Group10 &&
                         docker-compose down &&
                         docker system prune -f &&
                         docker-compose up --build -d

@@ -21,8 +21,9 @@ from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
 from modules.decorators import anonymous_required
 
 import mysql.connector
-import logging
 from flask_mail import Mail
+
+from modules.logger import configure_logging
 
 
 # Initialize the Flask application
@@ -42,6 +43,9 @@ app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password her
 # Initialize Mail
 mail = Mail(app)
 
+# Configure logging
+configure_logging()
+
 # Define the custom filter for enumerate
 def jinja2_enumerate(sequence, start=0):
     return enumerate(sequence, start=start)
@@ -56,14 +60,6 @@ def inject_user_cart_count():
     else:
         user_cart_count = '0'
     return dict(user_cart_count=user_cart_count)
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG for all loggers
-
-# Optionally, configure Flask's logger to use the same settings
-app.logger.setLevel(logging.DEBUG)
-
-app.logger.debug("This is a debug message")
 
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -16,3 +16,5 @@ Flask-Mail
 captcha
 stripe
 pytest
+file-read-backwards
+pytz

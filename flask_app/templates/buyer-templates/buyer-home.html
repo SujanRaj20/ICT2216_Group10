@@ -176,7 +176,7 @@
       <div class="col-lg-4 col-md-6">
         <div class="p-4 rounded bg-light">
           <div class="row align-items-center">
-            <div class="col-6">
+            <div onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')" class="col-6">
               <img
                 src="{{ url_for('static', filename=listing.imagepath.split('static/')[-1]) }}"
                 class="img-fluid bestseller-img"
@@ -263,3 +263,9 @@
   </div>
 </div>
 <!-- Features Section End -->
+
+<script>
+  function redirectToItemPage(url) {
+    window.location.href = url;
+  }
+</script>

@@ -156,9 +156,15 @@ pipeline {
                         venv/bin/python -m pip install --upgrade pip setuptools wheel
                     fi
 
-                    # Activate the virtual environment and install dependencies
-                    python3 venv/bin/pip install -r requirements.txt
-                    python3 venv/bin/pip install pytest
+                    # Activate the virtual environment
+                    . venv/bin/activate
+
+                    # List directory contents for troubleshooting
+                    ls -la
+
+                    # Install dependencies using pip from the virtual environment
+                    pip install -r requirements.txt
+                    pip install pytest
                     '''
                 }
             }

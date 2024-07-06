@@ -1,8 +1,9 @@
+<!-- util-templates/profile.html -->
 {% if user_role == 'buyer' %} {% include "buyer-templates/buyer-navbar.html" %}
 {% elif user_role == 'seller' %} {% include
 "seller-templates/seller-navbar.html" %} {% elif user_role == 'admin' %} {%
 include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
-%}Home{% endblock %}
+%}Profile{% endblock %}
 
 <div class="container-main my-account-container">
   <h2>My Account</h2>
@@ -10,6 +11,8 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
     <div class="tab active" onclick="openTab('profile')">Profile Info</div>
     {% if user_role == 'buyer' %}
     <div class="tab" onclick="openTab('history')">Transaction History</div>
+    {% elif user_role == 'seller' %}
+    <div class="tab" onclick="openTab('listings')">My Listings</div>
     {% endif %}
     <div class="tab" onclick="openTab('changePassword')">Change Password</div>
   </div>
@@ -99,6 +102,11 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
         {% endfor %}
       </tbody>
     </table>
+  </div>
+  {% elif user_role == 'seller' %}
+  <div id="listings" class="tab-content">
+    <h3>My Listings</h3>
+    <!-- Listings Content Here -->
   </div>
   {% endif %}
   <div id="changePassword" class="tab-content">

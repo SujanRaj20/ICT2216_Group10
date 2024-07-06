@@ -137,6 +137,9 @@ pipeline {
             steps {
                 dir('/var/www/bookwise/') {
                     sh '''
+                    # Ensure Python 3 is being used
+                    python3 --version
+
                     # Ensure the python3-venv package is installed
                     apt-get update
                     apt-get install -y python3-venv
@@ -151,9 +154,8 @@ pipeline {
                     ls -la
 
                     # Activate the virtual environment and install dependencies
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                    pip install pytest
+                    python3 venv/bin/pip install -r requirements.txt
+                    python3 venv/bin/pip install pytest
                     '''
                 }
             }

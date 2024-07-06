@@ -147,6 +147,9 @@ pipeline {
                         python3 -m venv venv
                     fi
 
+                    # List directory contents for troubleshooting
+                    ls -la
+
                     # Activate the virtual environment and install dependencies
                     . venv/bin/activate
                     pip install -r requirements.txt

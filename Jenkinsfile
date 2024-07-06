@@ -194,16 +194,18 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                script {
+                dir('/var/www/bookwise/flask_app') {
+                    script {
                     def results = sh (script: '''
                     ls -la
-                    . flask_app/venv/bin/activate &&
+                    . /venv/bin/activate &&
                     pytest --junitxml=unit-test-results.xml
                     ''', returnStatus: true)
 
                     if (results != 0) {
                         error("Build failed")
                     }
+                }
                 }
             }
         }

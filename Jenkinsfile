@@ -133,16 +133,24 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         echo "Installing dependencies..."
-        //         dir('flask_app') {
-        //             sh '''
-        //             docker run --rm -v $(pwd):/app -w /app python:3.8-slim /bin/sh -c "pip install -r requirements.txt && pip install pytest"
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Setup Python Environment') {
+            steps {
+                dir('/var/www/bookwise/') {
+                    sh '''
+                    # Check if the virtual environment already exists
+                    if [ ! -d "venv" ]; then
+                        # Create a virtual environment if it doesn't exist
+                        python3 -m venv venv
+                    fi
+
+                    # Activate the virtual environment and install dependencies
+                    source venv/bin/activate
+                    pip install -r requirements.txt
+                    pip install pytest
+                    '''
+                }
+            }
+        }
 
         stage('Test') {
             steps {
@@ -180,6 +188,21 @@ pipeline {
         //         }
         //     }
         // }
+
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    def results = sh (script: '''
+                    source venv/bin/activate &&
+                    pytest --junitxml=unit-test-results.xml
+                    ''', returnStatus: true)
+
+                    if (results != 0) {
+                        error("Build failed")
+                    }
+                }
+            }
+        }
 
         stage('OWASP DependencyCheck') {
             steps {

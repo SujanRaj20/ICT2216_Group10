@@ -54,19 +54,19 @@ def jinja2_enumerate(sequence, start=0):
 # Register the filter
 app.jinja_env.filters['enumerate'] = jinja2_enumerate
 
+# Function to get the user's cart item count to display on all pages in the navbar if they're logged in
 @app.context_processor
 def inject_user_cart_count():
-    if current_user.is_authenticated:
-        user_cart_count = Buyer_Cart.get_user_cart_item_count(current_user.id)
+    if current_user.is_authenticated:                                               # If the user is authenticated then grab the value for user's cart item count using 
+        user_cart_count = Buyer_Cart.get_user_cart_item_count(current_user.id)      # the get_user_cart_item_count funtion from the imported Buyer_Cart class
     else:
         user_cart_count = '0'
     return dict(user_cart_count=user_cart_count)
 
 
-app.logger.info('Initializing LoginManager')
-login_manager = LoginManager()
-login_manager.init_app(app)
-# login_manager.login_view = 'login'
+app.logger.info('Initializing LoginManager')    
+login_manager = LoginManager()  # Set-up login manager 
+login_manager.init_app(app)     # Initialize the lagin-manager for this app
 
 app.logger.info('Registering Blueprints')
 # Register the Blueprint with the app
@@ -81,11 +81,11 @@ def initialize_database():
     """Function to initialize the database and create/verify tables."""
     print("Initializing database...")
     try:
-        local_engine = get_engine()
+        local_engine = get_engine() # Create and receive engine from the get_engine function imported earlier
         print("Engine created.")
         
-        tables_or_fields = create_or_verify_tables(local_engine)
-        print_tables_or_fields_created(tables_or_fields)
+        tables_or_fields = create_or_verify_tables(local_engine) # Fetch tables that were created or verified to have already existed 
+        print_tables_or_fields_created(tables_or_fields) # print the results
         
         print("Tables created or verified successfully for local MySQL.")
         print("\nFields in Each Table:")

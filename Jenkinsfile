@@ -135,7 +135,7 @@ pipeline {
 
         stage('Setup Python Environment') {
             steps {
-                dir('/var/www/bookwise/') {
+                dir('/var/www/bookwise/flask_app') {
                     sh '''
                     # Ensure Python 3 is being used
                     python3 --version
@@ -165,7 +165,7 @@ pipeline {
             steps {
                 sh '''
                 # Define the target directory on the VM
-                TARGET_DIR="/var/www/bookwise"
+                TARGET_DIR="/var/www/bookwise/flask_app"
                 VM_USER="student25"
                 VM_HOST="3.15.19.78"
 

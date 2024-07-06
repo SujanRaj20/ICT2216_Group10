@@ -3,7 +3,7 @@
   <div class="container py-5">
     <div class="row g-5 align-items-center">
       <div class="col-md-12 col-lg-7">
-        <h4 class="mb-3 text-secondary">HUNGRYS, Click, Read WORK</h4>
+        <h4 class="mb-3 text-secondary">Discover, Click, Read</h4>
         <h1 class="mb-5 display-3 text-primary">
           The Easiest Way to Buy Books Online
         </h1>
@@ -176,7 +176,10 @@
       <div class="col-lg-4 col-md-6">
         <div class="p-4 rounded bg-light">
           <div class="row align-items-center">
-            <div onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')" class="col-6">
+            <div
+              onclick="redirectToItemPage('{{ url_for('user.item_page', item_id=listing.id) }}')"
+              class="col-6"
+            >
               <img
                 src="{{ url_for('static', filename=listing.imagepath.split('static/')[-1]) }}"
                 class="img-fluid bestseller-img"

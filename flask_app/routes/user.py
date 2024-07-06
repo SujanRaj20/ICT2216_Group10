@@ -640,6 +640,7 @@ def delete_image(image_path):
         os.remove(image_path)
        
 @user_bp.route('/item/<int:item_id>')
+@non_admin_required()
 def item_page(item_id):
     try:
         conn = get_mysql_connection()
@@ -810,6 +811,7 @@ def report_item():
         return jsonify({'error': str(e)}), 500
     
 @user_bp.route('/seller/<int:seller_id>')
+@non_admin_required()
 def buyer_seller_page(seller_id):
     seller_info = get_seller_info(seller_id)
     sort_option = request.args.get('sort', 'none')

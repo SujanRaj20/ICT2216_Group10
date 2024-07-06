@@ -25,6 +25,18 @@ def admin_required(redirect_url='main.index'):
         return decorated_function
     return decorator
 
+def non_admin_required(redirect_url='main.index'):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.is_authenticated:
+                user_role = current_user.get_role()
+                if user_role == 'admin':
+                    return redirect(url_for(redirect_url))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 def seller_required(redirect_url='main.index'):
     def decorator(f):
         @wraps(f)

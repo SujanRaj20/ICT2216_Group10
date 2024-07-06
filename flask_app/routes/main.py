@@ -6,7 +6,7 @@ from modules.seller_mods import Listing_Modules
 from modules.user_model import User
 from modules.buyer_mods import Buyer_Shop, Buyer_Cart, fetch_top_five_bestsellers
 
-from modules.decorators import anonymous_required, buyer_required
+from modules.decorators import anonymous_required, buyer_required, non_admin_required
 
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
@@ -42,6 +42,7 @@ def login():
     return render_template("util-templates/login.html")  # Render the /login template
 
 @main_bp.route("/signup")
+@non_admin_required()
 def signup():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
@@ -53,6 +54,7 @@ def contact():
     return render_template("util-templates/contact.html")  # Render the /contact template
 
 @main_bp.route("/shop")
+@non_admin_required()
 def shop():
     sort_option = request.args.get('sort', 'none')
     category = request.args.get('category', 'all')
@@ -77,6 +79,7 @@ def buyeraccount():
 #     return render_template("login-seller.html")  # Render the /seller-login template
 
 @main_bp.route("/seller-signup")
+@non_admin_required()
 def seller_signup():
     return render_template("seller-templates/seller-signup.html")  # Render the /seller-signup template
 

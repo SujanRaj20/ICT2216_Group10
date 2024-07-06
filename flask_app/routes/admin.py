@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, session, current_app, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, session, current_app, redirect, url_for, send_file  
 from flask_login import login_required, current_user
 from modules.admin_mods import (
     get_buyers_foradmin, admin_buyerdelete, get_sellers_foradmin, admin_sellerdelete,
@@ -10,6 +10,13 @@ from bcrypt import hashpw, gensalt
 import mysql.connector
 from modules.db_connector import get_mysql_connection
 from modules.decorators import admin_required
+
+from modules.logger import get_dates_with_logs, get_logs_within_date_range
+
+import os
+
+from io import BytesIO
+import zipfile
 
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)
@@ -211,4 +218,49 @@ def admin_listingreportdelete_route(report_id):
 @admin_required()
 @login_required
 def admin_logsview_route():
-    return render_template("admin-templates/admin-logsview.html")  # Render the logs view template
+    dates = get_dates_with_logs()
+    current_app.logger.info(f"Admin {current_user.id} accessed logs page")
+    return render_template("admin-templates/admin-logsview.html", dates=dates)  # Render the logs view template
+
+@admin_bp.route("/admin_download_logs", methods=['POST'])
+@admin_required()
+@login_required
+def admin_download_logs():
+    try:
+        data = request.get_json()
+        start_date = data['start_date']
+        end_date = data['end_date']
+        
+        # Validate dates to ensure end_date is not before start_date
+        if start_date > end_date:
+            return jsonify({'error': 'End date cannot be before start date.'}), 400
+        
+        current_app.logger.info(f"Admin {current_user.id} downloading logs from {start_date} to {end_date}")
+        
+        log_files = get_logs_within_date_range(start_date, end_date)
+
+        # Create a zip file of the selected log files
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+            for log_file in log_files:
+                log_path = os.path.join('logs', log_file)
+                zip_file.write(log_path, os.path.basename(log_path))
+
+        zip_buffer.seek(0)
+
+        return send_file(
+            zip_buffer,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=f'logs_{start_date}_to_{end_date}.zip'
+        )
+
+    except KeyError as e:
+        error_message = f'Missing or invalid key in request JSON: {e}'
+        current_app.logger.error(error_message)
+        return jsonify({'error': error_message}), 400
+
+    except Exception as e:
+        error_message = f'Error downloading logs: {e}'
+        current_app.logger.error(error_message)
+        return jsonify({'error': error_message}), 500

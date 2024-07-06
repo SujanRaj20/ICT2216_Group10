@@ -76,19 +76,19 @@
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
                         <a href="{{ url_for('main.index') }}" class="nav-item nav-link">Home</a>
-                        <a href="/shop" class="nav-item nav-link">Logs</a>
+                        <a href="{{ url_for('admin.admin_logsview_route') }}" class="nav-item nav-link">Logs</a>
                         <div class="nav-item nav-link dropdown">
                                 Reports
                             <ul class="dropdown-menu dropdown-menu-end m-0 bg-secondary rounded-0">
-                                <li><a href="{{ url_for('user.profile', userid=current_user.id) }}" class="dropdown-item">Listings</a></li>
-                                <li><a href="{{ url_for('user.profile', userid=current_user.id) }}" class="dropdown-item">Comments</a></li>
+                                <li><a href="{{ url_for('admin.admin_reportsmenu_route') }}" class="dropdown-item">Listings</a></li>
+                                <li><a href="{{ url_for('admin.admin_reportsmenu_route') }}" class="dropdown-item">Comments</a></li>
                             </ul>
                         </div>
                         <div class="nav-item nav-link dropdown">
                                 Accounts
                             <ul class="dropdown-menu dropdown-menu-end m-0 bg-secondary rounded-0">
-                                <li><a href="{{ url_for('user.profile', userid=current_user.id) }}" class="dropdown-item">Buyers</a></li>
-                                <li><a href="{{ url_for('user.profile', userid=current_user.id) }}" class="dropdown-item">Sellers</a></li>
+                                <li><a href="{{ url_for('admin.admin_buyersmenu_route') }}" class="dropdown-item">Buyers</a></li>
+                                <li><a href="{{ url_for('admin.admin_sellersmenu_route') }}" class="dropdown-item">Sellers</a></li>
                             </ul>
                         </div>
                     </div>

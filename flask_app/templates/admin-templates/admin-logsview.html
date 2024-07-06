@@ -1,12 +1,107 @@
-{% extends "base_admin.html" %}
-{% block title %}Admin - Logs{% endblock %}
-{% block content %}
-<div class="container-fluid fruite py-5">
-    <div class="container py-5">
-        <h1 class="mb-4">Admin - Logs</h1>
-        <div class="container">
-            
+<style>
+    .align-left-div {
+        text-align: left;
+        /* Ensure text is aligned to the left */
+        padding-left: 5%;
+    }
+</style>
+{% include "admin-templates/admin-navbar.html" %}
+
+<div class="container-fluid page-header py-4" style="margin-top: 10px;">
+    <h1 class="text-center text-white display-6">Logs</h1>
+</div>
+
+
+
+
+<div class="container mt-5">
+    <h1 class="mb-4">Download Logs</h1>
+    <form id="log_form">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <select class="form-control" id="start_date" name="start_date" required>
+                        <option value="" disabled selected>Select Start Date</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <select class="form-control" id="end_date" name="end_date" required>
+                        <option value="" disabled selected>Select End Date</option>
+                    </select>
+                </div>
+            </div>
         </div>
-    </div>
-</div>    
- {% endblock %}
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px" id="submit_button">Download Logs</button>
+        
+
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const dates = {{ dates|tojson|safe }}; // This should be passed from the Flask backend
+
+        const startDateSelect = document.getElementById('start_date');
+        const endDateSelect = document.getElementById('end_date');
+        const submitButton = document.getElementById('submit_button');
+        const form = document.getElementById('log_form');
+
+        dates.forEach(date => {
+            let option = new Option(date, date);
+            startDateSelect.add(option.cloneNode(true));
+            endDateSelect.add(option.cloneNode(true));
+        });
+
+        startDateSelect.addEventListener('change', validateDates);
+        endDateSelect.addEventListener('change', validateDates);
+
+        function validateDates() {
+            const startDate = startDateSelect.value;
+            const endDate = endDateSelect.value;
+
+            if (startDate && endDate && startDate > endDate) {
+                alert('End date cannot be before start date.');
+                submitButton.disabled = true;
+            } else {
+                submitButton.disabled = false;
+            }
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const startDate = startDateSelect.value;
+            const endDate = endDateSelect.value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            fetch('/admin_download_logs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ start_date: startDate, end_date: endDate })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `logs_${startDate}_to_${endDate}.zip`; // Adjust the filename as needed
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch(error => console.error('Error downloading logs:', error));
+        });
+    });
+</script>
+
+{% include "admin-templates/admin-footer.html" %}

@@ -25,12 +25,12 @@ from flask_mail import Mail
 
 from modules.logger import configure_logging
 
+# Configure logging
+configure_logging()
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 
-# Configure logging
-configure_logging()
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
@@ -44,7 +44,7 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = '***REMOVED***'
 app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
 
-app.logger.info('Bookwise Initiated')
+app.logger.info('Initiated app')
 
 app.logger.info('Initializing mail')
 # Initialize Mail
@@ -77,15 +77,6 @@ app.register_blueprint(main_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(admin_bp)
 
-# # Error handler for 404 errors
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     return render_template('404.html'), 404 # Display the 404 page whenever a non-existant route is called
-
-# # # Error handler for TemplateNotFound errors
-# @app.errorhandler(TemplateNotFound)
-# def template_not_found(e):
-#     return render_template('404.html'), 404
 
 
 app.logger.info('Initializing Database')
@@ -149,3 +140,13 @@ with app.app_context():
 # Run the app in debug mode if this script is executed directly
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
+
+# # Error handler for 404 errors
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     return render_template('404.html'), 404 # Display the 404 page whenever a non-existant route is called
+
+# # # Error handler for TemplateNotFound errors
+# @app.errorhandler(TemplateNotFound)
+# def template_not_found(e):
+#     return render_template('404.html'), 404

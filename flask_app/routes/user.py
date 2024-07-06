@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
 
-from modules.decorators import anonymous_required, seller_required, buyer_required
+from modules.decorators import anonymous_required, seller_required, buyer_required, non_admin_required
 
 from modules.seller_mods import Listing_Modules, get_seller_info
 from modules.user_model import User

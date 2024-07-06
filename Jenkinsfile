@@ -222,7 +222,7 @@ pipeline {
                 ssh ${VM_USER}@${VM_HOST} << EOF
                 sudo chown -R ${VM_USER}:${VM_USER} ${TARGET_DIR}
                 sudo chmod -R 755 ${TARGET_DIR}
-                EOF
+    
                 '''
             }
         }

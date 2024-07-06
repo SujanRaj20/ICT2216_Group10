@@ -137,6 +137,10 @@ pipeline {
             steps {
                 dir('/var/www/bookwise/') {
                     sh '''
+                    # Ensure the python3-venv package is installed
+                    sudo apt-get update
+                    sudo apt-get install -y python3-venv
+
                     # Check if the virtual environment already exists
                     if [ ! -d "venv" ]; then
                         # Create a virtual environment if it doesn't exist
@@ -173,21 +177,6 @@ pipeline {
                 '''
             }
         }
-
-        // stage('Run Unit Tests') {
-        //     steps {
-        //         script{
-        //             def results = sh (script: '''
-        //             . ${PYTHON_VENV}/bin/activate &&
-        //             ${PYTHON_VENV}/bin/pytest --junitxml=unit-test-results.xml
-        //             ''', returnStatus: true)
-
-        //             if (results !=0){
-        //                 error ("Build failed")
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Run Unit Tests') {
             steps {

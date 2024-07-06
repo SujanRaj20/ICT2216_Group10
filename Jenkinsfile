@@ -138,8 +138,8 @@ pipeline {
                 dir('/var/www/bookwise/') {
                     sh '''
                     # Ensure the python3-venv package is installed
-                    sudo apt-get update
-                    sudo apt-get install -y python3-venv
+                    apt-get update
+                    apt-get install -y python3-venv
 
                     # Check if the virtual environment already exists
                     if [ ! -d "venv" ]; then

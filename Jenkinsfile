@@ -196,6 +196,7 @@ pipeline {
             steps {
                 script {
                     def results = sh (script: '''
+                    ls -la
                     . venv/bin/activate &&
                     pytest --junitxml=unit-test-results.xml
                     ''', returnStatus: true)

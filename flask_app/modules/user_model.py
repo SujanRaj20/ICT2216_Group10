@@ -10,6 +10,8 @@ from flask import current_app
 from datetime import datetime
 import os
 
+from logging_config import configure_logging
+
 class User(UserMixin):
     def __init__(self, user_data):
         self.id = user_data['id']

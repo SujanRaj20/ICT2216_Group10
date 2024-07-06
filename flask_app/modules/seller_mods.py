@@ -9,6 +9,8 @@ from flask import current_app
 from datetime import datetime
 import os
 
+from logging_config import configure_logging
+
 class Listing_Modules:
     @staticmethod
     def get_listing_byid(listing_id):
@@ -57,7 +59,7 @@ class Listing_Modules:
             query = f"DELETE FROM listings WHERE id = {listing_id}"
             engine.execute(query)
         except SQLAlchemyError as e:
-            logging.error(f"Error deleting listing {listing_id}: {e}")
+            current_app.logger.error(f"Error deleting listing {listing_id}: {e}")
             raise
         finally:
             engine.dispose()
@@ -93,7 +95,7 @@ def get_seller_info(seller_id):
         print(f"SQLAlchemy Error: {e}")
         return None
     except Exception as e:
-        print(f"Error: {e}")
+        current_app.logger.error(f"Error getting seller info where user_id {seller_id}: {e}")
         return None
     finally:
         engine.dispose()

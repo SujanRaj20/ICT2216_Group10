@@ -28,6 +28,10 @@ from modules.logger import configure_logging
 
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
+
+# Configure logging
+configure_logging()
+
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = os.urandom(24)
@@ -40,11 +44,11 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = '***REMOVED***'
 app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
 
+app.logger.info('Bookwise Initiated')
+
+app.logger.info('Initializing mail')
 # Initialize Mail
 mail = Mail(app)
-
-# Configure logging
-configure_logging()
 
 # Define the custom filter for enumerate
 def jinja2_enumerate(sequence, start=0):
@@ -61,10 +65,13 @@ def inject_user_cart_count():
         user_cart_count = '0'
     return dict(user_cart_count=user_cart_count)
 
+
+app.logger.info('Initializing LoginManager')
 login_manager = LoginManager()
 login_manager.init_app(app)
 # login_manager.login_view = 'login'
 
+app.logger.info('Registering Blueprints')
 # Register the Blueprint with the app
 app.register_blueprint(main_bp)
 app.register_blueprint(user_bp)
@@ -81,7 +88,7 @@ app.register_blueprint(admin_bp)
 #     return render_template('404.html'), 404
 
 
-
+app.logger.info('Initializing Database')
 def initialize_database():
     """Function to initialize the database and create/verify tables."""
     print("Initializing database...")
@@ -112,22 +119,6 @@ def initialize_database():
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id)
-
-@app.route('/dbconntest')
-def dbconntest():
-    try:
-        # Test the database connection
-        conn = get_mysql_connection()
-        if conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            result = cursor.fetchone()
-            conn.close()
-            return f"Database connection successful yay: {result}"
-        else:
-            return "Failed to connect to database"
-    except Exception as e:
-        return f"Error connecting to database: {e}"
 
 @app.route('/search', methods=['GET'])
 def search():

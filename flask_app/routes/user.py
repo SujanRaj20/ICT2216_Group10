@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
+from logging_config import configure_logging
+
 from modules.decorators import anonymous_required, seller_required, buyer_required
 
 from modules.seller_mods import Listing_Modules, get_seller_info
@@ -67,11 +69,6 @@ def validate_otp(otp):
     stored_otp = session.get('otp')
     otp_timestamp = session.get('otp_timestamp')
     
-    current_app.logger.debug(f"otp: {otp}")
-    current_app.logger.debug(f"stored_otp: {stored_otp}")
-    current_app.logger.debug(f"otp_timestamp: {otp_timestamp}")
-    current_app.logger.debug(f"time.time() : { time.time() }")
-    
     if stored_otp and otp_timestamp:
         return otp == stored_otp and time.time() - otp_timestamp <= 120  # 120 seconds (2 minutes)
     return False
@@ -79,15 +76,8 @@ def validate_otp(otp):
 def store_otp_in_session(email, otp):
     """Store OTP and related information in the session."""
     session['otp'] = otp
-    current_app.logger.debug(f"store_otp_in_session pushing otp: {otp}")
     session['otp_timestamp'] = time.time()
-    current_app.logger.debug(f"store_otp_in_session pushing otp_timestamp: {time.time()}")
     session['email'] = email
-    current_app.logger.debug(f"store_otp_in_session pushing email: {email}")
-    
-    current_app.logger.debug(f"store_otp_in_session saved otp: {session.get('otp')}")
-    current_app.logger.debug(f"store_otp_in_session saved otp_timestamp: {session.get('otp_timestamp')}")
-    current_app.logger.debug(f"store_otp_in_session saved email: {session.get('email')}")
 
 @user_bp.route('/generate_new_otp', methods=['POST'])
 @anonymous_required()
@@ -101,6 +91,7 @@ def generate_new_otp():
         store_otp_in_session(email, otp)
         
         if send_otp_email(email, otp):
+            current_app.logger.info(f"Generated new OTP and set to {email}")
             return jsonify({'message': 'A new OTP has been sent to your email.'}), 200
         else:
             return jsonify({'error': 'Failed to send new OTP email.'}), 500
@@ -136,9 +127,6 @@ def buyerlogin():
                 otp = generate_otp()
                 store_otp_in_session(email, otp)
                 if send_otp_email(email, otp):
-                    # login_user(User(user), remember=True)
-                    # session.permanent = True
-                    # current_app.logger.info(f"Logged in user {email}. Redirecting to verify_otp.")
                     return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200
                 else:
                     return jsonify({'error': 'Failed to send OTP email.'}), 500
@@ -202,11 +190,6 @@ def buyersignup():
             session['purpose'] = 'signup'
             session['otp_timestamp'] = time.time()
                 
-            # otp_data = session.get('otp_data')
-            # otp_role = session.get('otp_role')
-                
-            # current_app.logger.debug(f"pushed otp_data: {otp_data}" )
-            # current_app.logger.debug(f"pushed otp_data: {otp_role}" )
             
             # Generate OTP and send email
             otp = generate_otp()
@@ -223,7 +206,7 @@ def buyersignup():
     except mysql.connector.Error as err:
         return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
-        current_app.logger.debug(f"e: {e}" )
+        current_app.logger.error(f"Error in buyersignup: {e}" )
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route('/sellersignup', methods=['POST'])
@@ -277,11 +260,6 @@ def sellersignup():
             session['purpose'] = 'signup'
             session['otp_timestamp'] = time.time()
                 
-            # otp_data = session.get('otp_data')
-            # otp_role = session.get('otp_role')
-                
-            # current_app.logger.debug(f"pushed otp_data: {otp_data}" )
-            # current_app.logger.debug(f"pushed otp_data: {otp_role}" )
             
             # Generate OTP and send email
             otp = generate_otp()
@@ -298,17 +276,15 @@ def sellersignup():
     except mysql.connector.Error as err:
         return jsonify({'error': f"Database error: {err}"}), 500
     except Exception as e:
-        current_app.logger.debug(f"e: {e}" )
+        current_app.logger.error(f"Error in sellersignup: {e}" )
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route('/verify_otp')
 @anonymous_required()
 def verify_otp_route():
-    current_app.logger.error(f"signup_verify_otp called")
     purpose = session.get('purpose')
     data = session.get('otp_data')
     role = session.get('otp_role')
-    current_app.logger.debug(f"{data}, {role}")
     return render_template('util-templates/verify_otp.html', purpose=purpose, role=role, data=data)
 
 
@@ -322,9 +298,7 @@ def signup_verify_otp():
         hashed_password = hashpw(password.encode('utf-8'), gensalt())
         otpdata = request.get_json()
         role = session.get('otp_role')
-        current_app.logger.debug(f"otpdata is {otpdata}")
         if validate_otp(otpdata):
-            current_app.logger.debug(f"otpdata validated")
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor()
@@ -340,6 +314,8 @@ def signup_verify_otp():
                 conn.commit()
                 cursor.close()
                 conn.close()
+                
+                current_app.logger.info(f"User {userdata['email']} successfully signed up")
                 return jsonify({'redirect_url': url_for('main.login')}), 200
             else:
                 return jsonify({'error': 'Failed to connect to database'}), 500
@@ -360,7 +336,6 @@ def login_verify_otp():
         otpdata = request.get_json()
         
         if validate_otp(otpdata):
-            current_app.logger.debug(f"otpdata validated")
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor(dictionary=True)
@@ -372,7 +347,7 @@ def login_verify_otp():
                 login_user(User(user), remember=True)
                 session.permanent = True
                 current_app.logger.info(f"Logged in user {email}")
-                    
+                                    
                 return jsonify({'redirect_url': url_for('main.index')}), 200
             else:
                 return jsonify({'error': 'Failed to connect to database'}), 500
@@ -425,11 +400,13 @@ def update_profile():
             cursor.execute(update_query, (fname, lname, phone_num, user_id))
             conn.commit()
             conn.close()
+            current_app.logger.info(f"User {current_user.id} updated profile")
             return jsonify({'message': 'User information updated successfully'})
         else:
             return jsonify({'error': 'Failed to connect to database'}), 500
         
     except Exception as e:
+        current_app.logger.error(f"Error in update_profile for userid {user_id}: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route('/generate_captcha')
@@ -481,7 +458,7 @@ def add_listing():
         image = request.files['image']  # Handle file upload separately if needed
 
         # Log received data for debugging
-        current_app.logger.debug(f"Received data: title={title}, description={description}, keywords={keywords}, release_date={release_date}, author={author}, publisher={publisher}, price={price}, sales={sales}, stock={stock}, type={type}, seller_id={seller_id}, image={image.filename if image else 'None'}")
+        # current_app.logger.debug(f"Received data: title={title}, description={description}, keywords={keywords}, release_date={release_date}, author={author}, publisher={publisher}, price={price}, sales={sales}, stock={stock}, type={type}, seller_id={seller_id}, image={image.filename if image else 'None'}")
         
         # Basic server-side validation
         if not (title and price and stock and type and image):
@@ -501,6 +478,8 @@ def add_listing():
         cursor.execute(insert_query, (title, description, keywords, release_date, author, publisher, price, sales, stock, type, seller_id, image_path))
         conn.commit()
         conn.close()
+        
+        current_app.logger.info(f"Seller {seller_id} added a listing")
 
         return jsonify({'message': 'Listing added successfully'})
     except Exception as e:
@@ -535,7 +514,7 @@ def add_to_cart_route(listing_id):
             flash(result['error'], 'danger')
             return jsonify({'error': result['error']}), 500
         else:
-            current_app.logger.debug(result['message'])
+            current_app.logger.info(f"User {current_user.id} added item {listing_id} to cart")
             flash(result['message'], 'success')
             return jsonify({'message': result['message']}), 200
     
@@ -559,7 +538,7 @@ def add_to_wishlist_route(listing_id):
             flash(result['error'], 'danger')
             return jsonify({'error': result['error']}), 500
         else:
-            current_app.logger.debug(result['message'])
+            current_app.logger.info(f"User {current_user.id} added item {listing_id} to wishlist")
             flash(result['message'], 'success')
             return jsonify({'message': result['message']}), 200
     
@@ -616,8 +595,10 @@ def edit_listing(item_id):
         conn.commit()
         conn.close()
 
+        current_app.logger.info(f"Seller {current_user.id} edited listing {listing_id}")
         return '', 200
     except Exception as e:
+        current_app.logger.error(f"Error in edit_listing: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
@@ -641,10 +622,11 @@ def delete_listing(listing_id):
         # Delete the image file from the filesystem
         if image_path:
             delete_image(image_path)
-        
+            
+        current_app.logger.info(f"Seller {current_user.id} deleted listing {listing_id}")
         return jsonify({"success": True}), 200
     except Exception as e:
-        logging.error(f"Error deleting listing {listing_id}: {e}")
+        current_app.logger.error(f"Error deleting listing {listing_id}: {e}")
         return jsonify({"success": False, "message": "Failed to delete the listing"}), 500
     
 def delete_image(image_path):
@@ -654,6 +636,7 @@ def delete_image(image_path):
     #     image_path = image_path.replace('/app', '')
         
     # Ensure the image path is valid and remove the file
+    current_app.logger.info(f"Deleting image with path {image_path}")
     if os.path.exists(image_path):
         os.remove(image_path)
        
@@ -687,7 +670,7 @@ def item_page(item_id):
 
     except Exception as e:
         flash(f'Error: {e}', 'danger')
-        current_app.logger.debug(e)
+        current_app.logger.error(f"Error in fetching item page with {item_id}: {str(e)}")
         return redirect(url_for('main.shop'))
     
 @user_bp.route('/selleritem/<int:item_id>')
@@ -722,7 +705,7 @@ def item_page_seller(item_id):
 
     except Exception as e:
         flash(f'Error: {e}', 'danger')
-        current_app.logger.debug(e)
+        current_app.logger.error(f"Error in selleritem with item_id {item_id}: {str(e)}")
         return redirect(url_for('main.shop'))
     
 @user_bp.route('/cart')
@@ -739,8 +722,10 @@ def cart():
 def increase_quantity(cart_item_id):
     result = Buyer_Cart.increase_cart_item_quantity(cart_item_id, current_user.id)
     if result['success']:
+        current_app.logger.info(f"User {current_user.id} increased card item {cart_item_id}'s quantity")
         return jsonify({'message': 'Quantity increased successfully'}), 200
     else:
+        current_app.logger.error(f"Error in cart increase user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
 
 @user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])
@@ -749,8 +734,10 @@ def increase_quantity(cart_item_id):
 def decrease_quantity(cart_item_id):
     result = Buyer_Cart.decrease_cart_item_quantity(cart_item_id, current_user.id)
     if result['success']:
+        current_app.logger.info(f"User {current_user.id} decreased card item {cart_item_id}'s quantity")
         return jsonify({'message': 'Quantity decreased successfully'}), 200
     else:
+        current_app.logger.error(f"Error in cart decrease user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
 
 @user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])
@@ -759,13 +746,16 @@ def decrease_quantity(cart_item_id):
 def delete_item(cart_item_id):
     result = Buyer_Cart.delete_cart_item(cart_item_id, current_user.id)
     if result['success']:
+        current_app.logger.info(f"User {current_user.id} deleted cart item {cart_item_id}")
         return jsonify({'message': 'Item deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in cart item delete user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
     
 @user_bp.route('/logout')
 @login_required
 def logout():
+    current_app.logger.info(f"Logging out {current_user.id}")
     logout_user()
     session.pop('user_id', None)  # Clear the 'user_id' from session
     return redirect(url_for('main.index'))  # Redirect to index page after logout
@@ -783,8 +773,10 @@ def wishlist():
 def delete_item_wishlist(wishlist_item_id):
     result = Buyer_Wishlist.delete_wishlist_item(wishlist_item_id, current_user.id)
     if result['success']:
+        current_app.logger.info(f"User {current_user.id} deleted wishlist item {wishlist_item_id}")
         return jsonify({'message': 'Item deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in wishklist item delete user_id {current_user.id} and wishlist_item_id {wishlist_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
     
     
@@ -811,6 +803,7 @@ def report_item():
             current_app.logger.error(f"Error in create_report function: {result['error']}")
             return jsonify({'error': result['error']}), 500
         else:
+            current_app.logger.info(f"User {current_user.id} reported item {item_id}")
             return jsonify({'message': result['message']}), 200
     
     except Exception as e:
@@ -847,6 +840,7 @@ def submit_comment(item_id):
         if 'error' in result:
             return jsonify({'error': result['error']}), 500
         else:
+            current_app.logger.info(f"User {current_user.id} commented on item {item_id}")
             # On success, do not return JSON but allow the frontend to reload
             return '', 200
 
@@ -874,6 +868,7 @@ def report_comment(comment_id):
         if 'error' in result:
             flash(result['error'], 'danger')
         else:
+            current_app.logger.info(f"User {reporter_id} reported {comment_id}")
             flash('Report submitted successfully.', 'success')
     except Exception as e:
         current_app.logger.error(f"Error reporting comment: {str(e)}")
@@ -939,13 +934,14 @@ def report_comment(comment_id):
 @buyer_required()
 @login_required
 def payment():
+    current_app.logger.info(f"Payment route called for {current_user.id}")
     try:
         # Fetch the cart value from the session or calculate it based on the current user
         cart_value = Buyer_Cart.get_user_cart_value(current_user.id)
         cart_items = get_user_cart_items(current_user.id)
 
         if not cart_value or cart_value <= 0:
-            current_app.logger.error("Invalid cart value.")
+            current_app.logger.error(f"Invalid cart value {cart_value} and user_id {current_user.id}")
             return "Invalid cart value.", 400
 
         # Convert cart value to cents
@@ -975,7 +971,7 @@ def payment():
             currency='sgd',
         )
 
-         # Update stock quantities
+        # Update stock quantities
         engine = get_engine()
         with engine.connect() as conn:
             for item in cart_items:
@@ -1031,6 +1027,7 @@ def get_user_cart_items(user_id):
                 WHERE c.user_id = :user_id
             """)
             result = conn.execute(query, {'user_id': user_id})
+            
             return [dict(row) for row in result]
     except SQLAlchemyError as e:
         current_app.logger.error(f"Error fetching cart items: {e}")
@@ -1047,6 +1044,8 @@ def create_transaction(user_id, status):
         with engine.connect() as conn:
             result = conn.execute(query, (user_id, status))
             transaction_id = result.lastrowid
+            
+        current_app.logger.info(f"Transaction created with transaction id {transaction_id} with user id {current_user.id}")
         return transaction_id
     except SQLAlchemyError as e:
         current_app.logger.error(f"Error creating transaction: {e}")
@@ -1068,7 +1067,7 @@ def create_order(transaction_id, total_price, buyer_id):
         keywords_json = json.dumps(keywords)  # Ensure proper JSON serialization
 
         # Print the serialized JSON for debugging
-        current_app.logger.debug(f"Serialized keywords JSON: {keywords_json}")
+        # current_app.logger.debug(f"Serialized keywords JSON: {keywords_json}")
 
         with engine.connect() as conn:
             conn.execute(query, {
@@ -1078,7 +1077,8 @@ def create_order(transaction_id, total_price, buyer_id):
                 'buyer_id': buyer_id,
                 'quantity': quantity
             })
-            current_app.logger.debug(f"Order created successfully")
+            
+            current_app.logger.info(f"Order created for transaction id {transaction_id}, user id {buyer_id}}")
     except SQLAlchemyError as e:
         current_app.logger.error(f"Error creating order: {e}")
     finally:
@@ -1092,6 +1092,7 @@ def calculate_total_quantity(user_id):
     return total_quantity
 
 def clear_cart(user_id):
+    current_app.logger.info(f"Clear cart route called for user {current_user.id}")
     engine = get_engine()
     try:
         # Get the user's cart
@@ -1111,7 +1112,7 @@ def clear_cart(user_id):
         
         return {'success': True}
     except SQLAlchemyError as e:
-        current_app.logger.error(f"Error clearing cart: {e}")
+        current_app.logger.error(f"Error clearing cart for user_id {user_id}: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -1127,6 +1128,7 @@ def clear_cart_route():
         else:
             return jsonify({'error': result['error']}), 500
     except Exception as e:
+        current_app.logger.error(f"Error in clear cart route: {e}")
         return jsonify({'error': str(e)}), 500
 
 def get_cart_items(buyer_id):
@@ -1142,9 +1144,11 @@ def get_cart_items(buyer_id):
         with engine.connect() as conn:
             result = conn.execute(query, (buyer_id,))
             cart_items = [dict(row) for row in result]
+        
+        current_app.logger.info(f"Got cart items for user {buyer_id}")
         return cart_items
     except SQLAlchemyError as e:
-        current_app.logger.error(f"Error fetching cart items: {e}")
+        current_app.logger.error(f"Error fetching cart items for user_id {buyer_id}: {e}")
         return []
     finally:
         engine.dispose()
@@ -1153,12 +1157,14 @@ def get_cart_items(buyer_id):
 @user_bp.route('/success')
 @login_required
 def success():
+    current_app.logger.info(f"Success for user {current_user.id}")
     clear_cart(current_user.id)
     return render_template('util-templates/success.html')
 
 @user_bp.route("/cancel")
 @login_required
 def cancel():
+    current_app.logger.info(f"Cancelled for user {current_user.id}")
     return render_template ('cancel.html')
 
 

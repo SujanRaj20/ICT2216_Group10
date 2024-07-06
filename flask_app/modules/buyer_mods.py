@@ -10,6 +10,8 @@ from flask import current_app
 from datetime import datetime
 import os
 
+from logging_config import configure_logging
+
 class Buyer_Cart:
     # @staticmethod
     # def add_to_cart(user_id, listing_id):
@@ -129,7 +131,7 @@ class Buyer_Cart:
             return {'message': 'Item added to cart successfully.'}
         
         except SQLAlchemyError as e:
-            print(f"Error: {e}")
+            current_app.logger.error(f"Error adding to cart user_id {user_id} listing_id {listing_id}: {e}")
             return {'error': str(e)}
         finally:
             engine.dispose()
@@ -158,7 +160,7 @@ class Buyer_Cart:
             return result
         
         except SQLAlchemyError as e:
-            print(f"Error: {e}")
+            current_app.logger.error(f"Error getting user cart user_id {user_id}: {e}")
             return None
         finally:
             engine.dispose()
@@ -213,7 +215,7 @@ class Buyer_Cart:
             engine.execute(update_query)
 
         except SQLAlchemyError as e:
-            print(f"Error updating cart totals: {e}")
+            current_app.logger.error(f"Error updating cart totals: {e}")
         finally:
             engine.dispose()
 
@@ -231,7 +233,7 @@ class Buyer_Cart:
             cart_count = cart['item_count']
             return cart_count
         except SQLAlchemyError as e:
-            print(f"Error: {e}")
+            current_app.logger.error(f"Error: {e}")
             return None
 
     # @staticmethod
@@ -302,6 +304,7 @@ class Buyer_Cart:
             else:
                 return {'success': False, 'error': 'Cart item not found or does not belong to user'}
         except SQLAlchemyError as e:
+            current_app.logger.error(f"Error increasing cart item quantity: {e}")
             return {'success': False, 'error': str(e)}
         finally:
             engine.dispose()
@@ -344,6 +347,7 @@ class Buyer_Cart:
             else:
                 return {'success': False, 'error': 'Cart item not found or does not belong to user'}
         except SQLAlchemyError as e:
+            current_app.logger.error(f"Error decrease cart item quantity: {e}")
             return {'success': False, 'error': str(e)}
         finally:
             engine.dispose()
@@ -376,6 +380,7 @@ class Buyer_Cart:
             else:
                 return {'success': False, 'error': 'Cart item not found or does not belong to user'}
         except SQLAlchemyError as e:
+            current_app.logger.error(f"Error delete cart item quantity: {e}")
             return {'success': False, 'error': str(e)}
         finally:
             engine.dispose()
@@ -432,7 +437,7 @@ class Buyer_Wishlist:
             return {'message': 'Item added to wishlist.'}
         
         except SQLAlchemyError as e:
-            print(f"Error: {e}")
+            current_app.logger.error(f"Error adding to wishlist: {e}")
             return {'error': str(e)}
         finally:
             engine.dispose()
@@ -453,7 +458,7 @@ class Buyer_Wishlist:
             return wishlist_items
         
         except SQLAlchemyError as e:
-            print(f"Error: {e}")
+            current_app.logger.error(f"Error get wishlist item: {e}")
             return None
         finally:
             engine.dispose()
@@ -473,6 +478,7 @@ class Buyer_Wishlist:
                 return {'success': True}
 
             except SQLAlchemyError as e:
+                current_app.logger.error(f"Error deleting wishlist item quantity: {e}")
                 return {'success': False, 'error': str(e)}
             finally:
                 engine.dispose()
@@ -568,10 +574,10 @@ def create_comment(title, body, rating, item_id, user_id):
             return {'message': 'Comment created successfully.'}
         
         except SQLAlchemyError as e:
-            current_app.logger.error(f"SQLAlchemy Error: {e}")
+            current_app.logger.error(f"SQLAlchemy Error creating comment: {e}")
             return {'error': f"SQLAlchemy Error: {e}"}
         except Exception as e:
-            current_app.logger.error(f"Error: {e}")
+            current_app.logger.error(f"Error creating comment: {e}")
             return {'error': str(e)}
         finally:
             engine.dispose()
@@ -589,10 +595,10 @@ def create_comment_report(comment_id, reporter_id, title, body):
             conn.execute(insert_query, (comment_id, reporter_id, title, body))
         return {'message': 'Report created successfully.'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error creating comment report: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"Error creating comment report: {e}")
         return {'error': str(e)}
     finally:
         engine.dispose()
@@ -622,11 +628,11 @@ def create_report(title, body, item_id, seller_id, buyer_id):
     
     except SQLAlchemyError as e:
         error_message = f"SQLAlchemy Error: {e}"
-        current_app.logger.error(error_message)
+        current_app.logger.error(f"SQLAlchemy Error creating report: {e}")
         return {'error': error_message}
     except Exception as e:
         error_message = f"Error: {e}"
-        current_app.logger.error(error_message)
+        current_app.logger.error(f"Error creating report: {e}")
         return {'error': error_message}
     finally:
         engine.dispose()

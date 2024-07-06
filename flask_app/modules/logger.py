@@ -17,6 +17,10 @@ class TZFormatter(logging.Formatter):
 
 def configure_logging():
     singapore_tz = pytz.timezone('Asia/Singapore')
+    
+    # Ensure the logs directory exists
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True)
 
     # Create a TimedRotatingFileHandler for warnings and above
     file_handler = TimedRotatingFileHandler(

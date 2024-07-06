@@ -11,6 +11,8 @@ import mysql.connector
 from modules.db_connector import get_mysql_connection
 from modules.decorators import admin_required
 
+from logging_config import configure_logging
+
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)
 
@@ -81,12 +83,17 @@ def add_admin_account():
             cursor.execute(insert_query, (fname, lname, email, phone_num, username, hashed_password.decode('utf-8'), role))
             conn.commit()
             conn.close()
+            
+            current_app.logger.info(f"Admin {current_user.id} added another admin account {email}")
             return jsonify({'message': 'User signed up successfully'})
         else:
+            current_app.logger.error(f"Error in add_admin_account connecting to database")
             return jsonify({'error': 'Failed to connect to database'}), 500
     except mysql.connector.Error as err:
-        return jsonify({'error': f"Database error: {err}"}), 500
+        current_app.logger.error(f"Database error for add admin account: {err}")
+        return jsonify({'error': f"Database error for add admin account: {err}"}), 500
     except Exception as e:
+        current_app.logger.error(f"Error for add admin account: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @admin_bp.route("/admin_buyersmenu")
@@ -102,8 +109,10 @@ def admin_buyersmenu_route():
 def admin_buyerdelete_route(buyer_id):
     result = admin_buyerdelete(buyer_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted buyer {buyer_id}")
         return jsonify({'message': 'Buyer account deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_buyersmenu_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_sellersmenu")
@@ -119,8 +128,10 @@ def admin_sellersmenu_route():
 def admin_sellerdelete_route(seller_id):
     result = admin_sellerdelete(seller_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted seller {seller_id}")
         return jsonify({'message': 'Seller account deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_sellerdelete_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_listingsmenu")
@@ -136,8 +147,10 @@ def admin_listingsmenu_route():
 def admin_listingdelete_route(listing_id):
     result = admin_listingdelete(listing_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted listing {listing_id}")
         return jsonify({'message': 'Listing deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_listingdelete_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_commentsmenu")
@@ -154,8 +167,10 @@ def admin_commentdelete_route(comment_id):
     current_app.logger.debug(f"delete comment id: {comment_id}")
     result = admin_commentdelete(comment_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted comment {comment_id}")
         return jsonify({'message': 'Comment deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_commentdelete_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_reportsmenu")
@@ -164,8 +179,8 @@ def admin_commentdelete_route(comment_id):
 def admin_reportsmenu_route():
     listing_reports = get_listingreports_foradmin()
     comment_reports = get_commentreports_foradmin()
-    current_app.logger.debug(comment_reports)
-    current_app.logger.debug(listing_reports)
+    # current_app.logger.debug(comment_reports)
+    # current_app.logger.debug(listing_reports)
     return render_template("admin-templates/admin-reportsmenu.html", listing_reports=listing_reports, comment_reports=comment_reports)  # Render the reports menu template
 
 @admin_bp.route('/admin/commentreportdelete/<int:report_id>', methods=['POST'])
@@ -175,8 +190,10 @@ def admin_commentreportdelete_route(report_id):
     current_app.logger.debug(f"delete comment report id: {report_id}")
     result = admin_commentreportdelete(report_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted comment report {report_id}")
         return jsonify({'message': 'Report deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_commentreportdelete_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route('/admin/listingreportdelete/<int:report_id>', methods=['POST'])
@@ -186,8 +203,10 @@ def admin_listingreportdelete_route(report_id):
     current_app.logger.debug(f"delete listing report id: {report_id}")
     result = admin_listingreportdelete(report_id)
     if result['success']:
+        current_app.logger.info(f"Admin {current_user.id} deleted listing report {report_id}")
         return jsonify({'message': 'Report deleted successfully'}), 200
     else:
+        current_app.logger.error(f"Error in admin_listingreportdelete_route")
         return jsonify({'error': result['error']}), 400
 
 @admin_bp.route("/admin_logs")

@@ -4,6 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 import logging
 from modules.db_engine import get_engine
 
+from logging_config import configure_logging
+
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 
@@ -16,8 +18,10 @@ def get_buyers_foradmin():
         
         return buyers
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting buyers for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
+        current_app.logger.error(f"Error getting buyers for admin: {e}")
         return {'error': str(e)}
     finally:
         engine.dispose()
@@ -31,9 +35,10 @@ def get_sellers_foradmin():
         
         return sellers
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting sellers for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        return {'error': str(e)}
+        current_app.logger.error(f"Error getting sellers for admin: {e}")
     finally:
         engine.dispose()
 
@@ -46,9 +51,10 @@ def get_listings_foradmin():
         
         return listings
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting listings for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        return {'error': str(e)}
+        current_app.logger.error(f"Error getting listings for admin: {e}")
     finally:
         engine.dispose()
 
@@ -95,9 +101,10 @@ def get_comments_foradmin():
         
         return comments
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting comments for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        return {'error': str(e)}
+        current_app.logger.error(f"Error getting comments for admin: {e}")
     finally:
         engine.dispose()
 
@@ -128,9 +135,10 @@ def get_commentreports_foradmin():
         
         return commentreports
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting comment reports for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        return {'error': str(e)}
+        current_app.logger.error(f"Error getting comment reports for admin: {e}")
     finally:
         engine.dispose()
 
@@ -168,9 +176,10 @@ def get_listingreports_foradmin():
         
         return listingreports
     except SQLAlchemyError as e:
+        current_app.logger.error(f"SQLAlchemy Error getting listing reports for admin: {e}")
         return {'error': f"SQLAlchemy Error: {e}"}
     except Exception as e:
-        return {'error': str(e)}
+        current_app.logger.error(f"Error getting listing reports for admin: {e}")
     finally:
         engine.dispose()
 
@@ -195,7 +204,7 @@ def admin_buyerdelete(user_id):
         else:
             return {'success': False, 'error': 'Buyer account not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting buyer for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -222,7 +231,7 @@ def admin_sellerdelete(user_id):
         else:
             return {'success': False, 'error': 'Seller account not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting seller for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -255,7 +264,7 @@ def admin_listingdelete(listing_id):
         else:
             return {'success': False, 'error': 'Listing not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting listing for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -289,7 +298,7 @@ def admin_commentdelete(comment_id):
         else:
             return {'success': False, 'error': 'Comment not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting comment for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -316,7 +325,7 @@ def admin_commentreportdelete(report_id):
         else:
             return {'success': False, 'error': 'Comment Report not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting comment report for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()
@@ -343,7 +352,7 @@ def admin_listingreportdelete(report_id):
         else:
             return {'success': False, 'error': 'Listing Report not found'}
     except SQLAlchemyError as e:
-        current_app.logger.debug(e)
+        current_app.logger.error(f"SQLAlchemy Error deleting listing report for admin: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         engine.dispose()

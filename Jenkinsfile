@@ -209,6 +209,18 @@ pipeline {
                 } 
             }
         }
+
+        stage('Install Dependencies') {
+            steps {
+                echo "Installing dependencies..."
+                dir('/var/www/bookwise') {
+                    sh '''
+                    docker run --rm -v $(pwd):/app -w /app python:3.8-slim /bin/sh -c "pip install -r requirements.txt && pip install pytest"
+                    '''
+                }
+            }
+        }
+
         stage('Test') {
             steps {
                 sh '''

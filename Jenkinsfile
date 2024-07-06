@@ -194,12 +194,12 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                dir('/var/www/bookwise') {
+                dir('/var/www/bookwise/flask_app') {
                     script {
                     def results = sh (script: '''
-                    cd flask_app
                     . venv/bin/activate
                     cd ..
+                    ls -la
                     cd tests
                     pytest --junitxml=unit-test-results.xml
                     ''', returnStatus: true)

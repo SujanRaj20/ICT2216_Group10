@@ -117,25 +117,27 @@
 
 
 
-pipeline {
+ppipeline {
     agent any
     stages {
         stage('Build') {
             steps {
-                sshagent(['56b8991e-7ef2-465c-92b2-fc6a31da829e']) {
-                    sh '''
-                    #!/bin/bash
+                withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    sshagent(['56b8991e-7ef2-465c-92b2-fc6a31da829e']) {
+                        sh '''
+                        #!/bin/bash
 
-                    # Navigate to the project directory
-                    cd "/var/jenkins_home/workspace/bookwise"
+                        # Navigate to the project directory
+                        cd "/var/jenkins_home/workspace/bookwise"
 
-                    # Set up GitHub authentication
-                    GIT_REPO="https://github.com/SujanRaj20/ICT2216_Group10.git"
+                        # Set up GitHub authentication
+                        GIT_REPO="git@github.com:SujanRaj20/ICT2216_Group10.git"
 
-                    # Pull the latest changes
-                    git pull origin main
-                    ''' 
-                }
+                        # Pull the latest changes
+                        git pull $GIT_REPO main
+                        ''' 
+                    }
+                } 
             }
         }
         stage('Test') {

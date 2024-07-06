@@ -121,7 +121,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                withCredentials([string(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', variable: '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')]){
+                withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', variable: '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')]){
                     sh '''
                     #!/bin/bash
 

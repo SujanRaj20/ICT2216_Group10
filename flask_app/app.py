@@ -1,29 +1,27 @@
-from flask import Flask, render_template, g, redirect, url_for, session, request, jsonify, current_app
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-import os
+from flask import Flask, render_template, g, redirect, url_for, session, request, jsonify, current_app # Import dependencies  from flask
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user # Import dependancies from flask-login 
+import os 
 from jinja2 import TemplateNotFound  # Import the TemplateNotFound exception
-from datetime import timedelta
+from datetime import timedelta # Import timedelta from datetime to measure time difference
 
-import stripe
+import stripe # Import the stripe package for checkout
 
-from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created
-from routes.main import main_bp  # Import the Blueprint from the routes module
-from routes.user import user_bp  # Import the user Blueprint
+from routes.main import main_bp  # Import the main Blueprint file from the routes module
+from routes.user import user_bp  # Import the user Blueprint 
 from routes.admin import admin_bp  # Import the admin Blueprint
-from endpoint_config import protected_endpoints  # Import protected endpoints
 
-from modules.user_model import User
-from modules.buyer_mods import Buyer_Cart
-from modules.db_engine import get_engine
-from modules.db_connector import get_mysql_connection
-from sqlalchemy import create_engine  # Import create_engine from SQLAlchemy
+from SqlAlchemy.createTable import create_or_verify_tables, print_tables_or_fields_created # Import required modules form the createTable file 
+from modules.user_model import User # Import the custom Users model
+from modules.buyer_mods import Buyer_Cart # Import Buyer_Cart class from the buyer_mods file
+from modules.db_engine import get_engine # Import get_engine function from the get_engine file
+from modules.db_connector import get_mysql_connection # Import the get_mysql_connection function from the db_connector file
+from modules.decorators import anonymous_required # Import the required decorators from the decorators file
+from modules.logger import configure_logging # Import the configure_logging function from the logger file
 
-from modules.decorators import anonymous_required
+from flask_mail import Mail # Import the Mail package from flask-mail (for OTP)
 
 import mysql.connector
-from flask_mail import Mail
 
-from modules.logger import configure_logging
 
 # Configure logging
 configure_logging()
@@ -33,7 +31,7 @@ app = Flask(__name__, static_url_path='/static')
 
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) # Set the maximum lifetime duration of a permanent session to 1 hour
 app.secret_key = os.urandom(24)
 
 # Flask-Mail configuration
@@ -47,8 +45,7 @@ app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password her
 app.logger.info('Initiated app')
 
 app.logger.info('Initializing mail')
-# Initialize Mail
-mail = Mail(app)
+mail = Mail(app) # Initialize Mail
 
 # Define the custom filter for enumerate
 def jinja2_enumerate(sequence, start=0):
@@ -126,12 +123,6 @@ def search():
     cursor.close()
     db.close()
     return jsonify(results)
-
-# Before request handler to check if user is logged in for specific endpoints
-@app.before_request
-def before_request():
-    if request.endpoint in protected_endpoints and 'user_id' not in session:
-        return redirect(url_for('user.login'))  # Redirect to login page if not logged in
 
 # Initialize the database tables when the app starts
 with app.app_context():

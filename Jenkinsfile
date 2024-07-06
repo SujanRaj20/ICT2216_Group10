@@ -229,23 +229,23 @@ pipeline {
     // }
 
 
-            stage('Deploy') {
-            steps {
-                dir('/home/student25/ICT2216_Group10') {
-                    git branch: 'main', url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd'}
+   stage('Deploy') {
+    steps {
+        dir('/home/student25/ICT2216_Group10') {
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/SujanRaj20/ICT2216_Group10.git', credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd']]])
+        }
 
-                }
-
-                sh '''
-                        cd /home/student25/ICT2216_Group10 &&
-                        git stash &&
-                        docker-compose down &&
-                        docker system prune -f &&
-                        docker-compose up --build -d
-                    '''
-            }
+        script {
+            sh '''
+                cd /home/student25/ICT2216_Group10 &&
+                git stash &&
+                docker-compose down &&
+                docker system prune -f &&
+                docker-compose up --build -d
+            '''
         }
     }
+}
 
     post {
         always {

@@ -133,22 +133,48 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         echo "Installing dependencies..."
-        //         dir('flask_app') {
-        //             sh '''
-        //             docker run --rm -v $(pwd):/app -w /app python:3.8-slim /bin/sh -c "pip install -r requirements.txt && pip install pytest"
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Setup Python Environment') {
+            steps {
+                dir('/var/www/bookwise/flask_app') {
+                    sh '''
+                    # Ensure Python 3 is being used
+                    python3 --version
+
+                    # Ensure the python3-venv package is installed
+                    apt-get update
+                    apt-get install -y python3-venv
+
+                    # Check if the virtual environment already exists
+                    if [ ! -d "venv" ]; then
+                        # Create a virtual environment if it doesn't exist
+                        python3 -m venv venv
+
+                        # Install pip in the virtual environment if not already installed
+                        venv/bin/python -m ensurepip --upgrade
+
+                        # Install setuptools and wheel
+                        venv/bin/python -m pip install --upgrade pip setuptools wheel
+                    fi
+
+                    # Activate the virtual environment
+                    . venv/bin/activate
+
+                    # List directory contents for troubleshooting
+                    ls -la
+
+                    # Install dependencies using pip from the virtual environment
+                    pip install -r requirements.txt
+                    pip install pytest
+                    '''
+                }
+            }
+        }
 
         stage('Test') {
             steps {
                 sh '''
                 # Define the target directory on the VM
-                TARGET_DIR="/var/www/bookwise"
+                TARGET_DIR="/var/www/bookwise/flask_app"
                 VM_USER="student25"
                 VM_HOST="3.15.19.78"
 
@@ -168,15 +194,20 @@ pipeline {
 
         // stage('Run Unit Tests') {
         //     steps {
-        //         script{
+        //         dir('/var/www/bookwise/flask_app') {
+        //             script {
         //             def results = sh (script: '''
-        //             . ${PYTHON_VENV}/bin/activate &&
-        //             ${PYTHON_VENV}/bin/pytest --junitxml=unit-test-results.xml
+        //             . venv/bin/activate
+        //             cd ..
+        //             ls -la
+        //             cd tests
+        //             pytest --junitxml=unit-test-results.xml
         //             ''', returnStatus: true)
 
-        //             if (results !=0){
-        //                 error ("Build failed")
+        //             if (results != 0) {
+        //                 error("Build failed")
         //             }
+        //         }
         //         }
         //     }
         // }

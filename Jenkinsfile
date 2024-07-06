@@ -148,14 +148,23 @@ pipeline {
                     if [ ! -d "venv" ]; then
                         # Create a virtual environment if it doesn't exist
                         python3 -m venv venv
+
+                        # Install pip in the virtual environment if not already installed
+                        venv/bin/python -m ensurepip --upgrade
+
+                        # Install setuptools and wheel
+                        venv/bin/python -m pip install --upgrade pip setuptools wheel
                     fi
+
+                    # Activate the virtual environment
+                    source venv/bin/activate
 
                     # List directory contents for troubleshooting
                     ls -la
 
-                    # Activate the virtual environment and install dependencies
-                    python3 venv/bin/pip install -r requirements.txt
-                    python3 venv/bin/pip install pytest
+                    # Install dependencies using pip from the virtual environment
+                    pip install -r requirements.txt
+                    pip install pytest
                     '''
                 }
             }

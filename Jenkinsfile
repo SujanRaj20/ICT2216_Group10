@@ -117,6 +117,67 @@
 
 
 
+// pipeline {
+//     agent any
+//     stages {
+//         stage('Build') {
+//             steps {
+//                 withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+//                     sh '''
+//                     #!/bin/bash
+
+//                     # Start the SSH agent and add the key
+//                     eval $(ssh-agent -s)
+//                     ssh-add /root/.ssh/id_rsa
+
+//                     # Navigate to the project directory
+//                     cd "/var/jenkins_home/workspace/bookwise"
+
+//                     # Set up GitHub authentication
+//                     GIT_REPO="https://github.com/SujanRaj20/ICT2216_Group10.git"
+//                     GIT_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/SujanRaj20/ICT2216_Group10.git"
+
+//                     # Pull the latest changes
+//                     git pull $GIT_URL main
+//                     ''' 
+//                 } 
+//             }
+//         }
+//         stage('Test') {
+//             steps {
+//                 sh '''
+//                 # Define the target directory on the VM
+//                 TARGET_DIR="/var/www/bookwise"
+//                 VM_USER="student25"
+//                 VM_HOST="3.15.19.78"
+   
+//                 # Copy files to the VM
+//                 scp -r . ${VM_USER}@${VM_HOST}:${TARGET_DIR}
+
+//                 # Run commands on the remote VM to set permissions
+//                 ssh ${VM_USER}@${VM_HOST} << EOF
+//                 sudo chown -R ${VM_USER}:${VM_USER} ${TARGET_DIR}
+//                 sudo chmod -R 755 ${TARGET_DIR}
+//                 EOF
+//                 '''
+//             }
+//         }
+        
+//         stage('OWASP DependencyCheck') {
+//             steps {
+//                 dependencyCheck additionalArguments: '--format HTML --format XML --noupdate', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+//             }
+//         }
+//     }
+//     post {
+//         success {
+//             // Publish Dependency-Check report
+//             dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+//         }
+//     }
+// }
+
+
 pipeline {
     agent any
     stages {
@@ -150,7 +211,10 @@ pipeline {
                 TARGET_DIR="/var/www/bookwise"
                 VM_USER="student25"
                 VM_HOST="3.15.19.78"
-   
+
+                # Add remote host key to known_hosts
+                ssh-keyscan -H ${VM_HOST} >> ~/.ssh/known_hosts
+
                 # Copy files to the VM
                 scp -r . ${VM_USER}@${VM_HOST}:${TARGET_DIR}
 
@@ -162,7 +226,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('OWASP DependencyCheck') {
             steps {
                 dependencyCheck additionalArguments: '--format HTML --format XML --noupdate', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'

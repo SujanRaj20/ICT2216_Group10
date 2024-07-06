@@ -1,177 +1,185 @@
-{% if user_role == 'buyer' %}
-  {% include "buyer-templates/buyer-navbar.html" %}
-{% elif user_role == 'seller' %}
-  {% include "seller-templates/seller-navbar.html" %}
-{% elif user_role == 'admin' %}
-  {% include "admin-templates/admin-navbar.html" %}
-{% endif %}
-{% block title %}Home{% endblock %}
+{% if user_role == 'buyer' %} {% include "buyer-templates/buyer-navbar.html" %}
+{% elif user_role == 'seller' %} {% include
+"seller-templates/seller-navbar.html" %} {% elif user_role == 'admin' %} {%
+include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
+%}Home{% endblock %}
 
 <div class="container-main my-account-container">
-    <h2>My Account</h2>
-    <div class="tabs">
-        <div class="tab active" onclick="openTab('profile')">Profile Info</div>
-        {% if user_role == 'buyer' %}
-        <div class="tab" onclick="openTab('history')">Transaction History</div>
-        {% endif %}
-        <div class="tab" onclick="openTab('changePassword')">Change Password</div>
-    </div>
-
-    <div id="profile" class="tab-content active">
-        <h3>Edit Profile</h3>
-        <form id="editProfileForm">
-            <div class="container">
-                <div class="row gx-2 align-items-center">
-                    <div class="col-lg-4 col-md-12">
-                        <h5 style="float: left; padding-left:20%;">Username</h5>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <span id="username">{{ user_data.username }}</span>
-                    </div>
-                </div>
-                <div class="row gx-2 align-items-center">
-                    <div class="col-lg-4 col-md-12">
-                        <h5 style="float: left; padding-left:20%;">Email</h5>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <span id="email">{{ user_data.email }}</span>
-                    </div>
-                </div>
-                <div class="row gx-2 align-items-center">
-                    <div class="col-lg-4 col-md-12">
-                        <h5 style="float: left; padding-left:20%;">Phone Number</h5>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <input type="text" class="form-control" id="phone_num" value="{{ user_data.phone_num }}">
-                    </div>
-                </div>
-                <div class="row gx-2 align-items-center">
-                    <div class="col-lg-4 col-md-12">
-                        <h5 style="float: left; padding-left:20%;">First Name</h5>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <input type="text" class="form-control" id="fname" value="{{ user_data.fname }}">
-                    </div>
-                </div>
-                <div class="row gx-2 align-items-center">
-                    <div class="col-lg-4 col-md-12">
-                        <h5 style="float: left; padding-left:20%;">Last Name</h5>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <input type="text" class="form-control" id="lname" value="{{ user_data.lname }}">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-            </div>
-        </form>
-    </div>
-
+  <h2>My Account</h2>
+  <div class="tabs">
+    <div class="tab active" onclick="openTab('profile')">Profile Info</div>
     {% if user_role == 'buyer' %}
-    <div id="history" class="tab-content">
-        <h3>Transaction History</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Order ID</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>2024-06-01</td>
-                    <td>#123456</td>
-                    <td>$50.00</td>
-                    <td>Completed</td>
-                </tr>
-                <tr>
-                    <td>2024-06-15</td>
-                    <td>#123457</td>
-                    <td>$75.00</td>
-                    <td>Pending</td>
-                </tr>
-                <!-- Add more rows as needed -->
-            </tbody>
-        </table>
-    </div>
+    <div class="tab" onclick="openTab('history')">Transaction History</div>
     {% endif %}
-    <div id="changePassword" class="tab-content">
-        <h3>Change Password</h3>
-        <form>
-            <div class="mb-3">
-                <label for="currentPassword" class="form-label">Current Password:</label>
-                <input type="password" class="form-control" id="currentPassword">
-            </div>
-            <div class="mb-3">
-                <label for="newPassword" class="form-label">New Password:</label>
-                <input type="password" class="form-control" id="newPassword">
-            </div>
-            <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm New Password:</label>
-                <input type="password" class="form-control" id="confirmPassword">
-            </div>
-            <button type="submit" class="btn btn-primary">Change Password</button>
-        </form>
-    </div>
+    <div class="tab" onclick="openTab('changePassword')">Change Password</div>
+  </div>
+
+  <div id="profile" class="tab-content active">
+    <h3>Edit Profile</h3>
+    <form id="editProfileForm">
+      <div class="container">
+        <div class="row gx-2 align-items-center">
+          <div class="col-lg-4 col-md-12">
+            <h5 style="float: left; padding-left: 20%">Username</h5>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <span id="username">{{ user_data.username }}</span>
+          </div>
+        </div>
+        <div class="row gx-2 align-items-center">
+          <div class="col-lg-4 col-md-12">
+            <h5 style="float: left; padding-left: 20%">Email</h5>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <span id="email">{{ user_data.email }}</span>
+          </div>
+        </div>
+        <div class="row gx-2 align-items-center">
+          <div class="col-lg-4 col-md-12">
+            <h5 style="float: left; padding-left: 20%">Phone Number</h5>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <input
+              type="text"
+              class="form-control"
+              id="phone_num"
+              value="{{ user_data.phone_num }}"
+            />
+          </div>
+        </div>
+        <div class="row gx-2 align-items-center">
+          <div class="col-lg-4 col-md-12">
+            <h5 style="float: left; padding-left: 20%">First Name</h5>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <input
+              type="text"
+              class="form-control"
+              id="fname"
+              value="{{ user_data.fname }}"
+            />
+          </div>
+        </div>
+        <div class="row gx-2 align-items-center">
+          <div class="col-lg-4 col-md-12">
+            <h5 style="float: left; padding-left: 20%">Last Name</h5>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <input
+              type="text"
+              class="form-control"
+              id="lname"
+              value="{{ user_data.lname }}"
+            />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+      </div>
+    </form>
+  </div>
+
+  {% if user_role == 'buyer' %}
+  <div id="history" class="tab-content">
+    <h3>Transaction History</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Order ID</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for transaction in transactions %}
+        <tr>
+          <td>{{ transaction.created_at }}</td>
+          <td>#{{ transaction.id }}</td>
+          <td>{{ transaction.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  <div id="changePassword" class="tab-content">
+    <h3>Change Password</h3>
+    <form>
+      <div class="mb-3">
+        <label for="currentPassword" class="form-label"
+          >Current Password:</label
+        >
+        <input type="password" class="form-control" id="currentPassword" />
+      </div>
+      <div class="mb-3">
+        <label for="newPassword" class="form-label">New Password:</label>
+        <input type="password" class="form-control" id="newPassword" />
+      </div>
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label"
+          >Confirm New Password:</label
+        >
+        <input type="password" class="form-control" id="confirmPassword" />
+      </div>
+      <button type="submit" class="btn btn-primary">Change Password</button>
+    </form>
+  </div>
 </div>
 
 <script>
-    document.getElementById("editProfileForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+  document
+    .getElementById("editProfileForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
 
-        var formData = {
-            phone_num: document.getElementById("phone_num").value,
-            fname: document.getElementById("fname").value,
-            lname: document.getElementById("lname").value
-        };
+      var formData = {
+        phone_num: document.getElementById("phone_num").value,
+        fname: document.getElementById("fname").value,
+        lname: document.getElementById("lname").value,
+      };
 
-        fetch("{{ url_for('user.update_profile') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
+      fetch("{{ url_for('user.update_profile') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            alert("Profile updated successfully");
+            location.reload();
+          }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                alert("Profile updated successfully");
-                location.reload();
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred while updating your profile.");
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while updating your profile.");
         });
     });
 
-    function openTab(tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-            tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabName).style.display = "block";
-        document.getElementById(tabName).classList.add("active");
-        event.currentTarget.classList.add("active");
+  function openTab(tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+      tabcontent[i].classList.remove("active");
     }
+    tablinks = document.getElementsByClassName("tab");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).style.display = "block";
+    document.getElementById(tabName).classList.add("active");
+    event.currentTarget.classList.add("active");
+  }
 
-    // By default, open the profile tab
-    document.getElementById("profile").style.display = "block";
+  // By default, open the profile tab
+  document.getElementById("profile").style.display = "block";
 </script>
-        
-{% if user_role == 'buyer' %}
-  {% include "buyer-templates/buyer-footer.html" %}
-{% elif user_role == 'seller' %}
-  {% include "seller-templates/seller-footer.html" %}
-{% elif user_role == 'admin' %}
-  {% include "admin-templates/admin-footer.html" %}
-{% endif %}
+
+{% if user_role == 'buyer' %} {% include "buyer-templates/buyer-footer.html" %}
+{% elif user_role == 'seller' %} {% include
+"seller-templates/seller-footer.html" %} {% elif user_role == 'admin' %} {%
+include "admin-templates/admin-footer.html" %} {% endif %}

@@ -10,12 +10,15 @@ from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
 
+
 from modules.decorators import anonymous_required, seller_required, buyer_required, non_admin_required
+
+
 
 from modules.seller_mods import Listing_Modules, get_seller_info
 from modules.user_model import User
 from modules.db_engine import get_engine
-from modules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report
+from modules.buyer_mods import Buyer_Cart, Buyer_Wishlist, Buyer_Shop, create_comment, create_comment_report, create_report, fetch_transactions
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -356,9 +359,28 @@ def login_verify_otp():
     except Exception as e:
         current_app.logger.error(f"Error in login_verify_otp: {str(e)}")
         return jsonify({'error': 'Failed to verify OTP.'}), 500
+    
 
 
-# Define the route for the user profile page
+# # Define the route for the user profile page
+# @user_bp.route("/profile")
+# @login_required
+# def profile():
+#     user_data = {
+#         'username': current_user.username,
+#         'fname': current_user.fname,
+#         'lname': current_user.lname,
+#         'email': current_user.email,
+#         'phone_num': current_user.phone_num
+#     }
+#     user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
+
+#     # Fetch transactions for the current user
+#     transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+
+#     return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
+
+
 @user_bp.route("/profile")
 @login_required
 def profile():
@@ -369,8 +391,13 @@ def profile():
         'email': current_user.email,
         'phone_num': current_user.phone_num
     }
-    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
-    return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role)  # Render profile.html with the userid
+    user_role = 'buyer'  # Assuming user role is 'buyer' for this example
+
+    # Fetch transactions for the current user
+    transactions = fetch_transactions(current_user.id)
+
+    return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role, transactions=transactions)
+
 
 @user_bp.route('/update_profile', methods=['POST'])
 @login_required

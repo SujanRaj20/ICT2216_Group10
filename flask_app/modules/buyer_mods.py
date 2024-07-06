@@ -653,3 +653,20 @@ def fetch_top_five_bestsellers():
     except SQLAlchemyError as e:
         current_app.logger.error(f"Error fetching top five bestsellers: {e}")
         return []
+
+def fetch_transactions(user_id):
+    engine = get_engine()
+    transactions = []
+    try:
+        transaction_query = f"""
+            SELECT * FROM transactions
+            WHERE user_id = '{user_id}'
+        """
+        transactions = engine.execute(transaction_query).fetchall()
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error fetching transactions: {e}")
+    finally:
+        engine.dispose()
+    return transactions
+
+

@@ -4,7 +4,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import logging
 from modules.db_engine import get_engine
 
-from logging_config import configure_logging
 
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 

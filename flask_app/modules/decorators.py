@@ -2,7 +2,6 @@ from functools import wraps
 from flask import redirect, url_for
 from flask_login import current_user
 from modules.user_model import User
-from logging_config import configure_logging
 
 def anonymous_required(redirect_url='/'):
     def decorator(f):

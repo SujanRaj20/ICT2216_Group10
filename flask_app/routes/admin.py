@@ -11,8 +11,6 @@ import mysql.connector
 from modules.db_connector import get_mysql_connection
 from modules.decorators import admin_required
 
-from logging_config import configure_logging
-
 # Create a Blueprint named 'admin'
 admin_bp = Blueprint('admin', __name__)
 

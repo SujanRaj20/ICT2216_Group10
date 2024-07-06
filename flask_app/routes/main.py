@@ -8,8 +8,6 @@ from modules.buyer_mods import Buyer_Shop, Buyer_Cart, fetch_top_five_bestseller
 
 from modules.decorators import anonymous_required, buyer_required
 
-from logging_config import configure_logging
-
 # Create a Blueprint named 'main'
 main_bp = Blueprint('main', __name__)
 

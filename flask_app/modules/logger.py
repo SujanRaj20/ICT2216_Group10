@@ -2,6 +2,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import pytz
 from datetime import datetime
+import os
 
 class TZFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, tz=None):

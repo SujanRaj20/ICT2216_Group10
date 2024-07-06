@@ -9,7 +9,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
-from logging_config import configure_logging
 
 from modules.decorators import anonymous_required, seller_required, buyer_required
 
@@ -1078,7 +1077,7 @@ def create_order(transaction_id, total_price, buyer_id):
                 'quantity': quantity
             })
             
-            current_app.logger.info(f"Order created for transaction id {transaction_id}, user id {buyer_id}}")
+            current_app.logger.info(f"Order created for transaction id {transaction_id}, user id {buyer_id}")
     except SQLAlchemyError as e:
         current_app.logger.error(f"Error creating order: {e}")
     finally:

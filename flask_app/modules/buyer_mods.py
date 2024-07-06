@@ -10,7 +10,6 @@ from flask import current_app
 from datetime import datetime
 import os
 
-from logging_config import configure_logging
 
 class Buyer_Cart:
     # @staticmethod

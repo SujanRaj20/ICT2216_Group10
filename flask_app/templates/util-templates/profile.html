@@ -89,6 +89,7 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
         <tr>
           <th>Date</th>
           <th>Order ID</th>
+          <th>Amount</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -97,6 +98,7 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
         <tr>
           <td>{{ transaction.created_at }}</td>
           <td>#{{ transaction.id }}</td>
+          <td>${{ transaction.amount }}</td>
           <td>{{ transaction.status }}</td>
         </tr>
         {% endfor %}
@@ -106,7 +108,32 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
   {% elif user_role == 'seller' %}
   <div id="listings" class="tab-content">
     <h3>My Listings</h3>
-    <!-- Listings Content Here -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Listing ID</th>
+          <th>Title</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for listing in listings %}
+        <tr>
+          <td>{{ listing.id }}</td>
+          <td>{{ listing.title }}</td>
+          <td>{{ listing.price }}</td>
+          <td>{{ listing.stock }}</td>
+          <td>{{ listing.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">No listings found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
   {% endif %}
   <div id="changePassword" class="tab-content">

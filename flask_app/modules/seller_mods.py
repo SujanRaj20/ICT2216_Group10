@@ -98,4 +98,20 @@ def get_seller_info(seller_id):
         return None
     finally:
         engine.dispose()
+
+
+def profile_seller_listings(user_id):
+    engine = get_engine()
+    listings = []
+    try:
+        listing_query = f"""
+            SELECT id, title, price, stock, created_at FROM listings
+            WHERE seller_id = {user_id}
+        """
+        listings = engine.execute(listing_query).fetchall()
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error fetching listings: {e}")
+    finally:
+        engine.dispose()
+    return listings
     

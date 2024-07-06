@@ -168,7 +168,7 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                dir('flask_app') {
+                dir('/var/www/bookwise') {
                     sh '''
                     # Run pytest
                     docker run --rm -v $(pwd):/app -w /app python:3.8-slim pytest

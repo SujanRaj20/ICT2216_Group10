@@ -122,25 +122,20 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sshagent(['56b8991e-7ef2-465c-92b2-fc6a31da829e']) {
                     sh '''
                     #!/bin/bash
-
-                    # Start the SSH agent and add the key
-                    eval $(ssh-agent -s)
-                    ssh-add /root/.ssh/id_rsa
 
                     # Navigate to the project directory
                     cd "/var/jenkins_home/workspace/bookwise"
 
                     # Set up GitHub authentication
                     GIT_REPO="https://github.com/SujanRaj20/ICT2216_Group10.git"
-                    GIT_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/SujanRaj20/ICT2216_Group10.git"
 
                     # Pull the latest changes
-                    git pull $GIT_URL main
+                    git pull origin main
                     ''' 
-                } 
+                }
             }
         }
         stage('Test') {

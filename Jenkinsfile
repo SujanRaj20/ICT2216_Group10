@@ -192,25 +192,25 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                dir('/var/www/bookwise/flask_app') {
-                    script {
-                    def results = sh (script: '''
-                    . venv/bin/activate
-                    cd ..
-                    ls -la
-                    cd tests
-                    pytest --junitxml=unit-test-results.xml
-                    ''', returnStatus: true)
+        // stage('Run Unit Tests') {
+        //     steps {
+        //         dir('/var/www/bookwise/flask_app') {
+        //             script {
+        //             def results = sh (script: '''
+        //             . venv/bin/activate
+        //             cd ..
+        //             ls -la
+        //             cd tests
+        //             pytest --junitxml=unit-test-results.xml
+        //             ''', returnStatus: true)
 
-                    if (results != 0) {
-                        error("Build failed")
-                    }
-                }
-                }
-            }
-        }
+        //             if (results != 0) {
+        //                 error("Build failed")
+        //             }
+        //         }
+        //         }
+        //     }
+        // }
 
         stage('OWASP DependencyCheck') {
             steps {

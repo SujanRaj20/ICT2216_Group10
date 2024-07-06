@@ -116,12 +116,13 @@
 // }
 
 
+
 pipeline {
     agent any
     stages {
         stage('Build') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', variable: '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')]){
+                withCredentials([usernamePassword(credentialsId: '84474bb7-b0b2-4e48-8fca-03f8e49ce5cd', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                     sh '''
                     #!/bin/bash
 
@@ -130,11 +131,11 @@ pipeline {
                     ssh-add /root/.ssh/id_rsa
 
                     # Navigate to the project directory
-                    cd "/var/jenkins_home/workspace/ICT2216_Group10"
+                    cd "/var/jenkins_home/workspace/bookwise"
 
                     # Set up GitHub authentication
                     GIT_REPO="https://github.com/SujanRaj20/ICT2216_Group10.git"
-                    GIT_URL="https://${GIT_TOKEN}@github.com/SujanRaj20/ICT2216_Group10.git"
+                    GIT_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/SujanRaj20/ICT2216_Group10.git"
 
                     # Pull the latest changes
                     git pull $GIT_URL main
@@ -148,7 +149,7 @@ pipeline {
                 # Define the target directory on the VM
                 TARGET_DIR="/var/www/bookwise"
                 VM_USER="student25"
-                VM_HOST=" 3.15.19.78"
+                VM_HOST="3.15.19.78"
    
                 # Copy files to the VM
                 scp -r . ${VM_USER}@${VM_HOST}:${TARGET_DIR}
@@ -157,24 +158,21 @@ pipeline {
                 ssh ${VM_USER}@${VM_HOST} << EOF
                 sudo chown -R ${VM_USER}:${VM_USER} ${TARGET_DIR}
                 sudo chmod -R 755 ${TARGET_DIR}
-
-                # Run PHPUnit tests on the remote VM
-                cd ${TARGET_DIR}
-                php artisan test --log-junit ${TARGET_DIR}/test-report.xml
+                EOF
                 '''
             }
         }
         
         stage('OWASP DependencyCheck') {
-			steps {
-				dependencyCheck additionalArguments: '--format HTML --format XML --noupdate', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-			}
-		}
+            steps {
+                dependencyCheck additionalArguments: '--format HTML --format XML --noupdate', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+            }
+        }
     }
     post {
-		success {
+        success {
             // Publish Dependency-Check report
-			dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-		}
-	}
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+        }
+    }
 }

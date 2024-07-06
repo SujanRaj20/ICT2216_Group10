@@ -133,16 +133,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                echo "Installing dependencies..."
-                dir('flask_app') {
-                    sh '''
-                    docker run --rm -v $(pwd):/app -w /app python:3.8-slim /bin/sh -c "pip install -r requirements.txt && pip install pytest"
-                    '''
-                }
-            }
-        }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         echo "Installing dependencies..."
+        //         dir('flask_app') {
+        //             sh '''
+        //             docker run --rm -v $(pwd):/app -w /app python:3.8-slim /bin/sh -c "pip install -r requirements.txt && pip install pytest"
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Test') {
             steps {
@@ -166,16 +166,20 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                dir('/var/www/bookwise') {
-                    sh '''
-                    # Run pytest
-                    docker run --rm -v $(pwd):/app -w /app python:3.8-slim pytest
-                    '''
-                }
-            }
-        }
+        // stage('Run Unit Tests') {
+        //     steps {
+        //         script{
+        //             def results = sh (script: '''
+        //             . ${PYTHON_VENV}/bin/activate &&
+        //             ${PYTHON_VENV}/bin/pytest --junitxml=unit-test-results.xml
+        //             ''', returnStatus: true)
+
+        //             if (results !=0){
+        //                 error ("Build failed")
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('OWASP DependencyCheck') {
             steps {

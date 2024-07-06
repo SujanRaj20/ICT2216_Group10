@@ -200,6 +200,7 @@ pipeline {
                     cd flask_app
                     . venv/bin/activate
                     cd ..
+                    cd tests
                     pytest --junitxml=unit-test-results.xml
                     ''', returnStatus: true)
 

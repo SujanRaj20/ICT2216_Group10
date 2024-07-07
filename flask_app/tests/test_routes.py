@@ -3,7 +3,7 @@ from flask import url_for
 from flask_login import current_user
 
 import pytest
-from flask_app.app import create_app
+from app import app
 
 @pytest.fixture
 def client():

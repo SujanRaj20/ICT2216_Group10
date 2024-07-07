@@ -19,28 +19,28 @@ def test_index(client):
     response = client.get('/')
     assert response.status_code == 200
 
-# def test_login(client):
-    # response = client.get(url_for('main.login'))
-    # assert response.status_code == 200
-    # assert b"Login Page" in response.data
-# 
-# def test_signup(client):
-    # response = client.get(url_for('main.signup'))
-    # assert response.status_code == 200
-    # assert b"Signup Page" in response.data
-# 
-# def test_contact(client):
-    # response = client.get(url_for('main.contact'))
-    # assert response.status_code == 200
-    # assert b"Contact Page" in response.data
-# 
-# def test_shop(client):
-    # response = client.get(url_for('main.shop'))
-    # assert response.status_code == 200
-    # assert b"Shop Page" in response.data
-# 
+def test_login(client):
+    response = client.get(url_for('/login'))
+    assert response.status_code == 200
+
+def test_signup(client):
+    response = client.get(url_for('/signup'))
+    assert response.status_code == 200
+
+def test_contact(client):
+    response = client.get(url_for('/contact'))
+    assert response.status_code == 200
+
+def test_shop(client):
+    response = client.get(url_for('/shop'))
+    assert response.status_code == 200
+    
+def test_protected_route(client):
+    response = client.get('/add_admin')
+    assert response.status_code == 302
+
 # def test_checkout(client):
-    # response = client.get(url_for('main.checkout'))
+#     response = client.get(url_for('main.checkout'))
     # assert response.status_code == 200
     # assert b"Checkout Page" in response.data
 # 

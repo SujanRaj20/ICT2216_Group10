@@ -7,7 +7,7 @@ from flask import current_app
 from datetime import datetime
 import os
 
-from modules.db_engine import get_engine
+from modules.db_engine import get_engine # custom function imported from another file to get db engine
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
@@ -131,20 +131,21 @@ def create_or_verify_tables(engine):
     
     metadata.create_all(engine)
 
+    
     existing_tables = engine.table_names()
 
     tables_created_or_verified = []
 
     for table in [users, carts, transactions, listings, pictures, comments, cart_items, orders, wishlist_items, reports, comment_reports]:
-        if table.name not in existing_tables:
-            table.create(engine)
-            tables_created_or_verified.append(f"{table.name} - Table created")
+        if table.name not in existing_tables:                                   # iterates over the list of tables to check if it already exists
+            table.create(engine)                                                # if it doesnt already exist, it is created
+            tables_created_or_verified.append(f"{table.name} - Table created")  # once created, it is added to the list of tables created or verified to already exist 
         else:
             # Check if all columns exist in the table
-            existing_columns = engine.execute(f"DESCRIBE {table.name}").fetchall()
-            expected_columns = [(column.name, str(column.type)) for column in table.columns]
-            for column_name, column_type in expected_columns:
-                if column_name not in [col[0] for col in existing_columns]:
+            existing_columns = engine.execute(f"DESCRIBE {table.name}").fetchall()              #if a tables does already exists, all the columns from it are fetched
+            expected_columns = [(column.name, str(column.type)) for column in table.columns]    #the list of columns fetched is compared 
+            for column_name, column_type in expected_columns:                                   #to the list of columns it should have
+                if column_name not in [col[0] for col in existing_columns]:                     #if the column doesnt exist, it is created
                     engine.execute(f"ALTER TABLE {table.name} ADD COLUMN {column_name} {column_type}")
                     tables_created_or_verified.append(f"{table.name} - Added column {column_name}")
 

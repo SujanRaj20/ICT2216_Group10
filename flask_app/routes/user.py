@@ -1,4 +1,5 @@
-import base64
+#  Import all required modules
+import base64   
 from datetime import datetime, timedelta
 import time
 from datetime import datetime
@@ -9,11 +10,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import stripe
 
-
-
+# Custom decorators imported from the decorators file
 from modules.decorators import anonymous_required, seller_required, buyer_required, non_admin_required
-
-
 
 from modules.seller_mods import Listing_Modules, get_seller_info, profile_seller_listings
 from modules.user_model import User
@@ -41,107 +39,107 @@ publishable_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
 
 # Create a Blueprint named 'user'
 user_bp = Blueprint('user', __name__)
-mail = Mail()
+mail = Mail()   # Initialize Mail
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
-def generate_otp():
+def generate_otp(): # Function to generate a random 6-digit OTP
     """Generate a random 6-digit OTP."""
-    return ''.join(random.choices(string.digits, k=6))
+    return ''.join(random.choices(string.digits, k=6))  # Generate a 6-digit OTP using random.choices and return it
 
-def send_otp_email(email, otp):
+def send_otp_email(email, otp): # Function to send an OTP email to the user
     """Send an OTP email to the user."""
-    msg = Message('Your OTP Code', sender='***REMOVED***', recipients=[email])
-    msg.body = f'Your OTP code is {otp}. Please use this code to complete your login.'
+    msg = Message('Your OTP Code', sender='***REMOVED***', recipients=[email])  # Create a Message object with the sender, recipient, and subject
+    msg.body = f'Your OTP code is {otp}. Please use this code to complete your login.'  # Set the body of the email to the OTP code
     try:
-        mail.send(msg)
-        current_app.logger.info(f"OTP email sent to {email}")
-        return True
-    except Exception as e:
-        current_app.logger.error(f"Failed to send OTP email to {email}: {e}")
-        return False
+        mail.send(msg)                                                                  # Send the email using the mail.send() method
+        current_app.logger.info(f"OTP email sent to {email}")                           # Log the successful email sending
+        return True                                                                     # Return True if the email was sent successfully
+    except Exception as e:                                                              # Catch any exceptions that occur during email sending
+        current_app.logger.error(f"Failed to send OTP email to {email}: {e}")           # Log the error
+        return False                                                                    # Return False if the email failed to send
     
-def validate_captcha(captcha_input):
+def validate_captcha(captcha_input):                        # Function to validate CAPTCHA input
     """Validate CAPTCHA input."""
-    return captcha_input == session.get('captcha_text')
+    return captcha_input == session.get('captcha_text')     # Return True if the input matches the CAPTCHA text stored in the session
 
-def validate_otp(otp):
-    """Validate the OTP entered by the user."""
-    stored_otp = session.get('otp')
-    otp_timestamp = session.get('otp_timestamp')
+def validate_otp(otp):                                      # Function to validate the OTP entered by the user 
+    """Validate the OTP entered by the user."""             
+    stored_otp = session.get('otp')                         # Get the stored OTP from the session
+    otp_timestamp = session.get('otp_timestamp')            # Get the timestamp when the OTP was generated
     
-    if stored_otp and otp_timestamp:
-        return otp == stored_otp and time.time() - otp_timestamp <= 120  # 120 seconds (2 minutes)
-    return False
+    if stored_otp and otp_timestamp:                        # Check if the stored OTP and timestamp exist
+        return otp == stored_otp and time.time() - otp_timestamp <= 120  # Return True if the OTP matches and is not expired ie. the difference between the current time and the timestamp is less than or equal to 120 seconds
+    return False                                            # Return False if the OTP is invalid or expired
 
-def store_otp_in_session(email, otp):
+def store_otp_in_session(email, otp):                       # Function to store OTP and related information in the session
     """Store OTP and related information in the session."""
-    session['otp'] = otp
-    session['otp_timestamp'] = time.time()
-    session['email'] = email
+    session['otp'] = otp                                    # Store the OTP in the session
+    session['otp_timestamp'] = time.time()                  # Store the current timestamp in the session
+    session['email'] = email                                # Store the user's email in the session
 
-@user_bp.route('/generate_new_otp', methods=['POST'])
-@anonymous_required()
+@user_bp.route('/generate_new_otp', methods=['POST'])       # Route to generate a new OTP
+@anonymous_required()                                       # Apply the custom anonymous_required decorator to the route to ensure the user is not logged in
 def generate_new_otp():
     try:
-        email = session.get('email')
-        if not email:
-            return jsonify({'error': 'Session expired. Please log in again.'}), 401
+        email = session.get('email')                        # Get the user's email from the session
+        if not email:                                       # Check if the email exists, if not, 
+            return jsonify({'error': 'Session expired. Please log in again.'}), 401 #return an error
 
-        otp = generate_otp()
-        store_otp_in_session(email, otp)
+        otp = generate_otp()                                # Generate a new OTP
+        store_otp_in_session(email, otp)                    # Store the new OTP in the session
         
-        if send_otp_email(email, otp):
-            current_app.logger.info(f"Generated new OTP and set to {email}")
-            return jsonify({'message': 'A new OTP has been sent to your email.'}), 200
+        if send_otp_email(email, otp):                      # Send the new OTP to the user's email and check if the email was sent successfully
+            current_app.logger.info(f"Generated new OTP and set to {email}")    # Log the successful generation of the new OTP
+            return jsonify({'message': 'A new OTP has been sent to your email.'}), 200  # Return a success message
         else:
-            return jsonify({'error': 'Failed to send new OTP email.'}), 500
+            return jsonify({'error': 'Failed to send new OTP email.'}), 500 # Return an error message if the email failed to send
     except Exception as e:
-        current_app.logger.error(f"Error in generate_new_otp: {str(e)}")
-        return jsonify({'error': 'Failed to generate new OTP.'}), 500
+        current_app.logger.error(f"Error in generate_new_otp: {str(e)}")    # Log any errors that occur
+        return jsonify({'error': 'Failed to generate new OTP.'}), 500    # Return an error message
 
-@user_bp.route('/buyerlogin', methods=['POST'])
-@anonymous_required()
+@user_bp.route('/buyerlogin', methods=['POST']) # Route to handle buyer login
+@anonymous_required()   
 def buyerlogin():    
     try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        captcha_input = data.get('captcha')
+        data = request.get_json()               # Get the JSON data from the request
+        email = data.get('email')               # Get the email from the data
+        password = data.get('password')         # Get the password from the data
+        captcha_input = data.get('captcha')     # Get the CAPTCHA input from the data
         
-        current_app.logger.debug(f"captcha_input: {captcha_input}")
+        current_app.logger.debug(f"captcha_input: {captcha_input}") # Debug print
 
-        if not validate_captcha(captcha_input):
-            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
+        if not validate_captcha(captcha_input): # Validate the CAPTCHA input
+            return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400    # Return an error if the CAPTCHA is invalid
 
-        conn = get_mysql_connection()
-        if conn:
-            cursor = conn.cursor(dictionary=True)
-            query = "SELECT * FROM users WHERE email = %s"
-            cursor.execute(query, (email,))
-            user = cursor.fetchone()
-            conn.close()
+        conn = get_mysql_connection()           # Get a connection to the MySQL database
+        if conn:                                # Check if the connection was successful
+            cursor = conn.cursor(dictionary=True)   # Create a cursor object to execute queries
+            query = "SELECT * FROM users WHERE email = %s"  # Query to fetch the user with the given email
+            cursor.execute(query, (email,))     # Execute the query with the email as a parameter
+            user = cursor.fetchone()            # Fetch the user from the query result
+            conn.close()                        # Close the database connection
 
-            if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                session['otp_data'] = data
-                session['purpose'] = 'login'
-                otp = generate_otp()
-                store_otp_in_session(email, otp)
-                if send_otp_email(email, otp):
-                    return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200
+            if user and checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):   # Check if the user exists and the password matches, if it does
+                session['otp_data'] = data      # Store the user data in the session for OTP verification
+                session['purpose'] = 'login'    # Store the purpose of the OTP verification in the session
+                otp = generate_otp()            # Generate a new OTP
+                store_otp_in_session(email, otp)    # Store the OTP and related information in the session
+                if send_otp_email(email, otp):      # Send the OTP to the user's email and check if the email was sent successfully
+                    return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200 # Return a success message with the redirect URL
                 else:
-                    return jsonify({'error': 'Failed to send OTP email.'}), 500
+                    return jsonify({'error': 'Failed to send OTP email.'}), 500 # Return an error message if the email failed to send
             else:
-                return jsonify({'error': 'Invalid email or password'}), 401
+                return jsonify({'error': 'Invalid email or password'}), 401 # Return an error if the email or password is invalid
         else:
-            return jsonify({'error': 'Failed to connect to database'}), 500
-    except Exception as e:
-        current_app.logger.error(f"Error in buyerlogin: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+            return jsonify({'error': 'Failed to connect to database'}), 500 # Return an error if the database connection failed
+    except Exception as e:  # Catch any exceptions that occur
+        current_app.logger.error(f"Error in buyerlogin: {str(e)}")  # Log the error
+        return jsonify({'error': str(e)}), 500  # Return an error message
 
 
-@user_bp.route('/buyersignup', methods=['POST'])
+@user_bp.route('/buyersignup', methods=['POST'])    # Route to handle buyer signup
 @anonymous_required()
 def buyersignup():
     try:
@@ -159,32 +157,32 @@ def buyersignup():
             return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
         
         # Basic server-side validation
-        if not (fname and lname and email and username and password):
-            return jsonify({'error': 'All fields except phone number are required'}), 400
+        if not (fname and lname and email and username and password):   # Check if all required fields are provided
+            return jsonify({'error': 'All fields except phone number are required'}), 400   # Return an error if any field is missing
         
 
-        conn = get_mysql_connection()
+        conn = get_mysql_connection()   
         if conn:
             cursor = conn.cursor()
             
             # Check if email, username, or phone number already exists
             query = """
             SELECT * FROM users WHERE email = %s OR username = %s OR phone_num = %s
-            """
-            cursor.execute(query, (email, username, phone_num))
-            existing_users = cursor.fetchall()
+            """ 
+            cursor.execute(query, (email, username, phone_num)) # Execute the query with the email, username, and phone number as parameters
+            existing_users = cursor.fetchall()                  # Fetch the users with the given email, username, or phone number
             
-            if existing_users:
-                existing_fields = []
-                for user in existing_users:
-                    if user[5] == email:
-                        existing_fields.append("Email")
-                    if user[1] == username:
-                        existing_fields.append("Username")
-                    if user[6] == phone_num:
-                        existing_fields.append("Phone Number")
+            if existing_users:                                  # Check if any existing users were found
+                existing_fields = []                            # Create an empty list to store the existing fields
+                for user in existing_users:                     # Iterate over the existing users
+                    if user[5] == email:                        # Check if the email already exists
+                        existing_fields.append("Email")         # Add 'Email' to the existing fields list
+                    if user[1] == username:                     # Check if the username already exists
+                        existing_fields.append("Username")      # Add 'Username' to the existing fields list
+                    if user[6] == phone_num:                    # Check if the phone number already exists
+                        existing_fields.append("Phone Number")  # Add 'Phone Number' to the existing fields list
                         
-                return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400
+                return jsonify({'error': f'The following fields already exist: {", ".join(existing_fields)}'}), 400 # Return an error message with the existing fields
 
             # Store user data in session for OTP verification
             session['otp_data'] = data
@@ -200,18 +198,18 @@ def buyersignup():
             session['otp_expiry'] = datetime.utcnow() + timedelta(seconds=60)
             session['email'] = email
             
-            if send_otp_email(email, otp):
-                return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200
-            else:
-                return jsonify({'error': 'Failed to send OTP email.'}), 500
+            if send_otp_email(email, otp):  # Send the OTP email to the user and check if the email was sent successfully
+                return jsonify({'redirect_url': url_for('user.verify_otp_route')}), 200 # Return a success message with the redirect URL
+            else:                                                           # If the email failed to send
+                return jsonify({'error': 'Failed to send OTP email.'}), 500 # Return an error message
             
-    except mysql.connector.Error as err:
-        return jsonify({'error': f"Database error: {err}"}), 500
-    except Exception as e:
-        current_app.logger.error(f"Error in buyersignup: {e}" )
-        return jsonify({'error': str(e)}), 500
+    except mysql.connector.Error as err:                            # Catch any MySQL errors that occur
+        return jsonify({'error': f"Database error: {err}"}), 500    # Return an error message with the database error
+    except Exception as e:                                          # Catch any other exceptions that occur
+        current_app.logger.error(f"Error in buyersignup: {e}" )     # Log the error
+        return jsonify({'error': str(e)}), 500                      # Return an error message
 
-@user_bp.route('/sellersignup', methods=['POST'])
+@user_bp.route('/sellersignup', methods=['POST'])                   # Route to handle seller signup
 @anonymous_required()
 def sellersignup():
     try:
@@ -281,26 +279,26 @@ def sellersignup():
         current_app.logger.error(f"Error in sellersignup: {e}" )
         return jsonify({'error': str(e)}), 500
 
-@user_bp.route('/verify_otp')
-@anonymous_required()
-def verify_otp_route():
-    purpose = session.get('purpose')
-    data = session.get('otp_data')
-    role = session.get('otp_role')
-    return render_template('util-templates/verify_otp.html', purpose=purpose, role=role, data=data)
+@user_bp.route('/verify_otp')   # Route to verify the OTP
+@anonymous_required()           
+def verify_otp_route():         
+    purpose = session.get('purpose')    # Get the purpose of the OTP verification from the session (login or signup)
+    data = session.get('otp_data')      # Get the user data from the session
+    role = session.get('otp_role')      # Get the user role from the session (buyer or seller)
+    return render_template('util-templates/verify_otp.html', purpose=purpose, role=role, data=data) # Render the verify_otp.html template with the purpose, role, and user data
 
 
-@user_bp.route('/signup_verify_otp', methods=['POST'])
+@user_bp.route('/signup_verify_otp', methods=['POST'])  # Route to verify the OTP during signup
 @anonymous_required()
 def signup_verify_otp():
     try:
-        userdata = session.get('otp_data')
-        password = userdata['password']
+        userdata = session.get('otp_data')  # Get the user data from the session
+        password = userdata['password']     # Get the password from the user data
         # Hash the password before saving
-        hashed_password = hashpw(password.encode('utf-8'), gensalt())
-        otpdata = request.get_json()
-        role = session.get('otp_role')
-        if validate_otp(otpdata):
+        hashed_password = hashpw(password.encode('utf-8'), gensalt())   # Hash the password using bcrypt
+        otpdata = request.get_json()        # Get the OTP data from the request
+        role = session.get('otp_role')      # Get the user role from the session
+        if validate_otp(otpdata):           # Validate the OTP
             conn = get_mysql_connection()
             if conn:
                 cursor = conn.cursor()
@@ -312,12 +310,12 @@ def signup_verify_otp():
                     userdata['fname'], userdata['lname'], userdata['email'],
                     userdata['phone_num'], userdata['username'],
                     hashed_password, role
-                ))
+                ))  # Execute the insert query with the user data
                 conn.commit()
                 cursor.close()
                 conn.close()
                 
-                current_app.logger.info(f"User {userdata['email']} successfully signed up")
+                current_app.logger.info(f"User {userdata['email']} successfully signed up") # Log the successful signup
                 return jsonify({'redirect_url': url_for('main.login')}), 200
             else:
                 return jsonify({'error': 'Failed to connect to database'}), 500
@@ -328,17 +326,17 @@ def signup_verify_otp():
         current_app.logger.error(f"Error in signup_verify_otp: {str(e)}")
         return jsonify({'error': 'Failed to verify OTP.'}), 500
     
-@user_bp.route('/login_verify_otp', methods=['POST'])
+@user_bp.route('/login_verify_otp', methods=['POST'])   # Route to verify the OTP during login
 @anonymous_required()
 def login_verify_otp():
     try:
-        userdata = session.get('otp_data')
-        email = userdata['email']
-        password = userdata['password']
-        otpdata = request.get_json()
+        userdata = session.get('otp_data')              # Get the user data from the session
+        email = userdata['email']                       # Get the email from the user data
+        password = userdata['password']                 # Get the password from the user data
+        otpdata = request.get_json()                    # Get the OTP data from the request
         
-        if validate_otp(otpdata):
-            conn = get_mysql_connection()
+        if validate_otp(otpdata):                       
+            conn = get_mysql_connection()               
             if conn:
                 cursor = conn.cursor(dictionary=True)
                 query = "SELECT * FROM users WHERE email = %s"
@@ -346,34 +344,21 @@ def login_verify_otp():
                 user = cursor.fetchone()
                 conn.close()
                 
-                login_user(User(user), remember=True)
-                session.permanent = True
-                current_app.logger.info(f"Logged in user {email}")
+                login_user(User(user), remember=True)   # Log the user in using the login_user function
+                session.permanent = True                # Set the session to be permanent
+                current_app.logger.info(f"Logged in user {email}")  # Log the successful login
                                     
-                return jsonify({'redirect_url': url_for('main.index')}), 200
+                return jsonify({'redirect_url': url_for('main.index')}), 200    # Return a success message with the redirect URL to the index page
             else:
-                return jsonify({'error': 'Failed to connect to database'}), 500
+                return jsonify({'error': 'Failed to connect to database'}), 500 # Return an error message if the database connection failed
         else:
-            return jsonify({'error': 'Invalid or expired OTP. Please try again.'}), 400
+            return jsonify({'error': 'Invalid or expired OTP. Please try again.'}), 400 # Return an error message if the OTP is invalid or expired
         
     except Exception as e:
-        current_app.logger.error(f"Error in login_verify_otp: {str(e)}")
+        current_app.logger.error(f"Error in login_verify_otp: {str(e)}")    # Log any errors that occur
         return jsonify({'error': 'Failed to verify OTP.'}), 500
     
 
-# @user_bp.route("/profile")
-# @login_required
-# def profile():
-#     user_data = {
-#         'username': current_user.username,
-#         'fname': current_user.fname,
-#         'lname': current_user.lname,
-#         'email': current_user.email,
-#         'phone_num': current_user.phone_num
-#     }
-#     user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
-#     transactions = fetch_transactions(current_user.id) if user_role == 'buyer' else []
-#     return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role, transactions=transactions)
 
 @user_bp.route("/profile")
 @login_required
@@ -385,30 +370,30 @@ def profile():
         'email': current_user.email,
         'phone_num': current_user.phone_num
     }
-    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'
+    user_role = current_user.get_role() if current_user.is_authenticated else 'Guest'   # Get the user role using the get_role method if the user is authenticated, otherwise set the role to 'Guest'
 
-    if user_role == 'buyer':
-        transactions = fetch_transactions(current_user.id)
+    if user_role == 'buyer':                                # If the user role is 'buyer'
+        transactions = fetch_transactions(current_user.id)  # Fetch the transactions for the buyer
         return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role, transactions=transactions)
-    elif user_role == 'seller':
-        listings = profile_seller_listings(current_user.id)
+    elif user_role == 'seller':                             # If the user role is 'seller'
+        listings = profile_seller_listings(current_user.id) # Fetch the seller listings for the seller
         print(listings)  # Debug print
         return render_template("util-templates/profile.html", user_data=user_data, user_role=user_role, listings=listings)
 
-@user_bp.route('/update_profile', methods=['POST'])
+@user_bp.route('/update_profile', methods=['POST']) # Route to update user profile
 @login_required
 def update_profile():
     try:
-        data = request.get_json()
-        fname = data.get('fname')
-        lname = data.get('lname')
-        phone_num = data.get('phone_num')
+        data = request.get_json()   # Get the JSON data from the request
+        fname = data.get('fname')   # Get the first name from the data
+        lname = data.get('lname')   # Get the last name from the data
+        phone_num = data.get('phone_num')   # Get the phone number from the data
         
         # Basic server-side validation
         if not (fname and lname):
             return jsonify({'error': 'First name and Last name are required'}), 400
 
-        user_id = current_user.id
+        user_id = current_user.id   # Get the user ID from the current user
         
         # Update user data in the database
         conn = get_mysql_connection()
@@ -418,12 +403,12 @@ def update_profile():
             UPDATE users 
             SET fname = %s, lname = %s, phone_num = %s 
             WHERE id = %s
-            """
-            cursor.execute(update_query, (fname, lname, phone_num, user_id))
+            """             # Query to update the user data
+            cursor.execute(update_query, (fname, lname, phone_num, user_id))    # Execute the query with the updated data
             conn.commit()
             conn.close()
-            current_app.logger.info(f"User {current_user.id} updated profile")
-            return jsonify({'message': 'User information updated successfully'})
+            current_app.logger.info(f"User {current_user.id} updated profile")  # Log the successful profile update
+            return jsonify({'message': 'User information updated successfully'})    # Return a success message
         else:
             return jsonify({'error': 'Failed to connect to database'}), 500
         
@@ -431,35 +416,35 @@ def update_profile():
         current_app.logger.error(f"Error in update_profile for userid {user_id}: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@user_bp.route('/generate_captcha')
+@user_bp.route('/generate_captcha') # Route to generate a CAPTCHA image
 def generate_captcha():
-    image = ImageCaptcha()
-    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    data = image.generate(captcha_text)
-    image_data = io.BytesIO(data.read())
-    session['captcha_text'] = captcha_text
-    current_app.logger.debug(f"Generated CAPTCHA text: {captcha_text}")
-    return send_file(image_data, mimetype='image/png')
+    image = ImageCaptcha()          # Create an ImageCaptcha object
+    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6)) # Generate a random 6-character CAPTCHA text
+    data = image.generate(captcha_text)     # Generate the CAPTCHA image data
+    image_data = io.BytesIO(data.read())    # Create a BytesIO object to store the image data
+    session['captcha_text'] = captcha_text  # Store the CAPTCHA text in the session
+    current_app.logger.debug(f"Generated CAPTCHA text: {captcha_text}") # Debug print
+    return send_file(image_data, mimetype='image/png')  # Return the CAPTCHA image data as a PNG file
 
 
-@user_bp.route("/seller-listings", methods=["GET"])
-@seller_required()
+@user_bp.route("/seller-listings", methods=["GET"]) # Route to fetch seller listings
+@seller_required()                                  # Apply the custom seller_required decorator to the route to ensure the user is a seller
 @login_required
 def seller_listings():
-    sort_option = request.args.get('sort', 'none')
-    category = request.args.get('category', 'all')
-    seller_listings = Listing_Modules.fetch_seller_listings(current_user.id, sort_option, category)
-    category_counts = Buyer_Shop.fetch_category_counts(current_user.id)
-    return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)
+    sort_option = request.args.get('sort', 'none')  # Get the sort option from the query parameters, default to 'none'
+    category = request.args.get('category', 'all')  # Get the category from the query parameters, default to 'all'
+    seller_listings = Listing_Modules.fetch_seller_listings(current_user.id, sort_option, category) # Fetch the seller listings using the fetch_seller_listings function
+    category_counts = Buyer_Shop.fetch_category_counts(current_user.id)                             # Fetch the category counts using the fetch_category_counts function
+    return render_template("seller-templates/seller-listings.html", seller_listings=seller_listings, sort_option=sort_option, category=category, category_counts=category_counts)   # Render the seller-listings.html template with the seller listings, sort option, category, and category counts
 
-@user_bp.route("/seller-listing-add")
+@user_bp.route("/seller-listing-add")   # Route to render the seller-listing-add.html template
 @seller_required()
 @login_required
 def seller_listing_add():
     return render_template("seller-templates/seller-listing-add.html")  # Render seller-listings.html with the userid
 
 
-@user_bp.route('/add-listing', methods=['POST'])
+@user_bp.route('/add-listing', methods=['POST'])    # Route to add a new listing
 @seller_required()
 @login_required
 def add_listing():
@@ -522,16 +507,16 @@ def save_image(image):
 
     return image_path
 
-@user_bp.route("/add-to-cart/<int:listing_id>", methods=["POST"])
-@buyer_required()
+@user_bp.route("/add-to-cart/<int:listing_id>", methods=["POST"])   # Route to add an item to the cart
+@buyer_required()   # Apply the custom buyer_required decorator to the route to ensure the user is a buyer
 @login_required
 def add_to_cart_route(listing_id):
     try:
-        user_id = current_user.id
+        user_id = current_user.id   # Get the user ID from the current user
         # current_app.logger.debug(f"User {user_id} is adding listing {listing_id} to cart")
-        result = Buyer_Cart.add_to_cart(user_id, listing_id)
+        result = Buyer_Cart.add_to_cart(user_id, listing_id)    # Add the item to the cart using the add_to_cart function
         
-        if 'error' in result:
+        if 'error' in result:   # Check if an error occurred during the operation
             current_app.logger.error(result['error'])
             flash(result['error'], 'danger')
             return jsonify({'error': result['error']}), 500
@@ -546,8 +531,8 @@ def add_to_cart_route(listing_id):
         return jsonify({'error': 'Failed to add item to cart'}), 500
     
     
-@user_bp.route("/add-to-wishlist/<int:listing_id>", methods=["POST"])
-@buyer_required()
+@user_bp.route("/add-to-wishlist/<int:listing_id>", methods=["POST"])   # Route to add an item to the wishlist
+@buyer_required()   # Apply the custom buyer_required decorator to the route to ensure the user is a buyer
 @login_required
 def add_to_wishlist_route(listing_id):
     try:
@@ -569,7 +554,7 @@ def add_to_wishlist_route(listing_id):
         flash(str(e), 'danger')
         return jsonify({'error': 'Failed to add item to wishlist'}), 500
 
-@user_bp.route('/edit-listing/<int:item_id>', methods=['POST'])
+@user_bp.route('/edit-listing/<int:item_id>', methods=['POST'])  # Route to edit a listing
 @seller_required()
 @login_required
 def edit_listing(item_id):
@@ -623,12 +608,12 @@ def edit_listing(item_id):
         current_app.logger.error(f"Error in edit_listing: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])
+@user_bp.route("/delete-listing/<int:listing_id>", methods=["DELETE"])  # Route to delete a listing
 @seller_required()
 @login_required
 def delete_listing(listing_id):
     try:
-        listing = Listing_Modules.get_listing_byid(listing_id)
+        listing = Listing_Modules.get_listing_byid(listing_id)  # Fetch the listing using the get_listing_byid function from the Listing_Modules module
         if not listing:
             return jsonify({"success": False, "message": "Listing not found"}), 404
 
@@ -639,7 +624,7 @@ def delete_listing(listing_id):
         # Fetch the image path before deleting the listing
         image_path = listing['imagepath']
         
-        Listing_Modules.delete_listing_fromdb(listing_id)
+        Listing_Modules.delete_listing_fromdb(listing_id)   # Delete the listing from the database using the delete_listing_fromdb function from the Listing_Modules module
         
         # Delete the image file from the filesystem
         if image_path:
@@ -652,30 +637,26 @@ def delete_listing(listing_id):
         return jsonify({"success": False, "message": "Failed to delete the listing"}), 500
     
 def delete_image(image_path):
-    
-    # Remove '/app' prefix from the image path if it exists
-    # if image_path.startswith('/app'):
-    #     image_path = image_path.replace('/app', '')
         
     # Ensure the image path is valid and remove the file
-    current_app.logger.info(f"Deleting image with path {image_path}")
-    if os.path.exists(image_path):
-        os.remove(image_path)
-       
-@user_bp.route('/item/<int:item_id>')
-@non_admin_required()
+    current_app.logger.info(f"Deleting image with path {image_path}")   # Log the deletion of the image
+    if os.path.exists(image_path):  # Check if the image path exists
+        os.remove(image_path)       # Remove the image file if it exists
+
+@user_bp.route('/item/<int:item_id>')   # Route to fetch an item page
+@non_admin_required()   
 def item_page(item_id):
     try:
         conn = get_mysql_connection()
         if conn:
-            cursor = conn.cursor(dictionary=True)
-            query = "SELECT * FROM listings WHERE id = %s"
+            cursor = conn.cursor(dictionary=True)                       
+            query = "SELECT * FROM listings WHERE id = %s"              
             cursor.execute(query, (item_id,))
             item = cursor.fetchone()
             seller_name_query = "SELECT * FROM users WHERE id = %s"
             cursor.execute(seller_name_query, (item['seller_id'],))
             seller = cursor.fetchone()
-            seller_name = seller['fname'] + " " + seller['lname']
+            seller_name = seller['fname'] + " " + seller['lname']   # Get the seller's full name by concatenating the first and last names
             
             comments_query = f""" SELECT c.id, c.title, c.body, c.rating, c.created_at, u.username, u.fname, u.lname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.listing_id = {item_id} """
             
@@ -696,7 +677,7 @@ def item_page(item_id):
         current_app.logger.error(f"Error in fetching item page with {item_id}: {str(e)}")
         return redirect(url_for('main.shop'))
     
-@user_bp.route('/selleritem/<int:item_id>')
+@user_bp.route('/selleritem/<int:item_id>')  # Route to fetch a seller item page
 @seller_required()
 @login_required
 def item_page_seller(item_id):
@@ -731,19 +712,19 @@ def item_page_seller(item_id):
         current_app.logger.error(f"Error in selleritem with item_id {item_id}: {str(e)}")
         return redirect(url_for('main.shop'))
     
-@user_bp.route('/cart')
+@user_bp.route('/cart')  # Route to fetch the cart page
 @buyer_required()
 @login_required
 def cart():
-    cart_items = get_cart_items(current_user.id)
-    cart_value = Buyer_Cart.get_user_cart_value(current_user.id)
+    cart_items = get_cart_items(current_user.id)    # Get the cart items using the get_cart_items function
+    cart_value = Buyer_Cart.get_user_cart_value(current_user.id)    # Get the cart value using the get_user_cart_value function from the Buyer_Cart module
     return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
 
-@user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])
+@user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])   # Route to increase the quantity of a cart item
 @buyer_required()
 @login_required
 def increase_quantity(cart_item_id):
-    result = Buyer_Cart.increase_cart_item_quantity(cart_item_id, current_user.id)
+    result = Buyer_Cart.increase_cart_item_quantity(cart_item_id, current_user.id)  # Increase the quantity of the cart item using the increase_cart_item_quantity function
     if result['success']:
         current_app.logger.info(f"User {current_user.id} increased card item {cart_item_id}'s quantity")
         return jsonify({'message': 'Quantity increased successfully'}), 200
@@ -751,11 +732,11 @@ def increase_quantity(cart_item_id):
         current_app.logger.error(f"Error in cart increase user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
 
-@user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])
+@user_bp.route('/cart/decrease/<int:cart_item_id>', methods=['POST'])   # Route to decrease the quantity of a cart item
 @buyer_required()
 @login_required
 def decrease_quantity(cart_item_id):
-    result = Buyer_Cart.decrease_cart_item_quantity(cart_item_id, current_user.id)
+    result = Buyer_Cart.decrease_cart_item_quantity(cart_item_id, current_user.id)  # Decrease the quantity of the cart item using the decrease_cart_item_quantity function
     if result['success']:
         current_app.logger.info(f"User {current_user.id} decreased card item {cart_item_id}'s quantity")
         return jsonify({'message': 'Quantity decreased successfully'}), 200
@@ -763,11 +744,11 @@ def decrease_quantity(cart_item_id):
         current_app.logger.error(f"Error in cart decrease user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
 
-@user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])
+@user_bp.route('/cart/delete/<int:cart_item_id>', methods=['POST'])  # Route to delete a cart item
 @buyer_required()
 @login_required
 def delete_item(cart_item_id):
-    result = Buyer_Cart.delete_cart_item(cart_item_id, current_user.id)
+    result = Buyer_Cart.delete_cart_item(cart_item_id, current_user.id) # Delete the cart item using the delete_cart_item function
     if result['success']:
         current_app.logger.info(f"User {current_user.id} deleted cart item {cart_item_id}")
         return jsonify({'message': 'Item deleted successfully'}), 200
@@ -775,26 +756,26 @@ def delete_item(cart_item_id):
         current_app.logger.error(f"Error in cart item delete user_id {current_user.id} and cart_item_id {cart_item_id}: {str(e)}")
         return jsonify({'error': result['error']}), 400
     
-@user_bp.route('/logout')
+@user_bp.route('/logout')   # Route to logout the user
 @login_required
 def logout():
-    current_app.logger.info(f"Logging out {current_user.id}")
+    current_app.logger.info(f"Logging out {current_user.id}") # Log the user logout
     logout_user()
     session.pop('user_id', None)  # Clear the 'user_id' from session
     return redirect(url_for('main.index'))  # Redirect to index page after logout
 
-@user_bp.route("/wishlist")
+@user_bp.route("/wishlist") # Route to fetch the wishlist page
 @buyer_required()
 @login_required
 def wishlist():
-    wishlist_items = Buyer_Wishlist.get_wishlist_items(current_user.id)
+    wishlist_items = Buyer_Wishlist.get_wishlist_items(current_user.id) # Get the wishlist items using the get_wishlist_items function
     return render_template("buyer-templates/buyer-wishlist.html", wishlist_items=wishlist_items)  # Render the /wishlist template
 
-@user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST'])
+@user_bp.route('/wishlist/delete/<int:wishlist_item_id>', methods=['POST']) # Route to delete a wishlist item
 @buyer_required()
 @login_required
 def delete_item_wishlist(wishlist_item_id):
-    result = Buyer_Wishlist.delete_wishlist_item(wishlist_item_id, current_user.id)
+    result = Buyer_Wishlist.delete_wishlist_item(wishlist_item_id, current_user.id) # Delete the wishlist item using the delete_wishlist_item function
     if result['success']:
         current_app.logger.info(f"User {current_user.id} deleted wishlist item {wishlist_item_id}")
         return jsonify({'message': 'Item deleted successfully'}), 200
@@ -803,7 +784,7 @@ def delete_item_wishlist(wishlist_item_id):
         return jsonify({'error': result['error']}), 400
     
     
-@user_bp.route('/report-item', methods=['POST'])
+@user_bp.route('/report-item', methods=['POST'])    # Route to report an item
 @login_required
 def report_item():
     try:
@@ -817,9 +798,7 @@ def report_item():
         # Verify CAPTCHA
         if captcha_input != session.get('captcha_text'):
             return jsonify({'error': 'Invalid CAPTCHA. Please try again.'}), 400
-        
-        # current_app.logger.debug(f"Received in user.py title: {title}, body: {body}, item_id: {item_id}, seller_id: {seller_id}, buyer_id: {buyer_id}")
-        
+                
         result = create_report(title, body, item_id, seller_id, buyer_id)
         
         if 'error' in result:
@@ -833,17 +812,17 @@ def report_item():
         current_app.logger.error(f"Error in report_item route: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
-@user_bp.route('/seller/<int:seller_id>')
-@non_admin_required()
-def buyer_seller_page(seller_id):
-    seller_info = get_seller_info(seller_id)
-    sort_option = request.args.get('sort', 'none')
-    category = request.args.get('category', 'all')
-    listings = Listing_Modules.fetch_seller_listings(seller_id, sort_option, category)
-    category_counts = Buyer_Shop.fetch_category_counts_for_shop_buyer()
+@user_bp.route('/seller/<int:seller_id>')   # Route to fetch the seller page
+@non_admin_required()   # Apply the custom non_admin_required decorator to the route to ensure the user is not an admin
+def buyer_seller_page(seller_id):   
+    seller_info = get_seller_info(seller_id)    # Get the seller information using the get_seller_info function
+    sort_option = request.args.get('sort', 'none')  # Get the sort option from the query parameters, default to 'none'
+    category = request.args.get('category', 'all')  # Get the category from the query parameters, default to 'all'
+    listings = Listing_Modules.fetch_seller_listings(seller_id, sort_option, category)  # Fetch the seller listings using the fetch_seller_listings function
+    category_counts = Buyer_Shop.fetch_category_counts_for_shop_buyer() # Fetch the category counts using the fetch_category_counts_for_shop_buyer function
     return render_template('buyer-templates/buyer-sellerpage.html', seller_info=seller_info, listings=listings, sort_option=sort_option, category=category, category_counts=category_counts)
 
-@user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])
+@user_bp.route('/submit-comment/<int:item_id>', methods=['POST'])   # Route to submit a comment
 @login_required
 def submit_comment(item_id):
     try:
@@ -851,8 +830,6 @@ def submit_comment(item_id):
         body = request.form.get('body')
         rating = int(request.form.get('rating'))
         user_id = current_user.id  # Assuming you have a way to get the current user ID
-
-        # current_app.logger.debug(f"Received title: {title}, body: {body}, rating: {rating}, user_id: {user_id}, item_id: {item_id}")
 
         # Validate rating
         if rating < 1 or rating > 5:
@@ -872,16 +849,14 @@ def submit_comment(item_id):
         current_app.logger.error(f"Error in submit_comment route: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
-@user_bp.route('/report-comment/<int:comment_id>', methods=['POST'])
+@user_bp.route('/report-comment/<int:comment_id>', methods=['POST'])    # Route to report a comment
 @login_required
 def report_comment(comment_id):
     title = request.form.get('title')
     body = request.form.get('body')
     captcha_input = request.form.get('captcha')
-    reporter_id = current_user.id  # Assuming you have a way to get the current logged-in user's ID
-    
-    # current_app.logger.debug(f"report comment route called comment id: {comment_id} title: {title} body: {body} captcha_input: {captcha_input} reporter_id: {reporter_id}")
-    
+    reporter_id = current_user.id  # use the current user ID as the reporter ID
+        
     # Verify CAPTCHA
     if captcha_input != session.get('captcha_text'):
         flash('Invalid CAPTCHA. Please try again.', 'danger')
@@ -954,7 +929,7 @@ def report_comment(comment_id):
 #         return f"Internal Server Error: {e}", 500
 
 
-@user_bp.route('/payment', methods=['POST'])
+@user_bp.route('/payment', methods=['POST'])    # Route to handle payment
 @buyer_required()
 @login_required
 def payment():
@@ -1007,10 +982,10 @@ def payment():
                 conn.execute(update_stock_query, {'quantity': item['quantity'], 'listing_id': item['listing_id']})
 
         # Create a new transaction record
-        transaction_id = create_transaction(current_user.id, 'completed')
-
+        transaction_id = create_transaction(current_user.id, 'completed')  
+        
         # Create a new order record
-        create_order(transaction_id, cart_value, current_user.id)
+        create_order(transaction_id, cart_value, current_user.id)  
 
         # Clear the cart after successful purchase
         clear_cart(current_user.id)
@@ -1024,7 +999,7 @@ def payment():
         return f"Internal Server Error: {e}", 500
 
     
-def clear_user_cart(user_id):
+def clear_user_cart(user_id):   # Function to clear the user cart
     engine = get_engine()
     try:
         with engine.connect() as conn:
@@ -1039,7 +1014,7 @@ def clear_user_cart(user_id):
         current_app.logger.error(f"Error clearing user cart: {e}")
 
 
-def get_user_cart_items(user_id):
+def get_user_cart_items(user_id):   # Function to get the user cart items
     engine = get_engine()
     try:
         with engine.connect() as conn:
@@ -1058,7 +1033,7 @@ def get_user_cart_items(user_id):
         return []
 
 
-def create_transaction(user_id, status):
+def create_transaction(user_id, status):    # Function to create a transaction
     engine = get_engine()
     try:
         query = """
@@ -1077,7 +1052,7 @@ def create_transaction(user_id, status):
     finally:
         engine.dispose()
 
-def create_order(transaction_id, total_price, buyer_id):
+def create_order(transaction_id, total_price, buyer_id):    # Function to create an order
     engine = get_engine()
     try:
         query = text("""
@@ -1110,12 +1085,12 @@ def create_order(transaction_id, total_price, buyer_id):
 
 
 
-def calculate_total_quantity(user_id):
+def calculate_total_quantity(user_id):  # Function to calculate the total quantity
     cart_items = get_cart_items(user_id)
     total_quantity = sum(item['quantity'] for item in cart_items)
     return total_quantity
 
-def clear_cart(user_id):
+def clear_cart(user_id):    # Function to clear the cart
     current_app.logger.info(f"Clear cart route called for user {current_user.id}")
     engine = get_engine()
     try:
@@ -1141,7 +1116,7 @@ def clear_cart(user_id):
     finally:
         engine.dispose()
 
-@user_bp.route('/clear_cart', methods=['POST'])
+@user_bp.route('/clear_cart', methods=['POST'])  # Route to clear the cart
 @buyer_required()
 @login_required
 def clear_cart_route():
@@ -1155,7 +1130,7 @@ def clear_cart_route():
         current_app.logger.error(f"Error in clear cart route: {e}")
         return jsonify({'error': str(e)}), 500
 
-def get_cart_items(buyer_id):
+def get_cart_items(buyer_id):   # Function to get the cart items
     engine = get_engine()
     try:
         query = """
@@ -1180,20 +1155,20 @@ def get_cart_items(buyer_id):
 
 @user_bp.route('/success')
 @login_required
-def success():
+def success():  # Route to render the success page
     current_app.logger.info(f"Success for user {current_user.id}")
     clear_cart(current_user.id)
     return render_template('util-templates/success.html')
 
 @user_bp.route("/cancel")
 @login_required
-def cancel():
+def cancel():   # Route to cancel the payment
     current_app.logger.info(f"Cancelled for user {current_user.id}")
     return render_template ('cancel.html')
 
 
 @user_bp.context_processor
-def inject_user_cart_count():
+def inject_user_cart_count():   # Function to inject the user cart count
     if current_user.is_authenticated:
         cart = Buyer_Cart.get_user_cart(current_user.id)
         user_cart_count = cart['item_count'] if cart else 0

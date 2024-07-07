@@ -89,7 +89,7 @@ def initialize_database():
         
         print("Tables created or verified successfully for local MySQL.")
         print("\nFields in Each Table:")
-        for table in local_engine.table_names():
+        for table in local_engine.table_names(): 
             print(f"Table: {table}")
             for column in local_engine.execute(f"DESCRIBE {table}"):
                 print(f" - {column['Field']} ({column['Type']})")
@@ -105,24 +105,24 @@ def initialize_database():
             
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id):         #load the current user
     return User.get(user_id)
 
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('query')
     db = get_mysql_connection()  # Use the existing get_mysql_connection function
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(dictionary=True) 
     search_query = """
-    SELECT * FROM listings 
-    WHERE title LIKE %s OR description LIKE %s OR keywords LIKE %s OR author LIKE %s
-    """
-    like_query = f"%{query}%"
-    cursor.execute(search_query, (like_query, like_query, like_query, like_query))
-    results = cursor.fetchall()
+    SELECT * FROM listings                                                              
+    WHERE title LIKE %s OR description LIKE %s OR keywords LIKE %s OR author LIKE %s    
+    """                                                                                 # this query is used to take input from the search box and compares 
+    like_query = f"%{query}%"                                                           # it to the description and keywords fields for each listing
+    cursor.execute(search_query, (like_query, like_query, like_query, like_query))  
+    results = cursor.fetchall()                                                         # listings with matches to the search term are fetched
     cursor.close()
     db.close()
-    return jsonify(results)
+    return jsonify(results)                                                             # returns the listings/results to show to the user 
 
 # Initialize the database tables when the app starts
 with app.app_context():

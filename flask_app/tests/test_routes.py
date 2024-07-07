@@ -20,19 +20,19 @@ def test_index(client):
     assert response.status_code == 200
 
 def test_login(client):
-    response = client.get(url_for('/login'))
+    response = client.get('/login')
     assert response.status_code == 200
 
 def test_signup(client):
-    response = client.get(url_for('/signup'))
+    response = client.get('/signup')
     assert response.status_code == 200
 
 def test_contact(client):
-    response = client.get(url_for('/contact'))
+    response = client.get('/contact')
     assert response.status_code == 200
 
 def test_shop(client):
-    response = client.get(url_for('/shop'))
+    response = client.get('/shop')
     assert response.status_code == 200
     
 def test_protected_route(client):

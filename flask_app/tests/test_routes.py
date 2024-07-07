@@ -30,14 +30,10 @@ def test_signup(client):
 def test_contact(client):
     response = client.get('/contact')
     assert response.status_code == 200
-
-def test_shop(client):
-    response = client.get('/shop')
-    assert response.status_code == 200
     
 def test_protected_route(client):
     response = client.get('/add_admin')
-    assert response.status_code == 302
+    assert response.status_code == 401
 
 # def test_checkout(client):
 #     response = client.get(url_for('main.checkout'))

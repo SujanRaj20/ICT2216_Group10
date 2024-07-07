@@ -194,7 +194,7 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                dir('/var/www/bookwise/flask_app') {
+                dir('/var/jenkins_home/workspace/bookwise/') {
                     script {
                     def results = sh (script: '''
                     . venv/bin/activate

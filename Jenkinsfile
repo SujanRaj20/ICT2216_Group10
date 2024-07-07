@@ -198,7 +198,7 @@ pipeline {
                     script {
                     def results = sh (script: '''
                     . venv/bin/activate
-                    cd "/var/jenkins_home/workspace/bookwise"
+                    cd "/var/jenkins_home/workspace/bookwise/flask_app/"
                     ls -la
                     cd tests
                     pytest --junitxml=unit-test-results.xml

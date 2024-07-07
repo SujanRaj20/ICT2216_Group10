@@ -68,16 +68,16 @@
 {% include "buyer-templates/buyer-footer.html" %}
 
 <script>
-  function updateCartCount() {
-    fetch("/cart/count")
-      .then((response) => response.json())
+  function updateCartCount() {  // Function to update the cart count
+    fetch("/cart/count")  // Fetch the cart count route
+      .then((response) => response.json())  // Parse the JSON response
       .then((data) => {
-        if (data.count !== undefined) {
-          document.getElementById("cart-count").innerText = data.count;
+        if (data.count !== undefined) { // Check if the count is defined
+          document.getElementById("cart-count").innerText = data.count; // Update the cart count
         }
       })
-      .catch((error) => {
-        console.error("Error updating cart count:", error);
+      .catch((error) => { // Catch any errors
+        console.error("Error updating cart count:", error); // Log the error
       });
   }
 

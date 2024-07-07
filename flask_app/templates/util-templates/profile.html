@@ -163,16 +163,16 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
 <script>
   document
     .getElementById("editProfileForm")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
+    .addEventListener("submit", function (event) {  // Listen for form submission
+      event.preventDefault();                       // Prevent default form submission
 
-      var formData = {
+      var formData = {  // Create a JSON object with the form data
         phone_num: document.getElementById("phone_num").value,
         fname: document.getElementById("fname").value,
         lname: document.getElementById("lname").value,
       };
 
-      fetch("{{ url_for('user.update_profile') }}", {
+      fetch("{{ url_for('user.update_profile') }}", { // Fetch the update_profile route
         method: "POST",
         headers: {
           "Content-Type": "application/json",

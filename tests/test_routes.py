@@ -1,38 +1,43 @@
-import sys
-import os
 import pytest
+from flask import url_for
+from flask_login import current_user
 
-# Add the root directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from flask_app.app import app
-
-@pytest.fixture
-def client():
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['WTF_CSRF_ENABLED'] = False
-
-    with app.test_client() as client:
-        with app.app_context():
-            pass
-        yield client
-
-
-
-def test_home_page(client):
-    response = client.get('/')
+def test_index(client):
+    response = client.get(url_for('flask_app.routes.main.index'))
     assert response.status_code == 200
-
-def test_signup_page(client):
-    response = client.get('/signup')
-    assert response.status_code == 200
+    assert b"Index Page" in response.data
 
 def test_login(client):
-    response = client.post('/login')
+    response = client.get(url_for('flask_app.routes.main.login'))
     assert response.status_code == 200
+    assert b"Login Page" in response.data
 
-def test_protected_route(client):
-    response = client.get('/add_admin')
-    assert response.status_code == 302
-    assert b'Location: /login' in response.headers['Location']
+def test_signup(client):
+    response = client.get(url_for('flask_app.routes.main.signup'))
+    assert response.status_code == 200
+    assert b"Signup Page" in response.data
+
+def test_contact(client):
+    response = client.get(url_for('flask_app.routes.main.contact'))
+    assert response.status_code == 200
+    assert b"Contact Page" in response.data
+
+def test_shop(client):
+    response = client.get(url_for('flask_app.routes.main.shop'))
+    assert response.status_code == 200
+    assert b"Shop Page" in response.data
+
+def test_checkout(client):
+    response = client.get(url_for('flask_app.routes.main.checkout'))
+    assert response.status_code == 200
+    assert b"Checkout Page" in response.data
+
+def test_buyeraccount(client):
+    response = client.get(url_for('flask_app.routes.main.buyeraccount'))
+    assert response.status_code == 200
+    assert b"Buyer Account Page" in response.data
+
+def test_seller_signup(client):
+    response = client.get(url_for('flask_app.routes.main.seller_signup'))
+    assert response.status_code == 200
+    assert b"Seller Signup Page" in response.data

@@ -16,41 +16,41 @@ def client():
         yield client
 
 def test_index(client):
-    response = client.get(url_for('flask_app.routes.main.index'))
+    response = client.get(url_for('main.index'))
     assert response.status_code == 200
     assert b"Index Page" in response.data
 
 def test_login(client):
-    response = client.get(url_for('flask_app.routes.main.login'))
+    response = client.get(url_for('main.login'))
     assert response.status_code == 200
     assert b"Login Page" in response.data
 
 def test_signup(client):
-    response = client.get(url_for('flask_app.routes.main.signup'))
+    response = client.get(url_for('main.signup'))
     assert response.status_code == 200
     assert b"Signup Page" in response.data
 
 def test_contact(client):
-    response = client.get(url_for('flask_app.routes.main.contact'))
+    response = client.get(url_for('main.contact'))
     assert response.status_code == 200
     assert b"Contact Page" in response.data
 
 def test_shop(client):
-    response = client.get(url_for('flask_app.routes.main.shop'))
+    response = client.get(url_for('main.shop'))
     assert response.status_code == 200
     assert b"Shop Page" in response.data
 
 def test_checkout(client):
-    response = client.get(url_for('flask_app.routes.main.checkout'))
+    response = client.get(url_for('main.checkout'))
     assert response.status_code == 200
     assert b"Checkout Page" in response.data
 
 def test_buyeraccount(client):
-    response = client.get(url_for('flask_app.routes.main.buyeraccount'))
+    response = client.get(url_for('main.buyeraccount'))
     assert response.status_code == 200
     assert b"Buyer Account Page" in response.data
 
 def test_seller_signup(client):
-    response = client.get(url_for('flask_app.routes.main.seller_signup'))
+    response = client.get(url_for('main.seller_signup'))
     assert response.status_code == 200
     assert b"Seller Signup Page" in response.data

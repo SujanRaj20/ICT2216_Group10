@@ -2,6 +2,17 @@ import pytest
 from flask import url_for
 from flask_login import current_user
 
+import pytest
+from flask_app.app import create_app
+
+@pytest.fixture
+def client():
+    app = create_app()
+    app.config['TESTING'] = True
+
+    with app.test_client() as client:
+        yield client
+
 def test_index(client):
     response = client.get(url_for('flask_app.routes.main.index'))
     assert response.status_code == 200

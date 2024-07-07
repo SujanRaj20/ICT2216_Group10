@@ -29,6 +29,11 @@ configure_logging()
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 
+def create_app():
+    app = Flask(__name__)
+    # Configure app, register blueprints, initialize extensions, etc.
+    return app
+
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Enable auto-reloading of templates
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) # Set the maximum lifetime duration of a permanent session to 1 hour

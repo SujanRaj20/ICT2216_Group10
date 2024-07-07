@@ -34,19 +34,3 @@ def test_contact(client):
 def test_protected_route(client):
     response = client.get('/add_admin')
     assert response.status_code == 401
-
-# def test_checkout(client):
-#     response = client.get(url_for('main.checkout'))
-    # assert response.status_code == 200
-    # assert b"Checkout Page" in response.data
-# 
-# def test_buyeraccount(client):
-    # response = client.get(url_for('main.buyeraccount'))
-    # assert response.status_code == 200
-    # assert b"Buyer Account Page" in response.data
-# 
-# def test_seller_signup(client):
-    # response = client.get(url_for('main.seller_signup'))
-    # assert response.status_code == 200
-    # assert b"Seller Signup Page" in response.data
-# 

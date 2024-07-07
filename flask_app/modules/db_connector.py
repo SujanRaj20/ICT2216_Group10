@@ -1,6 +1,6 @@
 import mysql.connector
 
-def get_mysql_connection():
+def get_mysql_connection(): # Function to establish a MySQL connection
     try:
         # Replace with your MySQL connection details
         conn = mysql.connector.connect(

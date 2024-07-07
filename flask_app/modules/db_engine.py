@@ -18,6 +18,6 @@ local_mysql_user = os.getenv('MYSQL_USER', 'bookwise_flask')
 local_mysql_password = os.getenv('MYSQL_PASSWORD', '***REMOVED***')
 local_mysql_db = os.getenv('MYSQL_DB', '***REMOVED***')
 
-def get_engine():
+def get_engine():   # Function to return a MySQL engine when called
     engine = create_engine(f'mysql+pymysql://{local_mysql_user}:{local_mysql_password}@{local_mysql_host}:{local_mysql_port}/{local_mysql_db}')
     return engine

@@ -10,29 +10,29 @@ from datetime import datetime
 import os
 
 
-class Listing_Modules:
+class Listing_Modules:  # Class to handle all listing-related functions
     @staticmethod
-    def get_listing_byid(listing_id):
+    def get_listing_byid(listing_id):   # Function to fetch a listing by its ID by taking the listing ID as an argument
         engine = get_engine()
         try:
-            query = f"SELECT * FROM listings WHERE id = {listing_id}"
-            result = engine.execute(query).fetchone()  # Fetch one instead of fetchall
+            query = f"SELECT * FROM listings WHERE id = {listing_id}"   # Query to fetch a listing by its ID
+            result = engine.execute(query).fetchone()  # Execute the query and fetch the result
         except SQLAlchemyError as e:
-            logging.error(f"Error fetching listing {listing_id}: {e}")
+            logging.error(f"Error fetching listing {listing_id}: {e}")  # Log an error if an exception occurs
             result = None
         finally:
-            engine.dispose()
+            engine.dispose()    # Close the connection to the database
         return result
 
     @staticmethod
-    def fetch_seller_listings(seller_id, sort_option, category):
+    def fetch_seller_listings(seller_id, sort_option, category):    # Function to fetch all listings by a seller by taking the seller ID, sort option, and category as arguments
         engine = get_engine()
-        query = f"SELECT * FROM listings WHERE seller_id = {seller_id}"
+        query = f"SELECT * FROM listings WHERE seller_id = {seller_id}" # Query to fetch all listings by a seller
 
-        if category != 'all':
-            query += f" AND type = '{category}'"
+        if category != 'all':                       # If the category is not 'all'
+            query += f" AND type = '{category}'"    # Add a condition to filter by the category using the category argument
 
-        if sort_option == "alpha":
+        if sort_option == "alpha":                 
             query += " ORDER BY title ASC"
         elif sort_option == "dateasc":
             query += " ORDER BY created_at ASC"
@@ -47,23 +47,23 @@ class Listing_Modules:
         elif sort_option == "stockdesc":
             query += " ORDER BY stock DESC"
 
-        result = engine.execute(query).fetchall()
+        result = engine.execute(query).fetchall()   # Execute the query and fetch all the results
         engine.dispose()
         return result
 
     @staticmethod
-    def delete_listing_fromdb(listing_id):
+    def delete_listing_fromdb(listing_id):  # Function to delete a listing from the database by taking the listing ID as an argument
         engine = get_engine()
         try:
-            query = f"DELETE FROM listings WHERE id = {listing_id}"
+            query = f"DELETE FROM listings WHERE id = {listing_id}" # Query to delete a listing by its ID 
             engine.execute(query)
         except SQLAlchemyError as e:
-            current_app.logger.error(f"Error deleting listing {listing_id}: {e}")
+            current_app.logger.error(f"Error deleting listing {listing_id}: {e}")   # Log an error if an exception occurs
             raise
         finally:
             engine.dispose()
         
-def get_seller_info(seller_id):
+def get_seller_info(seller_id): # Function to fetch seller information by taking the seller ID as an argument
     engine = get_engine()
     
     try:
@@ -71,12 +71,12 @@ def get_seller_info(seller_id):
         query = f"""
             SELECT username, fname, lname, email, phone_num
             FROM users
-            WHERE id = {seller_id}
+            WHERE id = {seller_id}      
         """
         
         # Execute the query
         with engine.connect() as connection:
-            result = connection.execute(text(query)).fetchone()
+            result = connection.execute(text(query)).fetchone() #
         
         if result:
             seller_info = {
@@ -100,7 +100,7 @@ def get_seller_info(seller_id):
         engine.dispose()
 
 
-def profile_seller_listings(user_id):
+def profile_seller_listings(user_id):   # Function to fetch all listings by a seller by taking the user ID as an argument
     engine = get_engine()
     listings = []
     try:

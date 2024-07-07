@@ -194,11 +194,11 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                dir('/var/jenkins_home/workspace/bookwise/') {
+                dir('/var/www/bookwise/flask_app') {
                     script {
                     def results = sh (script: '''
                     . venv/bin/activate
-                    cd ..
+                    cd "/var/jenkins_home/workspace/bookwise"
                     ls -la
                     cd tests
                     pytest --junitxml=unit-test-results.xml

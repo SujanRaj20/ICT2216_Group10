@@ -1,8 +1,10 @@
-{% if user_role == 'buyer' %} {% include "buyer-templates/buyer-navbar.html" %}
-{% elif user_role == 'seller' %} {% include
-"seller-templates/seller-navbar.html" %} {% else %} {% include
-"buyer-templates/buyer-navbar.html" %} {% endif %} {% block title %}Contact Us{%
-endblock %}
+{% if user_role == 'buyer' %} 
+{% include "buyer-templates/buyer-navbar.html" %}
+{% elif user_role == 'seller' %} 
+{% include "seller-templates/seller-navbar.html" %} 
+{% else %} 
+{% include "buyer-templates/buyer-navbar.html" %} 
+{% endif %} 
 
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-5">

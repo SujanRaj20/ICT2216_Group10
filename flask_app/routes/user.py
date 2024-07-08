@@ -50,7 +50,7 @@ def generate_otp(): # Function to generate a random 6-digit OTP
 
 def send_otp_email(email, otp): # Function to send an OTP email to the user
     """Send an OTP email to the user."""
-    msg = Message('Your OTP Code', sender='***REMOVED***', recipients=[email])  # Create a Message object with the sender, recipient, and subject
+    msg = Message('Your OTP Code', sender='bookwise940@gmail.com', recipients=[email])  # Create a Message object with the sender, recipient, and subject
     msg.body = f'Your OTP code is {otp}. Please use this code to complete your login.'  # Set the body of the email to the OTP code
     try:
         mail.send(msg)                                                                  # Send the email using the mail.send() method
@@ -1127,6 +1127,33 @@ def inject_user_cart_count():   # Function to inject the user cart count
     else:
         user_cart_count = 0
     return dict(user_cart_count=user_cart_count)
+
+@user_bp.route('/seller-orders')
+@login_required
+def seller_orders():
+    seller_id = current_user.id
+    engine = get_engine()
+    try:
+        query = text("""
+            SELECT o.id, o.transaction_id, o.keywords, o.total_price, o.buyer_id, o.quantity, u.fname, u.lname
+            FROM orders o
+            JOIN users u ON o.buyer_id = u.id
+            JOIN listings l ON JSON_OVERLAPS(o.keywords, l.keywords)
+            WHERE l.seller_id = :seller_id
+            ORDER BY o.id DESC
+        """)
+
+        with engine.connect() as conn:
+            result = conn.execute(query, {'seller_id': seller_id}).fetchall()
+            orders = [dict(row) for row in result]
+
+        return render_template('seller-templates/seller-orders.html', orders=orders)
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Error fetching seller orders: {e}")
+        return "Internal Server Error", 500
+    finally:
+        engine.dispose()
+
 
 
 

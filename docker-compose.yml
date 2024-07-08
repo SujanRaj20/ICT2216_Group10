@@ -13,8 +13,8 @@ services:
       FLASK_ENV: development
       MYSQL_HOST: mysql-container
       MYSQL_USER: bookwise_flask
-      MYSQL_PASSWORD: ***REMOVED***
-      MYSQL_DB: ***REMOVED***
+      MYSQL_PASSWORD: bookwiseflaskpasswordchangelater
+      MYSQL_DB: bookwisetesting
     depends_on:
       mysql-container:
         condition: service_healthy
@@ -24,10 +24,10 @@ services:
     env_file:
       - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ***REMOVED***
-      MYSQL_DATABASE: ***REMOVED***
+      MYSQL_ROOT_PASSWORD: kMcFNgtzJTA0{XW
+      MYSQL_DATABASE: bookwisetesting
       MYSQL_USER: bookwise_flask
-      MYSQL_PASSWORD: ***REMOVED***
+      MYSQL_PASSWORD: bookwiseflaskpasswordchangelater
     ports:
       - "3306:3306"
     volumes:

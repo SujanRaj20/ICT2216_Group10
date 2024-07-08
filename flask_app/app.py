@@ -48,7 +48,15 @@ app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
 app.config['MAIL_USE_TLS'] = str_to_bool(os.getenv('MAIL_USE_TLS'))
 app.config['MAIL_USE_SSL'] = str_to_bool(os.getenv('MAIL_USE_SSL'))
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
+# Configure the app with environment variables
+app.config['STRIPE_PUBLISHABLE_KEY'] = os.getenv('STRIPE_PUBLISHABLE_KEY')
+app.config['STRIPE_SECRET_KEY'] = os.getenv('STRIPE_SECRET_KEY')
+
+# Set the Stripe API key
+stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
 app.logger.info('Initiated app')
 

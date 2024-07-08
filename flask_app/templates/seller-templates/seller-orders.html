@@ -1,0 +1,48 @@
+{% include "seller-templates/seller-navbar.html" %} {% block title %}Orders{%
+endblock %}
+
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+  <h1 class="text-center text-white display-6">Orders</h1>
+  <ol class="breadcrumb justify-content-center mb-0">
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item"><a href="#">Pages</a></li>
+    <li class="breadcrumb-item active text-white">Orders</li>
+  </ol>
+</div>
+<!-- Single Page Header End -->
+
+<!-- Orders Page Content -->
+<div class="container py-5">
+  <h2 class="text-center">Order History</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Transaction ID</th>
+        <th>Buyer</th>
+        <th>Total Price</th>
+        <th>Quantity</th>
+        <th>Keywords</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if orders %} {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.transaction_id }}</td>
+        <td>{{ order.fname }} {{ order.lname }} ({{ order.buyer_id }})</td>
+        <td>S${{ order.total_price }}</td>
+        <td>{{ order.quantity }}</td>
+        <td>{{ order.keywords }}</td>
+      </tr>
+      {% endfor %} {% else %}
+      <tr>
+        <td colspan="6">No orders found.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+{% include "seller-templates/seller-footer.html" %}

@@ -75,7 +75,9 @@
             </td>
             <td>
               <button
-                class="btn btn-md rounded-circle bg-light border mt-4" onclick="deleteItem('{{item.id}}')">
+                class="btn btn-md rounded-circle bg-light border mt-4"
+                onclick="deleteItem('{{item.id}}')"
+              >
                 <i class="fa fa-trash text-danger"></i>
               </button>
             </td>
@@ -108,7 +110,7 @@
             <script
               src="https://checkout.stripe.com/checkout.js"
               class="stripe-button"
-              data-key="pk_test_51PWlrlRpBfPabO05uAeQQuBWCQstK1eIgCkSM0P31DfxlZMbAUb9cQyF1YvgwacxS9AZZJOs7ADWUWyfXRTVghfB008a9tXCfe"
+              data-key="{{ stripe_publishable_key }}"
               data-amount="{{ cart_value * 100 }}"
               data-name="BookWise"
               data-description="Complete your purchase"

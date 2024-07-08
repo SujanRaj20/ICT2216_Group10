@@ -3,7 +3,8 @@ import base64
 from datetime import datetime, timedelta
 import time
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, url_for, session, redirect,flash,current_app
+from dotenv import load_dotenv
+from flask import Blueprint, app, render_template, request, jsonify, url_for, session, redirect,flash,current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine, text
@@ -32,14 +33,13 @@ from flask import send_file
 from captcha.image import ImageCaptcha
 import io
 
-# Initialize Stripe
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-publishable_key = os.getenv('STRIPE_PUBLISHABLE_KEY')
-
 
 # Create a Blueprint named 'user'
 user_bp = Blueprint('user', __name__)
 mail = Mail()   # Initialize Mail
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
@@ -718,7 +718,7 @@ def item_page_seller(item_id):
 def cart():
     cart_items = get_cart_items(current_user.id)    # Get the cart items using the get_cart_items function
     cart_value = Buyer_Cart.get_user_cart_value(current_user.id)    # Get the cart value using the get_user_cart_value function from the Buyer_Cart module
-    return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value)
+    return render_template('buyer-templates/buyer-cart.html', cart_items=cart_items, cart_value=cart_value, stripe_publishable_key=current_app.config['STRIPE_PUBLISHABLE_KEY'])
 
 @user_bp.route('/cart/increase/<int:cart_item_id>', methods=['POST'])   # Route to increase the quantity of a cart item
 @buyer_required()
@@ -874,60 +874,6 @@ def report_comment(comment_id):
         flash(f"Error reporting comment: {str(e)}", 'danger')
     
     return redirect(request.referrer or url_for('main.shop'))
-
-# @user_bp.route('/payment', methods=['POST'])
-# @login_required
-# def payment():
-#     try:
-#         # Fetch the cart value from the session or calculate it based on the current user
-#         cart_value = get_user_cart_value(current_user.id)
-
-#         if not cart_value or cart_value <= 0:
-#             current_app.logger.error("Invalid cart value.")
-#             return "Invalid cart value.", 400
-
-#         # Convert cart value to cents
-#         amount = int(cart_value * 100)
-
-#         data = request.form
-
-#         address = {
-#             "line1": data.get('address_line1'),
-#             "line2": data.get('address_line2'),
-#             "city": data.get('city'),
-#             "state": data.get('state'),
-#             "postal_code": data.get('postal_code'),
-#             "country": data.get('country')
-#         }
-
-#         customer = stripe.Customer.create(
-#             email=data.get('stripeEmail'),
-#             source=data.get('stripeToken'),
-#             address=address  # Add address to the customer creation
-#         )
-
-#         charge = stripe.Charge.create(
-#             customer=customer.id,
-#             description='BookWise Purchase',
-#             amount=amount,
-#             currency='sgd',
-#         )
-
-#         # Create a new transaction record
-#         transaction_id = create_transaction(current_user.id, 'completed')
-
-#         # Create a new order record
-#         create_order(transaction_id, cart_value, current_user.id)
-
-#         # Clear the cart after successful purchase
-#         clear_cart(current_user.id)
-
-#         return redirect(url_for('user.success'))
-
-#     except Exception as e:
-#         current_app.logger.error(f"Error during payment: {e}")
-#         return f"Internal Server Error: {e}", 500
-
 
 @user_bp.route('/payment', methods=['POST'])    # Route to handle payment
 @buyer_required()

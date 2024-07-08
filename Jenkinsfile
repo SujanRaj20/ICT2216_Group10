@@ -165,6 +165,7 @@ pipeline {
                     # Install dependencies using pip from the virtual environment
                     pip install -r requirements.txt
                     pip install pytest
+                    pip install python-dotenv
                     '''
                 }
             }

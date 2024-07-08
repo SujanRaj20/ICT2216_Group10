@@ -141,6 +141,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+    function sanitize(input) {
+        const element = document.createElement('div');
+        element.innerText = input;
+        return element.innerHTML;
+    }
     function refreshCaptchaForComment(commentId) {
         document.getElementById(`captchaImage${commentId}`).src = '/generate_captcha?' + new Date().getTime();
     }
@@ -158,6 +163,16 @@
         event.preventDefault();  // Prevent the form from submitting the traditional way
         const form = event.target;
         const formData = new FormData(form);
+        // Sanitize form data
+        formData.set('title', sanitize(formData.get('title')));
+        formData.set('price', sanitize(formData.get('price')));
+        formData.set('stock', sanitize(formData.get('stock')));
+        formData.set('type', sanitize(formData.get('type')));
+        formData.set('description', sanitize(formData.get('description')));
+        formData.set('keywords', sanitize(formData.get('keywords')));
+        formData.set('release_date', sanitize(formData.get('release_date')));
+        formData.set('author', sanitize(formData.get('author')));
+        formData.set('publisher', sanitize(formData.get('publisher')));
 
         fetch(form.action, {
             method: 'POST',

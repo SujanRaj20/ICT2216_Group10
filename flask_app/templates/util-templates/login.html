@@ -95,8 +95,8 @@
 
 
       const email = sanitize(document.getElementById("email").value);
-      const password = document.getElementById("password").value;
-      const captcha = document.getElementById("captcha").value;
+      const password = sanitize(document.getElementById("password").value);
+      const captcha = sanitize(document.getElementById("captcha").value);
 
       const userData = {
         email,

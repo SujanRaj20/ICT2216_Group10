@@ -110,9 +110,9 @@
         const release_date = document.getElementById('release_date').value;
         const author = sanitize(document.getElementById('author').value);
         const publisher = sanitize(document.getElementById('publisher').value);
-        const price = document.getElementById('price').value;
-        const stock = document.getElementById('stock').value;
-        const type = document.getElementById('type').value;
+        const price = sanitize(document.getElementById('price').value);
+        const stock = sanitize(document.getElementById('stock').value);
+        const type = sanitize(document.getElementById('type').value);
         const image = document.getElementById('image').files[0];
     
         formData.append('title', title);

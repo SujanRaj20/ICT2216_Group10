@@ -43,9 +43,18 @@ def signup():
         return redirect(url_for('main.index'))
     return render_template("buyer-templates/buyer-signup.html")  # Render the /signup template
 
+# @main_bp.route("/contact")  # Define the route for the contact page
+# def contact():
+#     return render_template("util-templates/contact.html")  # Render the /contact template
+
 @main_bp.route("/contact")  # Define the route for the contact page
 def contact():
-    return render_template("util-templates/contact.html")  # Render the /contact template
+    try:
+        user_role = rolechecker()   # Call the rolechecker function to check the role of the user
+        return render_template("util-templates/contact.html", user_role=user_role)  # Render the /contact template with the user_role
+    except Exception as e:
+        current_app.logger.error(f"Exception on /contact [GET]: {e}")  # Log the exception
+        return "Internal Server Error", 500  # Return a 500 Internal Server Error response
 
 @main_bp.route("/shop")    # Define the route for the shop page
 @non_admin_required()      # Use the custom non_admin_required decorator to ensure that only admins cant access the shop page      

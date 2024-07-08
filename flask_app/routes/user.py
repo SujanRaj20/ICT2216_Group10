@@ -160,6 +160,9 @@ def buyersignup():
         if not (fname and lname and email and username and password):   # Check if all required fields are provided
             return jsonify({'error': 'All fields except phone number are required'}), 400   # Return an error if any field is missing
         
+        # Password length validation
+        if len(password) < 8:
+            return jsonify({'error': 'Password must be at least 8 characters long.'}), 400
 
         conn = get_mysql_connection()   
         if conn:
@@ -230,6 +233,9 @@ def sellersignup():
         if not (fname and lname and email and username and password):
             return jsonify({'error': 'All fields except phone number are required'}), 400
         
+        # Password length validation
+        if len(password) < 8:
+            return jsonify({'error': 'Password must be at least 8 characters long.'}), 400
 
         conn = get_mysql_connection()
         if conn:

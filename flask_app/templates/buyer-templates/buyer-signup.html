@@ -44,7 +44,9 @@
                 class="form-control"
                 id="password"
                 required
+                minlength="8"
               />
+              <span id="password-error" class="text-danger"></span>
             </div>
             <div class="mb-3">
               <label for="confirmPassword" class="form-label"
@@ -129,6 +131,10 @@
       ) {
         alert("All fields except phone number are required.");
         return;
+      } else if (password.length < 8) {
+        document.getElementById("password-error").innerText = "Password must be at least 8 characters long.";
+        return;
+
       } else if (password !== confirmPassword) {
         document.getElementById("error-message").style.display = "block";
         return;

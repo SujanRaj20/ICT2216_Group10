@@ -98,7 +98,8 @@ def create_or_verify_tables(engine):
                 Column('keywords', JSON),
                 Column('total_price', DECIMAL(10, 2), nullable=False),
                 Column('buyer_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
-                Column('quantity', Integer, nullable=False)
+                Column('quantity', Integer, nullable=False),
+                Column('listing_id', Integer, ForeignKey('listings.id', ondelete='CASCADE'), nullable=False)  
                 )
 
     # Define wishlist_items table

@@ -881,7 +881,7 @@ def report_comment(comment_id):
     
     return redirect(request.referrer or url_for('main.shop'))
 
-@user_bp.route('/payment', methods=['POST'])    # Route to handle payment
+@user_bp.route('/payment', methods=['POST'])
 @buyer_required()
 @login_required
 def payment():
@@ -922,7 +922,6 @@ def payment():
             currency='sgd',
         )
 
-        # Update stock quantities
         engine = get_engine()
         with engine.connect() as conn:
             for item in cart_items:
@@ -935,20 +934,22 @@ def payment():
 
         # Create a new transaction record
         transaction_id = create_transaction(current_user.id, 'completed')  
-        
-        # Create a new order record
-        create_order(transaction_id, cart_value, current_user.id)  
+
+        # Create a new order record for each cart item
+        for item in cart_items:
+            create_order(transaction_id, cart_value, current_user.id, item['listing_id'])
 
         # Clear the cart after successful purchase
         clear_cart(current_user.id)
         
-        engine.dispose
+        engine.dispose()
 
         return redirect(url_for('user.success'))
 
     except Exception as e:
         current_app.logger.error(f"Error during payment: {e}")
         return f"Internal Server Error: {e}", 500
+
 
     
 def clear_user_cart(user_id):   # Function to clear the user cart
@@ -1004,21 +1005,18 @@ def create_transaction(user_id, status):    # Function to create a transaction
     finally:
         engine.dispose()
 
-def create_order(transaction_id, total_price, buyer_id):    # Function to create an order
+def create_order(transaction_id, total_price, buyer_id, listing_id):    # Function to create a order
     engine = get_engine()
     try:
         query = text("""
-            INSERT INTO orders (transaction_id, keywords, total_price, buyer_id, quantity)
-            VALUES (:transaction_id, :keywords, :total_price, :buyer_id, :quantity)
+            INSERT INTO orders (transaction_id, keywords, total_price, buyer_id, quantity, listing_id)
+            VALUES (:transaction_id, :keywords, :total_price, :buyer_id, :quantity, :listing_id)
         """)
-        # Calculate total quantity and gather keywords from cart items
+
         cart_items = get_cart_items(buyer_id)
         quantity = sum(item['quantity'] for item in cart_items)
         keywords = [item['keywords'] for item in cart_items]
         keywords_json = json.dumps(keywords)  # Ensure proper JSON serialization
-
-        # Print the serialized JSON for debugging
-        # current_app.logger.debug(f"Serialized keywords JSON: {keywords_json}")
 
         with engine.connect() as conn:
             conn.execute(query, {
@@ -1026,7 +1024,8 @@ def create_order(transaction_id, total_price, buyer_id):    # Function to create
                 'keywords': keywords_json,
                 'total_price': total_price,
                 'buyer_id': buyer_id,
-                'quantity': quantity
+                'quantity': quantity,
+                'listing_id': listing_id  # Add listing_id here
             })
             
             current_app.logger.info(f"Order created for transaction id {transaction_id}, user id {buyer_id}")
@@ -1034,7 +1033,6 @@ def create_order(transaction_id, total_price, buyer_id):    # Function to create
         current_app.logger.error(f"Error creating order: {e}")
     finally:
         engine.dispose()
-
 
 
 def calculate_total_quantity(user_id):  # Function to calculate the total quantity
@@ -1128,24 +1126,40 @@ def inject_user_cart_count():   # Function to inject the user cart count
         user_cart_count = 0
     return dict(user_cart_count=user_cart_count)
 
-@user_bp.route('/seller-orders')
+@user_bp.route('/seller-orders')    #display sellers orders
 @login_required
 def seller_orders():
     seller_id = current_user.id
     engine = get_engine()
     try:
-        query = text("""
+        # Fetch listings IDs associated with the seller
+        listings_query = text("""
+            SELECT id, keywords
+            FROM listings
+            WHERE seller_id = :seller_id
+        """)
+
+        with engine.connect() as conn:
+            listings_result = conn.execute(listings_query, {'seller_id': seller_id}).fetchall()
+            listings = [dict(row) for row in listings_result]
+
+        # Extract listing IDs
+        listing_ids = [listing['id'] for listing in listings]
+
+        # Fetch orders associated with these listings
+        orders_query = text("""
             SELECT o.id, o.transaction_id, o.keywords, o.total_price, o.buyer_id, o.quantity, u.fname, u.lname
             FROM orders o
             JOIN users u ON o.buyer_id = u.id
-            JOIN listings l ON JSON_OVERLAPS(o.keywords, l.keywords)
-            WHERE l.seller_id = :seller_id
+            WHERE o.listing_id IN :listing_ids
             ORDER BY o.id DESC
         """)
 
         with engine.connect() as conn:
-            result = conn.execute(query, {'seller_id': seller_id}).fetchall()
-            orders = [dict(row) for row in result]
+            orders_result = conn.execute(orders_query, {'listing_ids': tuple(listing_ids)}).fetchall()
+            orders = [dict(row) for row in orders_result]
+
+        current_app.logger.debug(f"Orders for seller {seller_id}: {orders}")
 
         return render_template('seller-templates/seller-orders.html', orders=orders)
     except SQLAlchemyError as e:
@@ -1153,6 +1167,7 @@ def seller_orders():
         return "Internal Server Error", 500
     finally:
         engine.dispose()
+
 
 
 

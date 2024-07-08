@@ -17,4 +17,5 @@ captcha
 stripe
 pytest
 file-read-backwards
+python-dotenv
 pytz

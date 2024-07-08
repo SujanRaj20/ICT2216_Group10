@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from flask import Flask, render_template, g, redirect, url_for, session, request, jsonify, current_app # Import dependencies  from flask
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user # Import dependancies from flask-login 
 import os 
@@ -26,6 +27,13 @@ import mysql.connector
 # Configure logging
 configure_logging()
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Helper function to convert strings to booleans
+def str_to_bool(value):
+    return value.lower() in ('true', '1', 't', 'y', 'yes')
+
 # Initialize the Flask application
 app = Flask(__name__, static_url_path='/static')
 
@@ -35,12 +43,12 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) # Set the maximum 
 app.secret_key = os.urandom(24)
 
 # Flask-Mail configuration
-app.config['MAIL_SERVER'] = '***REMOVED***'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = '***REMOVED***'
-app.config['MAIL_PASSWORD'] = '***REMOVED***'  # Use your Gmail App Password here
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+app.config['MAIL_USE_TLS'] = str_to_bool(os.getenv('MAIL_USE_TLS'))
+app.config['MAIL_USE_SSL'] = str_to_bool(os.getenv('MAIL_USE_SSL'))
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
 app.logger.info('Initiated app')
 
@@ -66,7 +74,7 @@ def inject_user_cart_count():
 
 app.logger.info('Initializing LoginManager')    
 login_manager = LoginManager()  # Set-up login manager 
-login_manager.init_app(app)     # Initialize the lagin-manager for this app
+login_manager.init_app(app)     # Initialize the login-manager for this app
 
 app.logger.info('Registering Blueprints')
 # Register the Blueprint with the app
@@ -135,9 +143,9 @@ if __name__ == "__main__":
 # Error handler for 404 errors
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404 # Display the 404 page whenever a non-existant route is called
+    return render_template('util-templates/404.html'), 404 # Display the 404 page whenever a non-existant route is called
 
 # # Error handler for TemplateNotFound errors
 @app.errorhandler(TemplateNotFound)
 def template_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('util-templates/404.html'), 404

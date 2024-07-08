@@ -161,10 +161,18 @@ include "admin-templates/admin-navbar.html" %} {% endif %} {% block title
 </div>
 
 <script>
+  function sanitize(input) {
+    const element = document.createElement('div');
+    element.innerText = input;
+    return element.innerHTML;
+  }
   document
     .getElementById("editProfileForm")
     .addEventListener("submit", function (event) {  // Listen for form submission
       event.preventDefault();                       // Prevent default form submission
+      const phone_num = sanitize(document.getElementById("phone_num").value);
+    const fname = sanitize(document.getElementById("fname").value);
+    const lname = sanitize(document.getElementById("lname").value);
 
       var formData = {  // Create a JSON object with the form data
         phone_num: document.getElementById("phone_num").value,

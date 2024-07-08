@@ -116,9 +116,9 @@
       const email = sanitize(document.getElementById("email").value);
       const phone_num = sanitize(document.getElementById("phone_num").value);
       const username = sanitize(document.getElementById("username").value);
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-      const captcha = document.getElementById("captcha").value;
+      const password = sanitize(document.getElementById("password").value);
+      const confirmPassword = sanitize(document.getElementById("confirmPassword").value);
+      const captcha = sanitize(document.getElementById("captcha").value);
 
       if (
         !fname ||
